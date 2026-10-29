@@ -1,8 +1,9 @@
 # Demo script (about 5 minutes)
 
 Step 5 of the project: the tuned LightGBM served by a FastAPI service (`app/api.py`) and a Streamlit page
-(`app/streamlit_app.py`). The numbers shown live come from the model and from `MODEL_CARD.md`, which is
-generated from `reports/tables/`. Run every command from the project root.
+(`app/streamlit_app.py`). The numbers shown live come from the model and from `models/final/schema.json`
+(copied from `reports/tables/automl_vs_manual.csv` and `models/threshold.json`), as does `MODEL_CARD.md`.
+Run every command from the project root.
 
 Interpreter: Windows `.venv/Scripts/python.exe`, Linux/macOS `.venv/bin/python`. Below, `PY` stands for it:
 
@@ -23,8 +24,11 @@ In PowerShell, write `& $PY` wherever the commands below say `$PY`. In Git Bash 
 $PY run_all.py --steps deploy        # export models/final/ + MODEL_CARD.md, then run tests/test_api.py
 ```
 Expect `[export] ... parity max diff=0.0e+00` and all tests passing (the notepad.exe tests skip off Windows).
-`models/final/` is committed, so this step only re-checks it. The demo works without the 5 GB feature cache:
-the Streamlit page then uses the shipped `models/final/demo_samples.npz` (a few hundred test_future files).
+`models/final/` is committed, so this step only re-exports it and re-checks parity. The deploy step needs the
+feature cache (about 6 GB) (`data/cache`): it reloads test_future to check the exported model against the Step 2 scores.
+On a clone without the cache, skip it and run `$PY -m pytest tests/test_api.py` instead (the cache-only parity
+test skips). The demo itself works without the cache: the Streamlit page then uses the shipped
+`models/final/demo_samples.npz` (a few hundred test_future files).
 
 ## 1. Start the API (terminal 1) - 0:00
 
@@ -47,13 +51,14 @@ Score a real test_future file (written from the shipped demo samples), then show
 
 ```bash
 $PY -c "import json, numpy as np; d = np.load('models/final/demo_samples.npz'); json.dump({'features': d['X'][0].tolist()}, open('row.json', 'w')); print('offline score', d['p'][0])"
-curl -s -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" --data @row.json
-curl -s -X POST "http://127.0.0.1:8000/predict?top_k=3" -H "Content-Type: application/json" --data @row.json
+curl -s -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" --data "@row.json"
+curl -s -X POST "http://127.0.0.1:8000/predict?top_k=3" -H "Content-Type: application/json" --data "@row.json"
 curl -s -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" -d '{"features": [1, 2, 3]}'
 ```
 Expect the same `p_malicious` as the offline score, then the 3 largest SHAP contributions, then a 422
-("List should have at least 2568 items"). In PowerShell, call `curl.exe` (not the `curl` alias) and write
-the last body as `-d '{\"features\": [1, 2, 3]}'`.
+("List should have at least 2568 items"). In PowerShell, call `curl.exe` (not the `curl` alias), keep
+`"@row.json"` in quotes (a bare `@row` is PowerShell splatting) and write the last body as
+`-d '{\"features\": [1, 2, 3]}'`.
 
 Upload a file: the API parses it in memory and never stores or runs it.
 

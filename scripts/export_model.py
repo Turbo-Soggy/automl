@@ -187,7 +187,8 @@ def export(quick: bool) -> Path:
         "seed": config.SEED,
         "exported_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
-    (out_dir / "schema.json").write_text(json.dumps(schema, indent=2) + "\n", encoding="utf-8")
+    # newline="\n": the same bytes on Windows and Linux, so a re-export does not rewrite every line
+    (out_dir / "schema.json").write_text(json.dumps(schema, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"[export] {model_path.relative_to(ROOT)} sha256={model_sha[:12]} trees={booster.num_trees()} "
           f"parity max diff={parity['max_abs_diff']:.1e} demo rows={len(pos)}")
     # The model card is generated from schema.json and the tables, so its numbers are never typed.

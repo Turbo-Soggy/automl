@@ -6,6 +6,8 @@ Endpoints
   POST /predict_batch  {"rows": [[...], ...]} (at most MAX_BATCH rows) -> one prediction per row.
   POST /predict_file   the bytes of a PE file (raw body, or multipart field "file"), at most
                        50 MB. thrember extracts the features from the bytes in memory.
+  The JSON routes refuse a body whose Content-Length is above MAX_JSON_BYTES (413), so a huge
+  body is not parsed before validation rejects it.
   Add ?top_k=10 to /predict or /predict_file to also get the sample's largest TreeSHAP
   contributions (log-odds) and the SHAP total of each feature family.
 
@@ -23,7 +25,7 @@ import hashlib
 import json
 import os
 import threading
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from functools import lru_cache
@@ -34,7 +36,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 from starlette.datastructures import Headers, UploadFile
 from starlette.formparsers import MultiPartException, MultiPartParser
@@ -44,6 +46,9 @@ FEATURE_DIM: int = 2568            # thrember 0.1.0 vector length; checked again
 MAX_UPLOAD_BYTES: int = 50 * 1024 * 1024
 MULTIPART_SLACK: int = 64 * 1024   # room for multipart boundaries and headers around a 50 MB file
 MAX_BATCH: int = 256
+# A full batch is 256 x 2568 numbers of ~24 characters each (about 16 MB), so 32 MB leaves room.
+MAX_JSON_BYTES: int = 32 * 1024 * 1024
+JSON_ROUTES: frozenset[str] = frozenset({"/predict", "/predict_batch"})
 MAX_TOP_K: int = 50
 MAX_ERRORS_SHOWN: int = 20     # validation errors listed in a 422 (a bad vector can have thousands)
 AMD64_MACHINE: int = 0x8664        # IMAGE_FILE_MACHINE_AMD64: the only machine type in the training data
@@ -269,6 +274,18 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title="EMBER2024 Win64 malware detector", version="1.0", lifespan=lifespan,
               description="Static-feature triage aid (tuned LightGBM). Not a sole blocking verdict; see MODEL_CARD.md.")
+
+
+@app.middleware("http")
+async def cap_json_body(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    """413 before FastAPI reads and parses an oversized JSON body. It checks the declared
+    Content-Length only; this API is meant for private, local use (MODEL_CARD.md, DEMO.md)."""
+    declared = request.headers.get("content-length", "")
+    if request.url.path in JSON_ROUTES and declared.isdigit() and int(declared) > MAX_JSON_BYTES:
+        return JSONResponse(status_code=413,
+                            content={"detail": f"JSON body larger than {MAX_JSON_BYTES // (1024 * 1024)} MB"})
+    return await call_next(request)
+
 
 @app.exception_handler(RequestValidationError)
 async def compact_422(_: Request, exc: RequestValidationError) -> JSONResponse:

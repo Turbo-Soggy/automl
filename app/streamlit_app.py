@@ -94,7 +94,8 @@ def banner(s: dict[str, Any]) -> None:
     )
     st.warning(
         "**Limits.** A triage aid for analysts and research, not a sole verdict for blocking files. Win64 PE only; "
-        "static features only, so packed or adversarially modified files can evade it; trained at 50/50 "
+        "static features only, so adversarially modified files may evade it (untested) and packed benign files "
+        "may be flagged (unmeasured); trained at 50/50 "
         "class balance, so precision at real-world prevalence is much lower; malware the AV engines first "
         "missed (the EMBER2024 challenge set) is detected far less often. See MODEL_CARD.md."
     )
@@ -136,7 +137,8 @@ def show_shap(res: dict) -> None:
 
 def sample_tab(url: str, in_process: bool, threshold: float) -> None:
     tf = test_future()
-    st.caption(f"Source: {tf['source']}. Filters use the Step 2 offline scores; the prediction shown comes from the API.")
+    scored_by = "is scored in-process, without the API" if in_process else "comes from the API"
+    st.caption(f"Source: {tf['source']}. Filters use the Step 2 offline scores; the prediction shown {scored_by}.")
     how = st.radio("Choose by", ["filter", "test_future index"], horizontal=True)
     pred = (tf["p"] >= threshold).astype(int)
     if how == "filter":
@@ -170,7 +172,8 @@ def sample_tab(url: str, in_process: bool, threshold: float) -> None:
 
 
 def upload_tab(url: str, in_process: bool) -> None:
-    st.caption("The file is sent to the API, parsed in memory with thrember and scored. It is never executed "
+    where = "scored in this process" if in_process else "sent to the API"
+    st.caption(f"The file is {where}, parsed in memory with thrember. It is never executed "
                "or written to disk. Limit 50 MB. Only Win64 PE files are in the model's training distribution.")
     up = st.file_uploader("PE file (.exe, .dll, ...)")
     if up is None:

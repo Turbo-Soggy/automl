@@ -218,6 +218,20 @@ def test_oversize_upload_is_rejected(client, multipart: bool) -> None:
     assert response.status_code == 413
 
 
+@pytest.mark.parametrize("route", sorted(api.JSON_ROUTES))
+def test_oversize_json_body_is_413(client, route: str) -> None:
+    """The JSON routes refuse a huge body from its Content-Length, before parsing it."""
+    body = b"[" + b"0," * (api.MAX_JSON_BYTES // 2) + b"0]"
+    response = client.post(route, content=body, headers={"Content-Type": "application/json"})
+    assert response.status_code == 413
+
+
+def test_full_batch_fits_under_the_json_cap(demo) -> None:
+    """A legal MAX_BATCH request, written the way json.dumps writes floats, is under the cap."""
+    rows = np.resize(demo["X"], (api.MAX_BATCH, api.FEATURE_DIM)).tolist()
+    assert len(json.dumps({"rows": rows}).encode()) < api.MAX_JSON_BYTES
+
+
 def test_upload_never_touches_disk(client, monkeypatch) -> None:
     """A 2 MB multipart upload would normally spill to a temp file (starlette spools at 1 MB)."""
     def refuse(*args, **kwargs):
