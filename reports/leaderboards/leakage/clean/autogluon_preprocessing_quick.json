@@ -1,0 +1,269 @@
+{
+  "tool": "autogluon",
+  "version": "1.6.3",
+  "presets": "medium_quality",
+  "best_model": "WeightedEnsemble_L2",
+  "best_val_auc": 0.99090625,
+  "ensemble_weights": {
+    "LightGBMXT": 1.0
+  },
+  "models_trained": [
+    "LightGBMXT",
+    "WeightedEnsemble_L2"
+  ],
+  "validation": "holdout split of train made by AutoGluon (no bagging or stacking in medium_quality)",
+  "holdout_rows": 800,
+  "n_features_in": 2568,
+  "n_features_used": 2506,
+  "dropped_features": [
+    "datadirectories__30",
+    "datadirectories__31",
+    "general__4",
+    "header__31",
+    "header__34",
+    "header__36",
+    "header__37",
+    "header__38",
+    "header__41",
+    "header__42",
+    "header__44",
+    "header__45",
+    "header__50",
+    "header__57",
+    "pefilewarnings__1",
+    "pefilewarnings__11",
+    "pefilewarnings__15",
+    "pefilewarnings__16",
+    "pefilewarnings__18",
+    "pefilewarnings__20",
+    "pefilewarnings__21",
+    "pefilewarnings__22",
+    "pefilewarnings__23",
+    "pefilewarnings__24",
+    "pefilewarnings__25",
+    "pefilewarnings__26",
+    "pefilewarnings__27",
+    "pefilewarnings__28",
+    "pefilewarnings__29",
+    "pefilewarnings__30",
+    "pefilewarnings__32",
+    "pefilewarnings__34",
+    "pefilewarnings__35",
+    "pefilewarnings__38",
+    "pefilewarnings__39",
+    "pefilewarnings__41",
+    "pefilewarnings__42",
+    "pefilewarnings__43",
+    "pefilewarnings__44",
+    "pefilewarnings__45",
+    "pefilewarnings__46",
+    "pefilewarnings__49",
+    "pefilewarnings__5",
+    "pefilewarnings__51",
+    "pefilewarnings__54",
+    "pefilewarnings__59",
+    "pefilewarnings__61",
+    "pefilewarnings__62",
+    "pefilewarnings__63",
+    "pefilewarnings__68",
+    "pefilewarnings__74",
+    "pefilewarnings__77",
+    "pefilewarnings__78",
+    "pefilewarnings__80",
+    "pefilewarnings__82",
+    "pefilewarnings__83",
+    "pefilewarnings__9",
+    "section__10",
+    "section__6",
+    "section__8",
+    "strings__112",
+    "strings__153"
+  ],
+  "dropped_nonconstant_duplicate_of": {
+    "general__4": null,
+    "header__31": "general__2",
+    "header__34": null,
+    "header__38": null,
+    "header__41": null,
+    "header__57": null,
+    "pefilewarnings__11": null,
+    "pefilewarnings__43": "pefilewarnings__13",
+    "pefilewarnings__49": null,
+    "pefilewarnings__51": null,
+    "pefilewarnings__80": null,
+    "strings__153": "strings__132"
+  },
+  "n_features_transformed": 2506,
+  "new_features_created": [],
+  "constant_in_train": [
+    "strings__112",
+    "header__36",
+    "header__37",
+    "header__42",
+    "header__44",
+    "header__45",
+    "header__50",
+    "section__6",
+    "section__8",
+    "section__10",
+    "datadirectories__30",
+    "datadirectories__31",
+    "pefilewarnings__1",
+    "pefilewarnings__5",
+    "pefilewarnings__9",
+    "pefilewarnings__15",
+    "pefilewarnings__16",
+    "pefilewarnings__18",
+    "pefilewarnings__20",
+    "pefilewarnings__21",
+    "pefilewarnings__22",
+    "pefilewarnings__23",
+    "pefilewarnings__24",
+    "pefilewarnings__25",
+    "pefilewarnings__26",
+    "pefilewarnings__27",
+    "pefilewarnings__28",
+    "pefilewarnings__29",
+    "pefilewarnings__30",
+    "pefilewarnings__32",
+    "pefilewarnings__34",
+    "pefilewarnings__35",
+    "pefilewarnings__38",
+    "pefilewarnings__39",
+    "pefilewarnings__41",
+    "pefilewarnings__42",
+    "pefilewarnings__44",
+    "pefilewarnings__45",
+    "pefilewarnings__46",
+    "pefilewarnings__54",
+    "pefilewarnings__59",
+    "pefilewarnings__61",
+    "pefilewarnings__62",
+    "pefilewarnings__63",
+    "pefilewarnings__68",
+    "pefilewarnings__74",
+    "pefilewarnings__77",
+    "pefilewarnings__78",
+    "pefilewarnings__82",
+    "pefilewarnings__83"
+  ],
+  "missing_values_in_train": 0,
+  "feature_types_after_preprocessing": null,
+  "feature_generators": [
+    "AsTypeFeatureGenerator",
+    "FillNaFeatureGenerator",
+    "IdentityFeatureGenerator",
+    "DropUniqueFeatureGenerator",
+    "DropDuplicatesFeatureGenerator"
+  ],
+  "num_cpus": null,
+  "fit_log_highlights": [
+    "Beginning AutoGluon training ... Time limit = 30s",
+    "Fitting AutoMLPipelineFeatureGenerator...",
+    "\tStage 1 Generators:",
+    "\t\tFitting AsTypeFeatureGenerator...",
+    "\tStage 2 Generators:",
+    "\t\tFitting FillNaFeatureGenerator...",
+    "\tStage 3 Generators:",
+    "\t\tFitting IdentityFeatureGenerator...",
+    "\tStage 4 Generators:",
+    "\t\tFitting DropUniqueFeatureGenerator...",
+    "\tStage 5 Generators:",
+    "\t\tFitting DropDuplicatesFeatureGenerator...",
+    "\tUseless Original Features (Count: 50): ['strings__112', 'header__36', 'header__37', 'header__42', 'header__44', 'header__45', 'header__50', 'section__6', 'section__8', 'section__10', 'datadirectories__30', 'datadirectories__31', 'pefilewarnings__1', 'pefilewarnings__5', 'pefilewarnings__9', 'pefilewarnings__15', 'pefilewarnings__16', 'pefilewarnings__18', 'pefilewarnings__20', 'pefilewarnings__21', 'pefilewarnings__22', 'pefilewarnings__23', 'pefilewarnings__24', 'pefilewarnings__25', 'pefilewarnings__26', 'pefilewarnings__27', 'pefilewarnings__28', 'pefilewarnings__29', 'pefilewarnings__30', 'pefilewarnings__32', 'pefilewarnings__34', 'pefilewarnings__35', 'pefilewarnings__38', 'pefilewarnings__39', 'pefilewarnings__41', 'pefilewarnings__42', 'pefilewarnings__44', 'pefilewarnings__45', 'pefilewarnings__46', 'pefilewarnings__54', 'pefilewarnings__59', 'pefilewarnings__61', 'pefilewarnings__62', 'pefilewarnings__63', 'pefilewarnings__68', 'pefilewarnings__74', 'pefilewarnings__77', 'pefilewarnings__78', 'pefilewarnings__82', 'pefilewarnings__83']",
+    "\tUnused Original Features (Count: 12): ['general__4', 'strings__153', 'header__31', 'header__34', 'header__38', 'header__41', 'header__57', 'pefilewarnings__11', 'pefilewarnings__43', 'pefilewarnings__49', 'pefilewarnings__51', 'pefilewarnings__80']",
+    "\t\tFeatures can also be unused if they carry very little information, such as being categorical but having almost entirely unique values or being duplicates of other features.",
+    "\tTypes of features in original data (raw dtype, special dtypes):",
+    "\tTypes of features in processed data (raw dtype, special dtypes):",
+    "Automatically generating train/validation split with holdout_frac=0.1, Train Rows: 7200, Val Rows: 800",
+    "Fitting 11 L1 models, fit_strategy=\"sequential\" ...",
+    "Fitting model: LightGBMXT ... Training model for up to 22.11s of the 22.11s of remaining time.",
+    "Fitting model: WeightedEnsemble_L2 ... Training model for up to 22.11s of the -0.07s of remaining time."
+  ],
+  "checks": {
+    "seeds": {
+      "train/validation split (learner random_state)": 42,
+      "base models (random_seed)": {
+        "LightGBMXT": 0,
+        "WeightedEnsemble_L2": 0
+      }
+    },
+    "duplicate_check_sample_sizes": {
+      "sample_size_init": 1000,
+      "sample_size_final": 5000
+    },
+    "dropped_nonconstant_minority_rows": {
+      "general__4": {
+        "rows_not_mode": 1,
+        "n_distinct": 2,
+        "malicious_share_of_those": 1.0
+      },
+      "header__31": {
+        "rows_not_mode": 2,
+        "n_distinct": 2,
+        "malicious_share_of_those": 0.5
+      },
+      "header__34": {
+        "rows_not_mode": 3,
+        "n_distinct": 2,
+        "malicious_share_of_those": 0.0
+      },
+      "header__38": {
+        "rows_not_mode": 2,
+        "n_distinct": 2,
+        "malicious_share_of_those": 0.0
+      },
+      "header__41": {
+        "rows_not_mode": 46,
+        "n_distinct": 2,
+        "malicious_share_of_those": 0.10869565217391304
+      },
+      "header__57": {
+        "rows_not_mode": 2,
+        "n_distinct": 2,
+        "malicious_share_of_those": 0.5
+      },
+      "pefilewarnings__11": {
+        "rows_not_mode": 1,
+        "n_distinct": 2,
+        "malicious_share_of_those": 1.0
+      },
+      "pefilewarnings__43": {
+        "rows_not_mode": 3,
+        "n_distinct": 2,
+        "malicious_share_of_those": 1.0
+      },
+      "pefilewarnings__49": {
+        "rows_not_mode": 2,
+        "n_distinct": 2,
+        "malicious_share_of_those": 1.0
+      },
+      "pefilewarnings__51": {
+        "rows_not_mode": 6,
+        "n_distinct": 2,
+        "malicious_share_of_those": 1.0
+      },
+      "pefilewarnings__80": {
+        "rows_not_mode": 19,
+        "n_distinct": 2,
+        "malicious_share_of_those": 0.9473684210526315
+      },
+      "strings__153": {
+        "rows_not_mode": 161,
+        "n_distinct": 16,
+        "malicious_share_of_those": 0.5838509316770186
+      }
+    },
+    "refit_on_all_rows": false
+  },
+  "feature_importance": {
+    "data": "AutoGluon internal validation split (data=None, transformed features)",
+    "rows_cap": 5000,
+    "family_shuffle_sets": 5,
+    "family_seconds": 7.05022554199968,
+    "feature_time_cap_s": 60.0,
+    "features_covered": 768,
+    "features_total": 2506,
+    "feature_seconds": 66.31923414999983
+  }
+}

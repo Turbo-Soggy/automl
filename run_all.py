@@ -32,9 +32,15 @@ STEP_SCRIPTS: dict[str, list[str]] = {
     "data": ["download_data.py", "build_cache.py", "verify_data.py"],
     "tune": ["run_tuning.py"],
     "automl": ["run_automl.py"],  # FLAML, AutoGluon, H2O one after another, then the comparison
+    # Step 4, in dependency order: explain writes the train out-of-fold scores and models/threshold.json
+    # that eval_bias reuses; critical_eval reads the tables of all three.
+    "eval": ["run_explain.py", "run_eval_bias.py", "run_leakage.py", "run_critical_eval.py"],
 }
+# Extra arguments per script. run_leakage.py takes about 3-4 h on a 4-core machine, so a second
+# pipeline run reuses every run already logged with valid timing instead of repeating it
+# (the eval_bias fits resume the same way by default). Delete its log records to force a rerun.
+SCRIPT_ARGS: dict[str, list[str]] = {"run_leakage.py": ["--skip-done"]}
 NOT_IMPLEMENTED: dict[str, str] = {
-    "eval": "Step 4 (critical evaluation, SHAP)",
     "deploy": "Step 5 (FastAPI / Streamlit)",
 }
 
@@ -115,7 +121,9 @@ def main() -> None:
             continue
         print(f"[run_all] === step '{step}' ===", flush=True)
         for name in scripts_for(step, args.redownload):
-            extra = ["--keep-zipped"] if name == "download_data.py" and args.keep_zipped else []
+            extra = list(SCRIPT_ARGS.get(name, []))
+            if name == "download_data.py" and args.keep_zipped:
+                extra.append("--keep-zipped")
             run_script(name, env, extra)
     print(f"[run_all] done in {time.time() - t0:.0f} s", flush=True)
 

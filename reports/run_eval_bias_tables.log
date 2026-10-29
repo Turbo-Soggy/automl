@@ -1,0 +1,7 @@
+[tables] random_vs_future
+[tables] cv_comparison
+[tables] gap evidence
+[tables] bias, class weight, prevalence
+[tables] drift
+[tables] challenge
+[writeup] /home/user/automl/reports/temporal_bias.md

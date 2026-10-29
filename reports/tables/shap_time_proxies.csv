@@ -1,0 +1,4 @@
+feature,column,label,share_zero_malicious,share_zero_benign,mean_abs_shap,mean_abs_shap_zero_rows,mean_abs_shap_nonzero_rows,spearman_value_vs_shap_nonzero
+header__0,696,header: coff.timestamp,0.3968,0.0236,0.21833327693182947,0.16579875250571618,0.23231499006726755,-0.6009078059151705
+authenticode__6,2478,authenticode: latest_signing_time,0.9584,0.4628,1.120775359316594,0.6276264459231804,2.331665538505812,-0.320734871632234
+authenticode__7,2479,authenticode: signing_time_diff,0.9588,0.464,0.35856626345049003,0.16222307717820816,0.8425528979414858,-0.3904302587890361

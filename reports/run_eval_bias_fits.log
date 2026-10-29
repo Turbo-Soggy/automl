@@ -1,0 +1,17 @@
+[fits] tuned config from optuna: 609 rounds, 2 threads
+  cv_forward_fold0: fit on 36922 rows in 192s
+  cv_forward_fold1: fit on 67690 rows in 461s
+  cv_forward_fold2: fit on 98461 rows in 278s
+  cv_forward_fold3: fit on 129232 rows in 308s
+  drift_sliding_12w: fit on 36924 rows in 110s
+  drift_size_matched: fit on 36924 rows in 138s
+  class_weight_balanced: fit on 160000 rows in 431s
+  class_weight_prior_10pct: fit on 160000 rows in 385s
+  logreg_no_time_proxies: fit on 160000 rows in 81s
+  oof_lgbm_default_fold0: fit on 106666 rows in 67s
+  oof_lgbm_default_fold1: fit on 106667 rows in 66s
+  oof_lgbm_default_fold2: fit on 106667 rows in 61s
+  oof_logreg_fold0: fit on 106666 rows in 46s
+  oof_logreg_fold1: fit on 106667 rows in 33s
+  oof_logreg_fold2: fit on 106667 rows in 36s
+[fits] stratified OOF of the tuned config reused from /home/user/automl/reports/predictions/oof_lgbm_tuned.npz

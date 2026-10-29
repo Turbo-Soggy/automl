@@ -1,0 +1,2 @@
+[leakage] lgbm_tuned on ablate_time_proxies: budget 30 s, quick=True
+[leakage] lgbm_tuned ablate_time_proxies best=LightGBM (random config, 479 trees) wall_s=30 test_random_auc=0.99234 test_future_auc=0.99235 timing_valid=True

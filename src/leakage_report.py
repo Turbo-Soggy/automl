@@ -40,8 +40,8 @@ VARIANT_COLORS: dict[str, str] = {leakage.CLEAN: "#2a78d6", leakage.LEAK_DR: "#e
                                   leakage.LEAK_DATE: "#1baf7a", leakage.ABLATE: "#eda100"}
 VARIANT_LABELS: dict[str, str] = {leakage.CLEAN: "clean", leakage.LEAK_DR: "+ detection_ratio",
                                   leakage.LEAK_DATE: "+ first_submission_date", leakage.ABLATE: "- time proxies"}
-# Words that would show a tool noticed something odd about a column. The leak column's own name
-# and our "leakage" output folder contain "leak", so both are blanked out of a line first.
+# Words that would show a tool noticed something odd about a column. The leak column's own name,
+# the variant names and our "leakage" output folder contain "leak", so they are blanked out first.
 FLAG_WORDS: re.Pattern[str] = re.compile(
     r"leak|target|suspicious|correlat|perfect|too good|predictive|dominat|id[- ]like", re.IGNORECASE)
 OUR_FOLDER: re.Pattern[str] = re.compile(r"[\\/]leakage[\\/]")
@@ -130,6 +130,8 @@ def scan_logs(model: str, variant: str) -> dict[str, Any]:
             if line.startswith(("[leakage]", f"[{model}")):
                 continue  # our own progress lines
             blanked = OUR_FOLDER.sub("/<folder>/", line.replace(column, "<col>") if column else line)
+            for name in leakage.VARIANTS:
+                blanked = blanked.replace(name, "<variant>")
             if WARNING_WORDS.search(line):
                 warnings.append(line.strip())
             if column and column in line:

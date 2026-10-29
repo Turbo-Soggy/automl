@@ -3,7 +3,87 @@
 Written 2026-10-29, when the work moved from the student's Windows laptop to a Claude cloud
 session. Read `CLAUDE.md` first for the working rules.
 
-## 1. State at handoff
+## 0. Latest handoff: cloud VM → laptop (2026-10-29, 14:45 UTC)
+The work moved to a Claude cloud session (4-core Xeon, 15 GB RAM, Linux) on branch
+`step4-6-cloud`, ran Step 0 checks and all Step 4 experiments, and was then stopped at the
+user's request so it can continue on the laptop. **Pick up from the Step 4 review gate.**
+
+### Continue on the laptop
+```bash
+git fetch origin
+git checkout step4-6-cloud
+.venv/Scripts/python.exe -m pip install -r requirements.txt   # adds the oscrypto git pin (see below)
+.venv/Scripts/python.exe -m pytest -q
+```
+- **The laptop's data is still valid.** The cloud rebuilt the cache from the same zips and it
+  matched the laptop exactly (split sha256 order, first-1000-row feature hashes and
+  `cache_info.json` counts). Nothing needs re-downloading. `pytest` at this handoff: 118 passed
+  on the cloud VM.
+- **One new local file must be regenerated:** the challenge-set cache
+  (`data/cache/X_challenge_win64.npy`, `meta_challenge_win64.parquet`,
+  `challenge_win64_info.json`; gitignored). Build it from `data/raw/challenge` with
+  `.venv/Scripts/python.exe scripts/run_eval_bias.py --stages challenge` (uses `src/challenge.py`;
+  it also re-scores the saved models on those rows, which should reproduce `tables/challenge.csv`).
+- **What changed for Linux, and why it is safe on Windows:**
+  - `src/data.RawFile` / `raw_files()` read weekly jsonl straight out of the zips **only when
+    no extracted files exist**. The laptop has `data/raw/win64/*.jsonl`, so it uses them as before.
+  - `config.N_JOBS = min(16, cpu_count)`: 16 again on the laptop.
+  - `src/automl_runs._h2o_max_mem()`: 24G on the laptop (it caps at 60% of RAM).
+  - `requirements.txt` pins `oscrypto` to an upstream git commit (PyPI 1.3.0 cannot parse
+    OpenSSL 3.0.13 on Linux). Pure Python, so it installs on Windows too; reinstall once.
+- **Step 4 settings are tied to the cloud VM, keep them as they are.** Every leakage run
+  (clean and leaky) ran on the 4-core VM with the same settings: 600 s budget, FLAML "lean"
+  preprocessing (constant columns dropped by our code, `skip_transform=True`, because FLAML's
+  own transformer ran out of memory), H2O with XGBoost excluded and a 7G heap
+  (`H2O_STEP4_MAX_MEM` in `src/leakage.py`). If you re-run any leakage run on the laptop,
+  re-run its whole with/without set there too, or the comparison stops being equal-hardware.
+  The Step 4 bias and explain agents ran side by side with 2 threads each, so their timings
+  are from a shared machine (the write-ups say so).
+
+### Stage status
+| Stage | Status | Evidence |
+|---|---|---|
+| Steps 0–3 | Done, reviewed (see the table in section 1) | |
+| Step 0 cloud data path (zip reader, machine scaling) | **Done, passed review** (2 rounds), commit `ed12fcf` | `tests/test_raw_files.py`, `reports/build_cache_cloud.log` |
+| Step 4A leakage | **Done, NOT reviewed** | `reports/leakage.md`, `tables/leakage.csv`, `figures/leakage_jump.png`, `models/leakage/`, `reports/leakage_logs/`, `reports/leaderboards/leakage/` |
+| Step 4B temporal, bias, drift, challenge set | **Done, NOT reviewed** | `reports/temporal_bias.md`, `tables/{random_vs_future,cv_comparison,gap_*,class_balance,bias_slices,class_weight,prevalence,drift,challenge}.csv`, `figures/{bias_slices,drift}.png`, `models/eval/` |
+| Step 4C SHAP, cross-tool agreement, calibration, cost threshold | **Done, NOT reviewed** | `reports/explainability.md`, `tables/{shap_*,cross_tool_*,calibration,threshold}.csv`, `figures/{shap_*,cross_tool_agreement,calibration,pr_cost}.png`, `models/threshold.json` |
+| Step 4 synthesis | **Done, NOT reviewed** | `reports/critical_eval.md`, `reports/limitations.md`, `tables/{precision_both_sets,gap_vs_tuned,automl_self_estimate}.csv`; `run_all.py --steps eval` wired |
+| Step 4 review gate | **Next.** Round 1 reviewers had just started when the run was stopped; nothing from them was kept | |
+| Step 5 deployment | Not started (`app/` is empty) | |
+| Step 6 report, slides, notebooks | Not started | |
+| Final gate (D8) | Not started | |
+
+### Known points the Step 4 review must judge (raised by the agents themselves)
+- FLAML and H2O ran 3–7 min past the 600 s budget (`leakage.md`, run-time table); AutoGluon
+  stayed within ~10 s. The sleep guard does not flag overruns, only suspend gaps.
+- On the VM, H2O at 600 s scored clearly below its Step 3 run (test_future AUC ~0.992 vs
+  ~0.997), and AutoGluon trained in effect one LightGBM model (memory). Both are stated.
+- The AutoGluon leakage predictors (~2 GB each) were deleted after scoring to save disk, so
+  those rows can only be re-scored by re-running them.
+- Two failed attempts (FLAML clean OOM, H2O clean killed with a 9G heap) left logs but no
+  records; all final records come from the fixed code.
+- Threshold and calibrators are fitted on train out-of-fold scores from 2/3-size fold models,
+  while the deployed model is trained on all of train (stated, not corrected).
+- 1%-FPR thresholds exist only for tuned LightGBM, default LightGBM and LogReg (only they
+  have train OOF scores); the other models are reported at 0.5 on the challenge set.
+- The forward CV confounds recency with training-set size (stated; a size-matched control
+  exists only for drift).
+- `README.md` was updated by the synthesis agent (status row 4: "outputs produced, review gate
+  pending"); check it is current.
+
+### How to resume the orchestration
+`docs/handoff/workflow_cloud_reference.js` is the workflow script that ran on the cloud. To
+continue: drop its Step 0 gate, the Step 4 "do" agents and the synthesis agent (all done),
+start at `const g4 = await gate('Step 4 critical evaluation', ...)`, and change the MACHINE
+block of `CONTEXT` back to the laptop (Windows paths, 16 cores, 63 GB, plenty of disk, no
+Playwright/LibreOffice notes; a benign PE for upload tests is `C:\Windows\System32\notepad.exe`).
+Its prompts for the Step 4 gate, Steps 5–6 and the final gate are the detailed spec.
+
+The `wip-backup` branch on GitHub holds unreviewed snapshots taken while the workflow ran.
+It is superseded by `step4-6-cloud` and can be deleted.
+
+## 1. State at the first handoff (laptop → cloud; kept for history)
 
 | Stage | Status | Evidence |
 |---|---|---|

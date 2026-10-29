@@ -1,0 +1,31 @@
+feature,column,gain_share,comparison,tuned_lgbm_gain_rank
+header__0,696,0.003939571682978806,train split vs same weeks 0-51 (control),49
+histogram__12,19,0.0033755691395129478,train split vs same weeks 0-51 (control),309
+strings__37,556,0.0033442041398758534,train split vs same weeks 0-51 (control),705
+histogram__128,135,0.0032274499357086107,train split vs same weeks 0-51 (control),219
+byteentropy__170,433,0.0031112587495599653,train split vs same weeks 0-51 (control),675
+strings__38,557,0.0029563218465001647,train split vs same weeks 0-51 (control),460
+histogram__84,91,0.0029417602493735768,train split vs same weeks 0-51 (control),758
+histogram__17,24,0.0029045975832643995,train split vs same weeks 0-51 (control),431
+strings__48,567,0.0028790841313565568,train split vs same weeks 0-51 (control),371
+histogram__83,90,0.0028001188536099036,train split vs same weeks 0-51 (control),513
+byteentropy__182,445,0.002725633798232863,train split vs same weeks 0-51 (control),781
+byteentropy__145,408,0.002724727508408611,train split vs same weeks 0-51 (control),695
+strings__70,589,0.0026790890165799565,train split vs same weeks 0-51 (control),600
+strings__54,573,0.002642380687307934,train split vs same weeks 0-51 (control),278
+histogram__29,36,0.002625547249848192,train split vs same weeks 0-51 (control),958
+header__0,696,0.40023625935545487,train split vs future weeks 52-63,49
+section__140,910,0.1669743215952519,train split vs future weeks 52-63,1866
+authenticode__6,2478,0.1374273231540868,train split vs future weeks 52-63,3
+header__10,706,0.006063652960136063,train split vs future weeks 52-63,22
+section__154,924,0.004890503468695294,train split vs future weeks 52-63,71
+richheader__29,2468,0.004691132305895081,train split vs future weeks 52-63,1147
+section__40,810,0.004564631938659943,train split vs future weeks 52-63,1999
+section__5,775,0.004025910975998827,train split vs future weeks 52-63,64
+authenticode__0,2472,0.003419354993144571,train split vs future weeks 52-63,114
+header__28,724,0.002970522017402881,train split vs future weeks 52-63,19
+richheader__11,2450,0.0028971880778584556,train split vs future weeks 52-63,1005
+section__16,786,0.002818679949566468,train split vs future weeks 52-63,91
+section__221,991,0.0028106294703817898,train split vs future weeks 52-63,18
+richheader__6,2445,0.002697078595064913,train split vs future weeks 52-63,266
+header__20,716,0.0026957458112818176,train split vs future weeks 52-63,23

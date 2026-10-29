@@ -109,8 +109,14 @@ def _setup(table: pd.DataFrame, context: dict[str, Any]) -> str:
         f"**{LEAKAGE_BUDGET_S} s per run**. This is a stated deviation from the {context['step3_budget_s']} s "
         "of Step 3, made to save time. The `clean` variant is re-run at the same budget, so in every "
         "with/without comparison the leak column is the only difference.",
-        "* Same `train` (160k rows in the full run), seed 42, 16 threads, ROC-AUC as the tools' metric. "
-        "Importance and SHAP use rows of `train` or the tool's own validation rows, never a test set.",
+        f"* Same `train` ({_rows(lgbm)} rows), seed 42, {(lgbm or {}).get('n_jobs', 'n/a')} threads, ROC-AUC as the "
+        "tools' metric. Importance and SHAP use rows of `train` or the tool's own validation rows, never a test set.",
+        f"* **Machine:** {_machine(context)}. Steps 2 and 3 ran on a different machine (a 16-core Intel Core "
+        "Ultra 9 285H laptop, 63 GB RAM, Windows, 16 threads). Every run in this step, clean and leaky, ran on "
+        "the machine above with the same settings, one run at a time, so the with/without comparisons are fair; "
+        "times here must not be compared with the times of Steps 2-3. With 4 cores instead of 16, an AutoML "
+        "tool searches far fewer configurations in the same budget.",
+        f"* **Memory (15 GB RAM) forced runner settings that differ from Step 3, the same for every variant:** {_tool_settings(context)}",
         "* `Delta` columns are *variant minus clean* for the same model on the same test rows, with a "
         "paired bootstrap 95% CI (1000 resamples); `*` marks a CI that excludes 0.",
     ]
@@ -121,7 +127,10 @@ def _setup(table: pd.DataFrame, context: dict[str, Any]) -> str:
                      f"{_num(lgbm['test_future']['roc_auc'], 6)} (random / future); the Step 2 record "
                      f"`{config['step2_eval_id']}` has {_num(config['step2_test_random_auc'], 6)} / "
                      f"{_num(config['step2_test_future_auc'], 6)} (difference {diff_r:+.1e} / {diff_f:+.1e}). "
-                     "LightGBM is run deterministically, so the refit reproduces Step 2.")
+                     + ("The refit reproduces Step 2." if max(abs(diff_r), abs(diff_f)) < 1e-6 else
+                        "LightGBM runs with `deterministic=True`, but results are bit-identical only for the same "
+                        "thread count; this machine used a different one than Step 2, so tiny differences are "
+                        "expected."))
     step3 = TABLES / f"automl_vs_manual{RUN_SUFFIX}.csv"
     if step3.exists():
         ref = pd.read_csv(step3).set_index("method")
@@ -135,11 +144,82 @@ def _setup(table: pd.DataFrame, context: dict[str, Any]) -> str:
                          _num(row["test_future_roc_auc"]), str(ref.loc[tool, "best_model"])[:40],
                          str(row["best_model"])[:40]])
         if rows:
-            lines += ["", f"Effect of the shorter budget on the clean runs (Step 3 values from `{_rel(step3)}`):", "",
+            lines += ["", f"Effect of the shorter budget **and the smaller machine** on the clean runs (Step 3 values "
+                      f"from `{_rel(step3)}`, on the 16-core laptop):", "",
                       _md_table(["Tool", f"AUC random, {context['step3_budget_s']} s", f"AUC random, {LEAKAGE_BUDGET_S} s",
                                  f"AUC future, {context['step3_budget_s']} s", f"AUC future, {LEAKAGE_BUDGET_S} s",
                                  f"winner, {context['step3_budget_s']} s", f"winner, {LEAKAGE_BUDGET_S} s"], rows)]
+    lines += ["", _run_times(table, context)]
     return "\n".join(lines)
+
+
+def _tool_settings(context: dict[str, Any]) -> str:
+    """The Step 4 runner settings that differ from Step 3, read back from the logged records."""
+    recs = context["records"]
+    flaml = {(r.get("info") or {}).get("preprocessing") for (m, _), r in recs.items() if m == "flaml"}
+    h2o = {tuple((r.get("info") or {}).get("exclude_algos") or ()) for (m, _), r in recs.items() if m == "h2o"}
+    heap = {str((r.get("info") or {}).get("max_mem")) for (m, _), r in recs.items() if m == "h2o"}
+    parts = []
+    if flaml:
+        parts.append(f"FLAML preprocessing: {', '.join(sorted(str(f) for f in flaml))}. FLAML's own DataTransformer "
+                     "ran out of memory on the 160k-row train (its median imputer makes float64 copies of X); "
+                     "there are no missing values, so the data FLAML sees is the same.")
+    if h2o:
+        excluded = ", ".join(sorted({a for t in h2o for a in t})) or "none"
+        parts.append(f"H2O excluded algorithms: {excluded}. XGBoost is available on Linux (it was not on the "
+                     "Windows laptop of Step 3) and uses memory outside the H2O heap, which killed the H2O "
+                     "server; leaving it out also keeps H2O's algorithm set the same as in Step 3. "
+                     f"H2O heap: {', '.join(sorted(heap))} (Step 3: 24G); with 9G the JVM plus the Python "
+                     "worker passed the machine's memory limit and the kernel killed the H2O server.")
+    ag = [r for (m, _), r in recs.items() if m == "autogluon"]
+    if ag:
+        trained = sorted({mdl for r in ag for mdl in (r.get("info") or {}).get("models_trained", [])})
+        skipped = {v: sum("Not enough memory to safely train" in line
+                          for line in context["scans"].get(leakage.method_id("autogluon", v), {}).get("warning_lines", []))
+                   for (m, v) in recs if m == "autogluon"}
+        skipped_text = ", ".join(f"`{v}` {n}" for v, n in skipped.items())
+        parts.append(f"AutoGluon ran unchanged; across its runs it trained only: {', '.join(trained)}. It decides "
+                     "itself which models fit in the time and memory left; lines \"Not enough memory to safely train "
+                     f"model\" (a model it skipped) per run: {skipped_text}."
+                     + (" On this machine AutoGluon is therefore in effect one LightGBM model."
+                        if len([t for t in trained if not t.startswith("WeightedEnsemble")]) == 1
+                        and all(t.startswith(("LightGBM", "WeightedEnsemble")) for t in trained) else ""))
+    return " ".join(parts) or "n/a"
+
+
+def _rows(rec: dict[str, Any] | None) -> str:
+    return "n/a" if not rec else f"{int(rec['train_rows']):,}"
+
+
+def _machine(context: dict[str, Any]) -> str:
+    """'Intel Xeon ..., 4 logical CPUs, 15.6 GB RAM, Linux ...' from the logged records (all must agree)."""
+    machines = {tuple(sorted((r.get("machine") or {}).items())) for r in context["records"].values()}
+    if len(machines) != 1:
+        return f"the records name {len(machines)} different machines (see the `machine` field of each record)"
+    m = dict(next(iter(machines)))
+    return f"{m.get('cpu')}, {m.get('cpu_count')} logical CPUs, {m.get('ram_gb')} GB RAM, {m.get('os')}"
+
+
+def _run_times(table: pd.DataFrame, context: dict[str, Any]) -> str:
+    """Wall time of every run on this machine, and what happened to the AutoGluon predictor folders."""
+    rows = []
+    for _, row in table.iterrows():
+        rec = context["records"][(row["model"], row["variant"])]
+        over = None if row["budget_s"] is None or pd.isna(row["budget_s"]) else rec.get("wall_s", 0) - row["budget_s"]
+        rows.append([MODEL_LABEL[row["model"]], f"`{row['variant']}`", _num(rec.get("fit_s"), 0),
+                     _num(rec.get("wall_s"), 0), "-" if over is None else _signed(over, 0),
+                     _num(rec.get("score_s"), 0), "yes" if rec.get("timing_valid") else "NO"])
+    deleted = [r for r in context["records"].values() if r.get("model_folder_deleted_after_scoring")]
+    text = ["Run times on this machine, seconds (`fit` = the tool's fit call; `wall` = everything the budget "
+            "covers; `over budget` = wall minus budget; `timing valid` = the sleep guard saw no gap):", "",
+            _md_table(["Model", "Variant", "fit", "wall", "over budget", "scoring", "timing valid"], rows)]
+    if deleted:
+        text += ["", f"Disk: the machine had little free disk, so each AutoGluon predictor folder (about 2 GB) was "
+                 f"deleted right after its run was scored, once its leaderboard, importances, preprocessing notes "
+                 f"and test scores had been saved ({len(deleted)} folders, e.g. "
+                 f"`{deleted[0]['model_folder_deleted_after_scoring']}`). The AutoGluon rows can therefore be "
+                 "re-scored only by re-running them."]
+    return "\n".join(text)
 
 
 def _results(table: pd.DataFrame) -> str:
@@ -186,7 +266,7 @@ def _leak_dr(table: pd.DataFrame) -> str:
             f"({_pct(row.get('leak_share_native'))} of the total) and {_rank(row.get('leak_rank_shap'))} by SHAP "
             f"({_pct(row.get('leak_share_shap'))}); {dropped_text}; "
             f"log lines naming it: {int(row['n_lines_mentioning_leak'])}, warning lines: {int(row['n_warning_lines'])}.")
-    fell = int(part["relied_on_leak"].fillna(False).astype(bool).sum())
+    fell = int(sum(v is True or v == 1.0 for v in part["relied_on_leak"]))
     lines += [
         "",
         f"**{fell} of {len(part)} models fell for the leak**: they kept the column and ranked it first "
@@ -194,10 +274,11 @@ def _leak_dr(table: pd.DataFrame) -> str:
         "this column is post-hoc: a column with AUC 1.0 against the label looks like the best feature there "
         "is, and every tool's job is to find exactly such features.",
         "",
-        "Note what temporal validation does **not** show here: the detection ratio of a future file is just "
-        "as post-hoc as that of a past one, so the leaky model also looks perfect on test_future. The split "
-        "cannot expose this leak. Only asking *when would this value be known?* exposes it: a detector "
-        "scores a file when it first appears, before (or instead of) the antivirus scan the ratio comes from.",
+        f"Note what temporal validation does **not** show here: the detection ratio of a future file is just "
+        f"as post-hoc as that of a past one, so the leaky models score {_num(part['test_future_roc_auc'].min())} "
+        f"to {_num(part['test_future_roc_auc'].max())} AUC on test_future too: the future split cannot expose "
+        "this leak. Only asking *when would this value be known?* exposes it: a detector scores a file when it "
+        "first appears, before (or instead of) the antivirus scan the ratio comes from.",
     ]
     return "\n".join(lines)
 
@@ -246,6 +327,15 @@ def _leak_date(table: pd.DataFrame, context: dict[str, Any]) -> str:
             lines.append("Whatever the date did on the random split, it carries no information to test_future.")
     elif thresholds is not None:
         lines += ["", "The tuned LightGBM never split on the date column."]
+    weak = [MODEL_LABEL[r["model"]] for _, r in part.iterrows()
+            if r["model"] != leakage.LGBM and "did not" not in _effect(r, "test_future")
+            and min(_rank_or_inf(r.get("leak_rank_native")), _rank_or_inf(r.get("leak_rank_shap"))) > 10]
+    if weak:
+        lines += ["", f"For {', '.join(weak)} the date changed the score measurably although it is not among the "
+                  "model's 10 most important columns by either measure. A time-budgeted AutoML search is not "
+                  "repeatable: with one more column it tries other configurations and can end at a different "
+                  "winner, so these deltas are more likely the search taking another path than an effect of the "
+                  "date itself."]
     helped = [MODEL_LABEL[r["model"]] for _, r in part.iterrows() if _effect(r, "test_random") == "raised"]
     lines += ["", ("On the random split the date measurably raised AUC for: " + ", ".join(helped) + "."
                    if helped else "No model got a measurable AUC gain from the date, even on the random split "
@@ -253,6 +343,10 @@ def _leak_date(table: pd.DataFrame, context: dict[str, Any]) -> str:
                    "is a weak leak in this dataset; it would be a strong one wherever the share of malware "
                    "changes over time.")]
     return "\n".join(lines)
+
+
+def _rank_or_inf(value: Any) -> float:
+    return math.inf if value is None or (isinstance(value, float) and math.isnan(value)) else float(value)
 
 
 def _ablation(table: pd.DataFrame, context: dict[str, Any]) -> str:
@@ -290,10 +384,15 @@ def _ablation(table: pd.DataFrame, context: dict[str, Any]) -> str:
             f"{_signed(ablated['auc_gap_random_minus_future'], 5)} without them (TPR@1%FPR gap "
             f"{_signed(clean['tpr_gap_random_minus_future'], 4)} vs {_signed(ablated['tpr_gap_random_minus_future'], 4)}).",
             "",
+            f"So removing the proxies changes the random-minus-future AUC gap by "
+            f"{_signed(ablated['auc_gap_random_minus_future'] - clean['auc_gap_random_minus_future'], 5)}: "
+            + ("it does not shrink it. " if ablated["auc_gap_random_minus_future"] >= clean["auc_gap_random_minus_future"]
+               else "it shrinks it. "),
+            "",
             "Reading: if the proxies were a time *leak* that the random split rewards, removing them would cost "
             "more on test_random than on test_future and shrink the gap. If the cost is similar on both sets, "
-            "the model uses them as ordinary file properties (e.g. a zero or a fake compile date is typical of "
-            "some packers and malware builders), not as a calendar."]
+            "the model uses them as ordinary file properties (for example, whether a file is signed at all, or "
+            "has a zeroed or implausible compile date), not as a calendar."]
     return "\n".join(lines)
 
 
@@ -321,9 +420,31 @@ def _warnings(table: pd.DataFrame, context: dict[str, Any]) -> str:
              "warn/warning or a Python warning class; H2O's event-log WARN lines are its notes on dropping "
              "constant columns. Full lines: "
              f"`{_rel(leakage.LEAKAGE_LEADERBOARDS / f'log_scan{RUN_SUFFIX}.json')}`."]
+    leaky = table[table["leak_column"].notna() & (table["model"] != leakage.LGBM)]
+    named = int(leaky["n_lines_mentioning_leak"].sum())
+    dropped_any = any(v is True for v in leaky["leak_dropped_by_tool"])
+    lines += ["", f"**Verdict:** across the {len(leaky)} leaky AutoML runs, {named} log lines name the leak column "
+              f"and {'at least one tool dropped it' if dropped_any else 'no tool dropped it'}. "
+              + ("So no tool singled the column out: no warning or note in any log names it. "
+                 if named == 0 and not dropped_any else "")
+              + (("The flag-word and warning lines below do not name the leak column; they are the tools' "
+                  "generic messages (constant or useless columns, the evaluation metric)"
+                  + ("; each tool prints at least as many flag-word lines in its clean run." if _generic_in_clean(table)
+                    else "."))
+                 if named == 0 else "The lines that name it are listed below; read them before concluding.")]
     lines += ["", "Lines that matched (first few per run):", *examples] if examples else \
         ["", "No line in any log matched a flag word or named the leak column."]
     return "\n".join(lines)
+
+
+def _generic_in_clean(table: pd.DataFrame) -> bool:
+    """True if each tool's clean run has at least as many flag-word lines as any of its leaky runs."""
+    tools = table[table["model"] != leakage.LGBM]
+    for _, part in tools.groupby("model"):
+        clean = part[part["variant"] == leakage.CLEAN]
+        if clean.empty or (part["n_flag_word_lines"] > int(clean["n_flag_word_lines"].iloc[0])).any():
+            return False
+    return True
 
 
 STATIC_TAIL = """## Why this matters
@@ -345,9 +466,10 @@ STATIC_TAIL = """## Why this matters
    (made by the same AV scans as the label) and `first_submission_date` (a VirusTotal bookkeeping
    time) both fail this test. No tool did this review for us; it has to be a human step.
 2. **Temporal validation for time-like leaks.** Training on earlier weeks and testing on later
-   ones (our `test_future`) puts every date out of range, which removes any benefit a date column
-   had on the random split. It does not catch post-hoc label proxies such as `detection_ratio`,
-   which stay available (and perfect) in every period.
+   ones (our `test_future`) puts every date out of range, so a model cannot use the future dates
+   themselves, and a validation score taken that way shows what a date column is really worth
+   after deployment. It does not catch post-hoc label proxies such as `detection_ratio`, which
+   stay available (and perfect) in every period.
 3. **Treat a too-good score as a bug report.** An AUC of 1.0 on malware detection, or one feature
    with most of the total importance, should trigger a look at that feature before anything else.
 """
@@ -365,7 +487,8 @@ def _caveats(table: pd.DataFrame) -> str:
         "* Importances are not comparable across tools (gain, permutation, H2O varimp measure different "
         "things), so only ranks are compared. H2O's varimp and SHAP come from the best H2O model that has "
         "them (a GBM or DRF), which may not be the stacked-ensemble leader. AutoGluon's permutation "
-        "importance uses its own ~2.5k validation rows.",
+        "importance uses its own internal validation rows (a few thousand rows of `train`). Permutation "
+        "importances can be negative, so a column's share of their sum can exceed 100%.",
         "* `relied_on_leak` is our rule (kept the column and ranked it first), not a statement by the tool.",
     ])
 

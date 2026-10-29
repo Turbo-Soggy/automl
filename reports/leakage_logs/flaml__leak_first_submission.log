@@ -1,0 +1,5 @@
+[leakage] flaml on leak_first_submission: budget 600 s, quick=False
+[flaml:leak_first_submission] alive 09:37:15, 300 s in, max gap 30 s
+[flaml:leak_first_submission] alive 09:42:15, 600 s in, max gap 30 s
+[flaml:leak_first_submission] alive 09:47:15, 900 s in, max gap 30 s
+[leakage] flaml leak_first_submission best=lgbm wall_s=885 test_random_auc=0.99877 test_future_auc=0.99779 timing_valid=True

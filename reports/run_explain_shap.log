@@ -1,0 +1,19 @@
+=== stage shap (full) ===
+wrote reports/tables/shap_feature_importance.csv
+wrote reports/tables/shap_family_importance.csv
+wrote reports/tables/shap_time_proxies.csv
+wrote reports/figures/shap_beeswarm.png
+wrote reports/figures/shap_family_bar.png
+wrote reports/figures/shap_waterfall_tp.png
+wrote reports/figures/shap_waterfall_fp.png
+wrote reports/figures/shap_waterfall_fn.png
+wrote reports/tables/shap_cases.csv
+wrote reports/tables/shap_feature_importance_flaml.csv
+=== stage shap done in 126 s ===
+=== stage agreement (full) ===
+wrote reports/tables/cross_tool_agreement.csv
+wrote reports/tables/cross_tool_family_shares.csv
+wrote reports/figures/cross_tool_agreement.png
+wrote reports/tables/time_proxy_ranks.csv
+wrote reports/tables/cross_tool_top20.csv
+=== stage agreement done in 1 s ===

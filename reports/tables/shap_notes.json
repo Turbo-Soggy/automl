@@ -1,0 +1,36 @@
+{
+  "method": "optuna",
+  "sample_n": 5000,
+  "sample_malicious": 2500,
+  "sample_weeks": [
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63
+  ],
+  "base_value": 1.0517461034030822,
+  "max_abs_diff_vs_saved_scores": 4.336808689942018e-19,
+  "additivity_max_abs_error": 4.315356250117475e-08,
+  "shap_seconds": 82.77811742900303,
+  "n_jobs": 2,
+  "machine": {
+    "cpu_count": 4,
+    "ram_gb": 15.7,
+    "os": "Linux-6.18.44-fc-v185-x86_64-with-glibc2.39",
+    "processor": "x86_64"
+  },
+  "flaml_model": "XGBClassifier",
+  "flaml_explained": true,
+  "flaml_n_features_used": 2533,
+  "flaml_max_abs_diff_vs_saved": 2.980232238769531e-07,
+  "shap_version": "0.54.1",
+  "lightgbm_version": "4.7.0"
+}

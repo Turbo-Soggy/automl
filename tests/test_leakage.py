@@ -183,6 +183,64 @@ def test_scan_logs_blanks_the_column_name(tmp_path: Path, monkeypatch: pytest.Mo
     assert scan["leak_dropped_by_tool"] is False
 
 
+def test_require_disk_refuses_when_full(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(leakage, "free_disk_gb", lambda path=None: 1.0)
+    with pytest.raises(RuntimeError, match="GB free"):
+        leakage.require_disk(5.0)
+    leakage.require_disk(0.5)  # enough space: no error
+
+
+def test_machine_info_names_cpu_and_ram() -> None:
+    info = leakage.machine_info()
+    assert info["cpu_count"] and info["ram_gb"] and info["os"]
+
+
+def test_h2o_varimp_counts_unused_columns_as_zero(tmp_path: Path) -> None:
+    """H2O's varimp lists only used columns; an unused leak column is rank-last, not 'dropped'."""
+    from src.automl_runs import AutomlPaths, FitResult
+
+    paths = AutomlPaths(log=tmp_path / "log.jsonl", models=tmp_path / "m", leaderboards=tmp_path / "lb",
+                        predictions=tmp_path / "p")
+    paths.leaderboards.mkdir()
+    names = ["a", "b", "c", leakage.LEAK_COLUMN[leakage.LEAK_DATE]]
+    pd.DataFrame({"feature": ["a", "b"], "relative_importance": [3.0, 1.0]}).to_csv(
+        paths.leaderboards / f"h2o_varimp{'_quick' if QUICK else ''}.csv", index=False)
+    (paths.leaderboards / f"h2o_preprocessing{'_quick' if QUICK else ''}.json").write_text(
+        json.dumps({"constant_in_train": ["c"]}), encoding="utf-8")
+    fit = FitResult(tool="h2o", best_model="x", predict=lambda X: X, timings={}, info={})  # no varimp model
+    out = leakage.h2o_importance(fit, np.zeros((3, 4)), names, paths)
+    rank = out["native"]["ranks"][leakage.LEAK_COLUMN[leakage.LEAK_DATE]]
+    assert rank["in_model"] is True and rank["rank"] == 3 and rank["value"] == 0.0  # 3 kept columns, tied last
+
+
+def test_autogluon_importance_computes_watched_columns_first(tmp_path: Path,
+                                                            monkeypatch: pytest.MonkeyPatch) -> None:
+    """The leak column is last in X; with fi_first it gets a value even if the time cap stops after one chunk."""
+    from src import automl_runs
+
+    leak = leakage.LEAK_COLUMN[leakage.LEAK_DR]
+    names = [f"general__{i}" for i in range(6)] + [leak]
+
+    class FakePredictor:
+        def features(self, feature_stage: str = "original") -> list[str]:
+            return names
+
+        def feature_importance(self, features: list, **_: object) -> pd.DataFrame:
+            if isinstance(features[0], tuple):  # the family stage
+                return pd.DataFrame({"importance": [1.0] * len(features)}, index=[f for f, _ in features])
+            monkeypatch.setattr(automl_runs, "AG_FI_TIME_LIMIT_S", -1.0)  # cap reached after this chunk
+            return pd.DataFrame({"importance": [1.0] * len(features)}, index=features)
+
+    monkeypatch.setattr(automl_runs, "AG_FI_FEATURE_CHUNK", 2)
+    monkeypatch.setattr(automl_runs, "AG_FI_TIME_LIMIT_S", 1e9)
+    paths = automl_runs.AutomlPaths(log=tmp_path / "l.jsonl", models=tmp_path, leaderboards=tmp_path,
+                                    predictions=tmp_path)
+    info = automl_runs._ag_feature_importance(FakePredictor(), names, paths, fi_first=(leak,))
+    assert info["features_covered"] == 2
+    fi = pd.read_csv(tmp_path / f"autogluon_feature_importance{'_quick' if QUICK else ''}.csv").set_index("feature")
+    assert fi.loc[leak, "importance"] == 1.0 and fi["importance"].isna().sum() == 5
+
+
 def test_run_plan_covers_every_required_comparison() -> None:
     plan = set(leakage.RUN_PLAN)
     for model in leakage.MODEL_NAMES:

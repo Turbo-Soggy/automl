@@ -1,0 +1,2 @@
+[leakage] lgbm_tuned on ablate_time_proxies: budget 600 s, quick=False
+[leakage] lgbm_tuned ablate_time_proxies best=LightGBM (optuna config, 609 trees) wall_s=237 test_random_auc=0.99902 test_future_auc=0.99795 timing_valid=True

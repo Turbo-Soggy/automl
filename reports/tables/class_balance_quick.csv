@@ -1,0 +1,4 @@
+split,n,n_benign,n_malicious,malicious_share
+train,8000,4002,3998,0.49975
+test_random,2000,998,1002,0.501
+test_future,2000,1001,999,0.4995

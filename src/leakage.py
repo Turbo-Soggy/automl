@@ -37,7 +37,10 @@ Importances and SHAP use rows of `train` (or the tool's own validation rows), ne
 from __future__ import annotations
 
 import inspect
+import os
+import platform
 import re
+import shutil
 import time
 import uuid
 from dataclasses import dataclass
@@ -49,7 +52,7 @@ import numpy as np
 import pandas as pd
 
 from config import (
-    EXPERIMENT_LOG, LEADERBOARDS, LEAKAGE_BUDGET_S, MODELS, N_JOBS, PREDICTIONS, QUICK, RUN_SUFFIX, SEED,
+    EXPERIMENT_LOG, LEADERBOARDS, LEAKAGE_BUDGET_S, MODELS, N_JOBS, PREDICTIONS, QUICK, ROOT, RUN_SUFFIX, SEED,
 )
 from src import automl_runs, tune
 from src.automl_runs import AutomlPaths, FitResult, Heartbeat, feature_names, timed, to_frame
@@ -302,6 +305,35 @@ def leak_split_thresholds(booster: Any, names: list[str]) -> dict[str, Any] | No
             "max_threshold": float(thresholds.max()) if len(thresholds) else None}
 
 
+# --- Machine and disk ----------------------------------------------------------------------
+
+MIN_FREE_DISK_GB: float = 5.0  # an AutoGluon predictor on 160k x 2569 takes about 2 GB; keep a margin
+
+
+def machine_info() -> dict[str, Any]:
+    """CPU, RAM and OS of this machine, logged with every run (Step 4 ran on a different machine than Steps 2-3)."""
+    cpu = platform.processor() or ""
+    try:  # on Linux the readable CPU name is in /proc/cpuinfo
+        cpu = next(line.split(":", 1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines()
+                   if line.startswith("model name"))
+    except (OSError, StopIteration):
+        pass
+    ram = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 2**30 if hasattr(os, "sysconf") else None
+    return {"cpu": cpu, "cpu_count": os.cpu_count(), "ram_gb": None if ram is None else round(ram, 1),
+            "os": f"{platform.system()} {platform.release()}", "python": platform.python_version()}
+
+
+def free_disk_gb(path: Path = ROOT) -> float:
+    return shutil.disk_usage(path).free / 2**30
+
+
+def require_disk(min_gb: float = MIN_FREE_DISK_GB) -> None:
+    """Refuse to start a run that could fill the disk (the cloud VM had about 13 GB free)."""
+    free = free_disk_gb()
+    if free < min_gb:
+        raise RuntimeError(f"only {free:.1f} GB free on disk, need {min_gb} GB; delete old model folders first")
+
+
 # --- Shared run plumbing -----------------------------------------------------------------
 
 def run_paths(variant: str) -> AutomlPaths:
@@ -340,7 +372,7 @@ def evaluate_and_log(model: str, variant: str, predict: automl_runs.Predictor, r
     predictions = automl_runs._save_predictions(method, eval_id, scored, paths)
     full = {"step": "leakage", "kind": "final_eval", "method": method, "model": model, "variant": variant,
             "leak_column": LEAK_COLUMN.get(variant), "eval_id": eval_id, "seed": SEED, "n_jobs": N_JOBS,
-            **record, **timings, **metrics, "predictions_path": predictions}
+            "machine": machine_info(), **record, **timings, **metrics, "predictions_path": predictions}
     log_experiment(full, path=paths.log)
     return full
 
@@ -391,6 +423,14 @@ def _csv(paths: AutomlPaths, stem: str) -> Path:
     return paths.leaderboards / f"{stem}{RUN_SUFFIX}.csv"
 
 
+def json_notes(paths: AutomlPaths, stem: str) -> dict[str, Any]:
+    """A runner's JSON notes for this variant ({} if missing)."""
+    import json
+
+    path = paths.leaderboards / f"{stem}{RUN_SUFFIX}.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
 def _series(path: Path, key: str, value: str) -> pd.Series:
     frame = pd.read_csv(path)
     return pd.Series(frame[value].to_numpy(float), index=frame[key].astype(str))
@@ -410,8 +450,9 @@ def flaml_importance(fit: FitResult, X: np.ndarray, names: list[str], paths: Aut
     try:
         # Safe to unpickle: run_flaml() wrote this file seconds ago in this same run (never downloaded).
         automl = joblib.load(paths.models / "flaml" / f"automl{RUN_SUFFIX}.joblib")
-        # FLAML's own preprocessing first (it drops constant columns), as its predict() does.
-        X_t = automl._transformer.transform(to_frame(X[sample_rows(len(X))], names))  # no public accessor
+        # The columns FLAML's model received: we dropped the constant ones (lean preprocessing).
+        kept = list(automl.feature_names_in_)
+        X_t = to_frame(X[sample_rows(len(X))], names)[kept]
         shap_imp = mean_abs_shap(tree_shap(automl.model.estimator, X_t), list(X_t.columns))
         out["shap"] = importance_summary(shap_imp, f"mean |TreeSHAP| of {fit.best_model} on {len(X_t)} train rows",
                                          watched)
@@ -465,8 +506,12 @@ def h2o_importance(fit: FitResult, X: np.ndarray, names: list[str], paths: Autom
     varimp_path = _csv(paths, "h2o_varimp")
     model_id = fit.info.get("varimp_model")
     if varimp_path.exists():
-        out["native"] = importance_summary(_series(varimp_path, "feature", "relative_importance"),
-                                           f"H2O varimp of {model_id}", watched)
+        # H2O lists only the columns a model used; every other input column it kept has importance 0.
+        # Constant columns are dropped by H2O itself, so they stay out (in_model False).
+        constant = set(json_notes(paths, "h2o_preprocessing").get("constant_in_train") or [])
+        varimp = _series(varimp_path, "feature", "relative_importance")
+        varimp = varimp.reindex([n for n in names if n not in constant], fill_value=0.0)
+        out["native"] = importance_summary(varimp, f"H2O varimp of {model_id} (unused columns = 0)", watched)
     if not model_id:
         out["shap"] = {"skipped": "no H2O model with variable importance"}
         return out
@@ -488,14 +533,30 @@ def h2o_importance(fit: FitResult, X: np.ndarray, names: list[str], paths: Autom
 
 
 TOOL_IMPORTANCE = {"flaml": flaml_importance, "autogluon": autogluon_importance, "h2o": h2o_importance}
+H2O_EXCLUDE: tuple[str, ...] = ("XGBoost",)
+# H2O heap for the Step 4 runs. The cloud VM's memory limit is about 14 GB for all our processes:
+# with the default 9G heap the JVM reached ~9.9 GB and, with the Python worker holding train, the
+# kernel killed it at the end of a 600 s run. 7G leaves room for the worker.
+H2O_STEP4_MAX_MEM: str = "7G"
+TOOL_OPTIONS = {  # extra runner arguments of the Step 4 runs (see run_tool)
+    "flaml": lambda names: {"lean_preprocessing": True},
+    "autogluon": lambda names: {"fi_first": tuple(watched_columns(names))},
+    "h2o": lambda names: {"exclude_algos": H2O_EXCLUDE, "max_mem": H2O_STEP4_MAX_MEM},
+}
 
 
 def run_tool(tool: str, variant: str, budget_s: int = LEAKAGE_BUDGET_S) -> dict[str, Any]:
     """Run one AutoML tool on train in `variant` (Step 3 runner, LEAKAGE_BUDGET_S), explain, score, log."""
     paths = run_paths(variant)
+    require_disk()
     X, y, names, _ = load_variant("train", variant)
+    # AutoGluon's per-feature permutation importance stops at a time cap: compute the watched columns first.
+    # FLAML: lean preprocessing (same data, far less memory; see automl_runs.run_flaml). H2O: no
+    # XGBoost (memory outside the H2O heap; also absent in Step 3). The same for every variant.
+    extra = TOOL_OPTIONS[tool](names)
     with Heartbeat(f"{tool}:{variant}") as beat:
-        fit = automl_runs.RUNNERS[tool](X, y, budget_s, paths, names=names)
+        fit = automl_runs.RUNNERS[tool](X, y, budget_s, paths, names=names, **extra)
+    ag_dir = paths.models / f"autogluon{RUN_SUFFIX}"
     try:
         start = time.perf_counter()
         importance = TOOL_IMPORTANCE[tool](fit, X, names, paths)
@@ -504,7 +565,13 @@ def run_tool(tool: str, variant: str, budget_s: int = LEAKAGE_BUDGET_S) -> dict[
         record = {"budget_s": budget_s, "best_model": fit.best_model, "tool_version": fit.info.get("version"),
                   "train_rows": len(y), "n_features": len(names), **fit.timings, "importance_s": importance_s,
                   **beat.report(), "importance": importance, "interpretability": fit.interpretability,
-                  "info": fit.info}
+                  "info": fit.info, "disk_free_gb_after_fit": round(free_disk_gb(), 1)}
+        if tool == "autogluon":
+            # The predictor folder (~2 GB) is deleted right after scoring (finally below): its
+            # leaderboard, importances, notes and test scores are saved first. The disk is too small to keep it.
+            record["model_folder_deleted_after_scoring"] = str(ag_dir.relative_to(ROOT).as_posix())
         return evaluate_and_log(tool, variant, fit.predict, record, paths)
     finally:
         fit.cleanup()  # always shut H2O down
+        if tool == "autogluon":
+            shutil.rmtree(ag_dir, ignore_errors=True)

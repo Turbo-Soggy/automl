@@ -1,0 +1,13 @@
+tool,run,variant,budget_s,machine,own_validation,own_auc,test_random_roc_auc,test_future_roc_auc,same_scores_as_step3,own_minus_random,own_minus_future
+flaml,step3,clean,1200.0,"16 threads, Steps 2-3 laptop",random stratified holdout of train (16000 rows),0.9985131718750001,0.9986420949456838,0.9975713411953552,,-0.00012892307068368414,0.0009418306796449283
+autogluon,step3,clean,1200.0,"16 threads, Steps 2-3 laptop",random holdout of train (2496 rows),0.9994035328320184,0.99907624996305,0.9980444149559994,,0.00032728286896843706,0.0013591178760190559
+h2o,step3,clean,1200.0,"16 threads, Steps 2-3 laptop",random validation frame of train (16092 rows),0.9984478408232624,0.9984370311874812,0.9970068399326538,,1.0809635781261484e-05,0.0014410008906086125
+flaml,step4_leakage,clean,600.0,"4 threads, 4-CPU Linux VM",random stratified holdout of train (16000 rows),0.9952425937499999,0.9990207049608284,0.9979923674548282,False,-0.003778111210828494,-0.0027497737048283177
+autogluon,step4_leakage,clean,600.0,"4 threads, 4-CPU Linux VM",random holdout of train (2496 rows),0.9994035328320184,0.99907624996305,0.9980444149559994,True,0.00032728286896843706,0.0013591178760190559
+h2o,step4_leakage,clean,600.0,"4 threads, 4-CPU Linux VM",random validation frame of train (15803 rows),0.9955247348636272,0.9958644248345768,0.99215911357358,False,-0.00033968997094957487,0.0033656212900472493
+flaml,step4_leakage,leak_detection_ratio,600.0,"4 threads, 4-CPU Linux VM",random stratified holdout of train (16000 rows),0.9999975703125,0.9999982162499286,0.999999959999999,,-6.459374285450181e-07,-2.389687498993709e-06
+autogluon,step4_leakage,leak_detection_ratio,600.0,"4 threads, 4-CPU Linux VM",random holdout of train (2496 rows),0.9999544142422747,0.9999049724961988,0.9999250549983136,,4.944174607590668e-05,2.935924396108014e-05
+h2o,step4_leakage,leak_detection_ratio,600.0,"4 threads, 4-CPU Linux VM",random validation frame of train (15803 rows),1.0,1.0,1.0,,0.0,0.0
+flaml,step4_leakage,leak_first_submission,600.0,"4 threads, 4-CPU Linux VM",random stratified holdout of train (16000 rows),0.9952976718749998,0.998773982450959,0.9977886799502452,,-0.0034763105759592072,-0.0024910080752453823
+autogluon,step4_leakage,leak_first_submission,600.0,"4 threads, 4-CPU Linux VM",random holdout of train (2496 rows),0.9993868394559501,0.9990862337134492,0.9981795949590409,,0.00030060574250090344,0.0012072444969092322
+h2o,step4_leakage,leak_first_submission,600.0,"4 threads, 4-CPU Linux VM",random validation frame of train (15803 rows),0.9961846461761348,0.9962342373493694,0.993096262344666,,-4.959117323466433e-05,0.0030883838314688106

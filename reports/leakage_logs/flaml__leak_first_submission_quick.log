@@ -1,0 +1,2 @@
+[leakage] flaml on leak_first_submission: budget 30 s, quick=True
+[leakage] flaml leak_first_submission best=lgbm wall_s=47 test_random_auc=0.99149 test_future_auc=0.99032 timing_valid=True

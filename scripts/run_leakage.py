@@ -7,12 +7,12 @@ that run. Each child's output goes to reports/leakage_logs/<model>__<variant>[_q
 report scans those logs (and the tools' own logs) for warnings about the leak column.
 A run whose timed fit included machine sleep is logged as timing_valid=False and re-run.
 
-Usage (from the project root):
-  .venv/Scripts/python.exe scripts/run_leakage.py --quick                 # smoke test (30 s budgets)
-  .venv/Scripts/python.exe scripts/run_leakage.py                         # all of src.leakage.RUN_PLAN (~3 h)
-  .venv/Scripts/python.exe scripts/run_leakage.py --skip-done             # resume: skip runs already logged
-  .venv/Scripts/python.exe scripts/run_leakage.py --runs flaml:clean,h2o:leak_detection_ratio
-  .venv/Scripts/python.exe scripts/run_leakage.py --tables-only           # rebuild outputs from the log
+Usage (from the project root; python = .venv/bin/python on Linux, .venv/Scripts/python.exe on Windows):
+  python scripts/run_leakage.py --quick                 # smoke test (30 s budgets)
+  python scripts/run_leakage.py                         # all of src.leakage.RUN_PLAN (~3-4 h on a 4-core machine)
+  python scripts/run_leakage.py --skip-done             # resume: skip runs already logged
+  python scripts/run_leakage.py --runs flaml:clean,h2o:leak_detection_ratio
+  python scripts/run_leakage.py --tables-only           # rebuild outputs from the log
 """
 from __future__ import annotations
 

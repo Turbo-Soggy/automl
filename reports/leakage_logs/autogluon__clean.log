@@ -1,0 +1,103 @@
+[leakage] autogluon on clean: budget 600 s, quick=False
+Verbosity: 2 (Standard Logging)
+=================== System Info ===================
+AutoGluon Version:  1.6.3
+Python Version:     3.12.3
+Operating System:   Linux
+Platform Machine:   x86_64
+Platform Version:   #1 SMP PREEMPT_DYNAMIC @0
+CPU Count:          4
+Pytorch Version:    2.14.1+cpu
+CUDA Version:       CUDA is not available
+Memory Avail:       12.62 GB / 15.71 GB (80.3%)
+Disk Space Avail:   12.18 GB / 251.97 GB (4.8%)
+===================================================
+Presets specified: ['medium_quality']
+Using hyperparameters preset: hyperparameters='default'
+Beginning AutoGluon training ... Time limit = 600s
+AutoGluon will save models to "/home/user/automl/models/leakage/clean/autogluon"
+Train Data Rows:    160000
+Train Data Columns: 2568
+Label Column:       label
+AutoGluon infers your prediction problem is: 'binary' (because only two unique label-values observed).
+	2 unique label values:  [np.int64(0), np.int64(1)]
+	If 'binary' is not the correct problem_type, please manually specify the problem_type parameter during Predictor init (You may specify problem_type as one of: ['binary', 'multiclass', 'regression', 'quantile'])
+Problem Type:       binary
+Preprocessing data...
+Selected class <--> label mapping:  class 1 = 1, class 0 = 0
+Using Feature Generators to preprocess the data ...
+Fitting AutoMLPipelineFeatureGenerator...
+	Available Memory:                    12866.15 MB
+	Train Data (Original)  Memory Usage: 1567.38 MB (12.2% of available memory)
+	Warning: Data size prior to feature transformation consumes 12.2% of available memory. Consider increasing memory or subsampling the data to avoid instability.
+	Inferring data type of each feature based on column values. Set feature_metadata_in to manually specify special dtypes of the features.
+	Stage 1 Generators:
+		Fitting AsTypeFeatureGenerator...
+			Note: Converting 101 features to boolean dtype as they only contain 2 unique values.
+	Stage 2 Generators:
+		Fitting FillNaFeatureGenerator...
+	Stage 3 Generators:
+		Fitting IdentityFeatureGenerator...
+	Stage 4 Generators:
+		Fitting DropUniqueFeatureGenerator...
+	Stage 5 Generators:
+		Fitting DropDuplicatesFeatureGenerator...
+	Useless Original Features (Count: 35): ['strings__112', 'header__44', 'section__6', 'section__8', 'section__10', 'datadirectories__30', 'datadirectories__31', 'pefilewarnings__1', 'pefilewarnings__5', 'pefilewarnings__15', 'pefilewarnings__18', 'pefilewarnings__20', 'pefilewarnings__21', 'pefilewarnings__22', 'pefilewarnings__23', 'pefilewarnings__25', 'pefilewarnings__26', 'pefilewarnings__27', 'pefilewarnings__28', 'pefilewarnings__29', 'pefilewarnings__30', 'pefilewarnings__32', 'pefilewarnings__34', 'pefilewarnings__35', 'pefilewarnings__38', 'pefilewarnings__41', 'pefilewarnings__42', 'pefilewarnings__44', 'pefilewarnings__45', 'pefilewarnings__59', 'pefilewarnings__61', 'pefilewarnings__74', 'pefilewarnings__77', 'pefilewarnings__82', 'pefilewarnings__83']
+		These features carry no predictive signal and should be manually investigated.
+		This is typically a feature which has the same value for all rows.
+		These features do not need to be present at inference time.
+	Unused Original Features (Count: 18): ['strings__153', 'header__36', 'header__42', 'header__45', 'header__57', 'pefilewarnings__9', 'pefilewarnings__11', 'pefilewarnings__12', 'pefilewarnings__16', 'pefilewarnings__24', 'pefilewarnings__39', 'pefilewarnings__46', 'pefilewarnings__54', 'pefilewarnings__56', 'pefilewarnings__63', 'pefilewarnings__68', 'pefilewarnings__78', 'pefilewarnings__80']
+		These features were not used to generate any of the output features. Add a feature generator compatible with these features to utilize them.
+		Features can also be unused if they carry very little information, such as being categorical but having almost entirely unique values or being duplicates of other features.
+		These features do not need to be present at inference time.
+		('float', []) : 18 | ['strings__153', 'header__36', 'header__42', 'header__45', 'header__57', ...]
+	Types of features in original data (raw dtype, special dtypes):
+		('float', []) : 2515 | ['general__0', 'general__1', 'general__2', 'general__3', 'general__4', ...]
+	Types of features in processed data (raw dtype, special dtypes):
+		('float', [])     : 2431 | ['general__0', 'general__1', 'general__5', 'general__6', 'histogram__0', ...]
+		('int', ['bool']) :   84 | ['general__2', 'general__3', 'general__4', 'strings__114', 'header__30', ...]
+	45.8s = Fit runtime
+	2515 features in original data used to generate 2515 features in processed data.
+	Train Data (Processed) Memory Usage: 1496.58 MB (11.6% of available memory)
+Data preprocessing and feature engineering runtime = 76.44s ...
+AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'
+	This metric expects predicted probabilities rather than predicted class labels, so you'll need to use predict_proba() instead of predict()
+	To change this, specify the eval_metric parameter of Predictor()
+Automatically generating train/validation split with holdout_frac=0.0156, Train Rows: 157504, Val Rows: 2496
+User-specified model hyperparameters to be fit:
+{
+	'NN_TORCH': [{}],
+	'GBM': [{'extra_trees': True, 'ag_args': {'name_suffix': 'XT'}}, {}, {'learning_rate': 0.03, 'num_leaves': 128, 'feature_fraction': 0.9, 'min_data_in_leaf': 3, 'ag_args': {'name_suffix': 'Large', 'priority': 0, 'hyperparameter_tune_kwargs': None}}],
+	'CAT': [{}],
+	'XGB': [{}],
+	'FASTAI': [{}],
+	'RF': [{'criterion': 'gini', 'ag_args': {'name_suffix': 'Gini', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'entropy', 'ag_args': {'name_suffix': 'Entr', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'squared_error', 'ag_args': {'name_suffix': 'MSE', 'problem_types': ['regression', 'quantile']}}],
+	'XT': [{'criterion': 'gini', 'ag_args': {'name_suffix': 'Gini', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'entropy', 'ag_args': {'name_suffix': 'Entr', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'squared_error', 'ag_args': {'name_suffix': 'MSE', 'problem_types': ['regression', 'quantile']}}],
+}
+Fitting 11 L1 models, fit_strategy="sequential" ...
+Fitting model: LightGBMXT ... Training model for up to 523.56s of the 523.56s of remaining time.
+	Warning: Potentially not enough memory to safely train model. Estimated to require 8.425 GB out of 9.409 GB available memory (89.538%)... (90.000% of avail memory is the max safe size)
+	To avoid this warning, specify the model hyperparameter "ag.max_memory_usage_ratio" to a larger value (currently 1.0, set to >=1.24 to avoid the warning)
+		To set the same value for all models, do the following when calling predictor.fit: `predictor.fit(..., ag_args_fit={"ag.max_memory_usage_ratio": VALUE})`
+		Setting "ag.max_memory_usage_ratio" to values above 1 may result in out-of-memory errors. You may consider using a machine with more memory as a safer alternative.
+	Fitting with cpus=4, gpus=0, mem=8.4/9.4 GB
+[autogluon:clean] alive 09:52:53, 300 s in, max gap 30 s
+[1000]	valid_set's binary_logloss: 0.0357939
+[2000]	valid_set's binary_logloss: 0.0315645
+[autogluon:clean] alive 09:57:53, 600 s in, max gap 30 s
+	Ran out of time, early stopping on iteration 2410. Best iteration is:
+	[2283]	valid_set's binary_logloss: 0.031218
+	0.9994	 = Validation score   (roc_auc)
+	523.85s	 = Training   runtime
+	0.32s	 = Validation runtime
+Fitting model: WeightedEnsemble_L2 ... Training model for up to 360.00s of the -0.80s of remaining time.
+	Fitting 1 model on all data | Fitting with cpus=4, gpus=0, mem=0.0/7.2 GB
+	Ensemble Weights: {'LightGBMXT': 1.0}
+	0.9994	 = Validation score   (roc_auc)
+	0.0s	 = Training   runtime
+	0.0s	 = Validation runtime
+AutoGluon training complete, total runtime = 605.46s ... Best model: WeightedEnsemble_L2 | Estimated inference throughput: 7714.2 rows/s (2496 batch size)
+TabularPredictor saved. To load, use: predictor = TabularPredictor.load("/home/user/automl/models/leakage/clean/autogluon")
+[autogluon:clean] alive 10:02:53, 900 s in, max gap 30 s
+[autogluon:clean] alive 10:07:53, 1200 s in, max gap 30 s
+[leakage] autogluon clean best=WeightedEnsemble_L2 wall_s=608 test_random_auc=0.99908 test_future_auc=0.99804 timing_valid=True
