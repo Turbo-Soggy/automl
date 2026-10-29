@@ -1,0 +1,5 @@
+QUICK=False TUNE_TRIALS=36 refit_only=True refit_version=2 log=C:\projects\automl\reports\experiments.jsonl
+train (160000, 2568), tuning subset (60000, 2568), 3 folds
+[lgbm_default] cv_auc=0.9968 test_random_auc=0.9978 test_future_auc=0.9967
+[logreg] cv_auc=0.9842 test_random_auc=0.9929 test_future_auc=0.9297
+[baseline] done in 87.0s

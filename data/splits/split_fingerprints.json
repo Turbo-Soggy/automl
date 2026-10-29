@@ -1,0 +1,8 @@
+{
+  "train": "3da2ed5cb1d28e60e87707198409197ea8046ccef8b98b68318b8c1bdb13b36a",
+  "test_random": "3ff6806edfe1d715f2de3bc55dbc3e0e61bb84c8bd563dcaeec218fb815d6fa8",
+  "test_future": "dbaf6b1f7f4eb3e364cb5c22a93d69de931f56efe8e9aa08735b338909f17a53",
+  "train_X_first1000_sha256": "434d2e71aeb1e36454daa64aa3b9299b9a00ab2dfd8a47741ed99a646ec02328",
+  "test_random_X_first1000_sha256": "130cb4105d4708009fe04b60f8f00a68129226c9553f6710a114bd0e7d5fa11c",
+  "test_future_X_first1000_sha256": "5106105e29d4e664b8cad67c4b20bbcd47129044a65ca0bf65e7b0e76108970d"
+}

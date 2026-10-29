@@ -1,0 +1,221 @@
+# Handoff: where the work stopped and how to continue
+
+Written 2026-10-29, when the work moved from the student's Windows laptop to a Claude cloud
+session. Read `CLAUDE.md` first for the working rules.
+
+## 1. State at handoff
+
+| Stage | Status | Evidence |
+|---|---|---|
+| Step 0: environment, data, splits | Done, reviewed | `reports/data_check.json`, `data/splits/splits_info.json`, `tests/test_splits.py` |
+| Step 2: baselines and tuning (Grid / Random / Optuna, 36 configs each) | Done. Passed adversarial review (2 rounds; round 2 clean apart from minor issues, which were then fixed) | `reports/tables/tuning_summary.csv`, `tuning_pairwise.csv`, `reports/figures/tuning_*.png`, `reports/tuning_writeup.md` |
+| Step 3: AutoML (FLAML, AutoGluon, H2O, 1200 s each, run one after another) | Done. Passed adversarial review (2 rounds; minor issues fixed afterwards) | `reports/leaderboards/*`, `reports/tables/automl_vs_manual.csv`, `automl_pairwise.csv`, `reports/figures/automl_vs_manual.png`, `reports/automl_comparison.md` |
+| **Step 4: critical evaluation** | **Not done. Redo it fully** (the user's decision). | see section 3 |
+| Step 5: deployment (FastAPI, Streamlit, model card) | Not started (`app/` is empty) | |
+| Step 6: report PDF, slides, executed notebooks | Not started (2 draft notebooks exist, not executed) | |
+| Final gate (D8) | Not started | |
+
+All the review verdicts and fixer reports from Steps 2–3 are in `docs/handoff/review_log.md`.
+They show what was already checked, and how.
+
+`pytest` passed at handoff: 67 tests in about 34 s, on Windows with the full data present.
+
+### Step 4 at handoff: partially run, archived, to be redone
+The Step 4 leakage agent was interrupted midway. Before handoff:
+- **Code it wrote is kept but unreviewed:** `src/leakage.py`, `src/leakage_report.py`,
+  `src/leakage_writeup.py`, `scripts/run_leakage.py`, `tests/test_leakage.py`, and
+  `LEAKAGE_BUDGET_S` in `config.py`. It also edited `README.md` and possibly
+  `src/automl_runs.py`. Treat it as a draft. Review it, then reuse or rewrite it. Nothing
+  in it has passed a gate.
+- **All of its outputs were removed from the repo** and moved to a local archive on the
+  laptop (`_archive/step4_partial_20261029/`, gitignored). That covers models, predictions,
+  leaderboards, logs, `leakage_quick.md/csv/png`, and its 4 full plus 13 quick records in
+  `reports/experiments*.jsonl`.
+- Step 4 starts clean: no `step == "leakage"` records remain in the experiment logs.
+
+## 2. Key results so far (read from the generated tables, do not retype them)
+- **`reports/tables/automl_vs_manual.csv`:** tuned LightGBM, AutoGluon, FLAML and H2O all
+  reach test_future ROC-AUC of about 0.997–0.998, and their CIs overlap. LogReg falls to
+  about 0.93.
+- **Random-vs-future gap:** small for the tree models (AUC gap about 0.001; TPR@1%FPR drops
+  about 1 point), large for LogReg (about 0.06). This is an honest, somewhat surprising
+  finding. Step 4 must explain it (the time proxies already inside X, the 50/50 prevalence,
+  the weekly stratification), not hide it.
+- **Tuner differences** (Grid / Random / Optuna) are within the bootstrap noise.
+- **H2O ran past its 1200 s budget** (wall time about 1487 s), because the stacked ensemble
+  is built after the search. This is logged in `over_budget_seconds` and explained in the
+  write-up.
+- **Step 2 searches took about 4.7 h and Step 3 about 1.5 h on the laptop.** Do not re-run
+  them unless strictly necessary. `run_tuning.py --refit-only` and
+  `run_automl.py --tables-only` rebuild outputs from the logs.
+
+## 3. What is left (spec and Definition of done)
+The full spec is the D1–D8 table in `docs/PLAN.md`. The prompts in
+`docs/handoff/workflow_windows_reference.js` give the per-stage detail. In short:
+
+**Step 4 (D5), to redo from scratch:**
+1. **Leakage:**
+   - Add `detection_ratio` (the float in meta, `detection_ratio_float`) as a leak column,
+     and separately `first_submission_date`.
+   - Run tuned LightGBM plus FLAML, AutoGluon and H2O with and without each leak, at equal
+     budget. 600 s is the stated deviation from 1200 s; the clean reruns also use 600 s.
+   - Report the score jump, the leak's importance rank and SHAP, and whether each tool
+     warned about or dropped the leak.
+   - Also ablate the time-proxy columns already in X (COFF timestamp, column 696, and the
+     authenticode signing times).
+2. **Random vs future gap table:** for all models, with paired-bootstrap CIs (already
+   implemented in `src/eval.py`).
+3. **CV comparison:** stratified CV vs a week-blocked forward CV. Which one predicts
+   test_future better?
+4. **Bias:**
+   - Class balance, per-slice metrics (week, file-size quartile, packer, signed or
+     unsigned) and benign FPR per slice.
+   - A class-weight variant, and whether it helped.
+   - A prevalence discussion: the classes are 50/50 by construction.
+   - The challenge set: 814 Win64 rows, all malicious, so recall only.
+5. **SHAP** on tuned LightGBM:
+   - A beeswarm plot, a bar chart grouped by feature family (offsets from
+     `src/data.feature_groups()`), and 3 waterfalls (one TP, one FP, one FN).
+   - Cross-tool agreement with the AutoML importances in `reports/leaderboards/`.
+6. **Stretch goals:**
+   - Calibration: a reliability curve and the Brier score.
+   - A cost-sensitive threshold at C_FN/C_FP = 10, written to `models/threshold.json`.
+   - A drift monitor: a sliding 12-week retrain, with F1 and AUC per future week.
+7. **Write-ups:** `reports/critical_eval.md` and `reports/limitations.md`, then the review
+   gate (leakage, stats and honesty lenses).
+
+**Step 5 (D6):**
+- `models/final/` holding the model, `schema.json` and the threshold.
+- `app/api.py`, a FastAPI service:
+  - `/health`.
+  - `/predict`: a vector of length 2568 with finite values. Anything else gets a 422.
+  - `/predict_file`: in memory only, 50 MB cap, 400 on a parse error. Never write uploads
+    to disk or execute them.
+- `app/streamlit_app.py`.
+- `tests/test_api.py`, including a check that API scores match offline scoring.
+- Screenshots in `reports/screenshots/`, plus `MODEL_CARD.md` and `DEMO.md`.
+
+**Step 6 (D7):**
+- `scripts/build_report.py` produces `reports/report.pdf`. Render the pages to images and
+  check them.
+- `scripts/build_slides.py` produces a `.pptx` of 8–10 slides with speaker notes, plus
+  `reports/qa_prep.md`.
+- All notebooks executed, with their outputs.
+
+**Final (D1, D8):**
+- `reports/repro_check.md`: a fresh venv, `pytest`, and `run_all.py --quick` run from
+  deleted quick outputs.
+- `reports/SUBMISSION_CHECKLIST.md`, which maps every rubric item to evidence.
+- `run_all.py` gets its `eval` and `deploy` steps wired in.
+- 2 consecutive clean adversarial rounds, then your own spot-check.
+
+## 4. Setting up a fresh (Linux / cloud) machine
+
+### 4.1 Python environment
+The pins were frozen on Windows with Python 3.12.10. On Linux:
+```bash
+python3.12 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r requirements.txt
+```
+- `run_all.py` already looks for both `.venv/Scripts/python.exe` and `.venv/bin/python`.
+  Some docs and prompts use the Windows path; translate it.
+- If a pin has no Linux wheel, change only that pin and record why in `requirements.txt`.
+- **H2O needs Java** (Java 21 was used), for example
+  `apt-get install -y openjdk-21-jre-headless` or `openjdk-17-jre-headless`.
+- `H2O_MAX_MEM` in `src/automl_runs.py` is set for a 63 GB machine. Lower it if the cloud
+  machine has less RAM.
+
+### 4.2 Data (not in git: 38 GB raw plus 6.2 GB cache)
+- **Check the disk and RAM first** with `df -h .` and `free -g`. The full rebuild needs
+  about 50 GB of disk:
+  - 6.6 GB of zips
+  - 32 GB of extracted jsonl
+  - 6.2 GB of cache
+- Loading the 160k-row train split takes about 1.6 GB of RAM.
+- If the machine is too small, stop and tell the user. Do not shrink the experiment.
+
+```bash
+.venv/bin/python run_all.py --steps data      # download (sha256-checked) + build cache + verify
+```
+This downloads from Hugging Face `joyce8/EMBER2024` and needs network access to
+huggingface.co. It took about 5 min to build the cache on the laptop, plus the download time.
+
+### 4.3 Check the rebuilt data matches the laptop exactly
+- `data/splits/*.npy` (the row indices) are committed.
+- `data/splits/split_sha256.parquet` holds the sha256 and label for every row of train,
+  test_random and test_future.
+- `data/splits/split_fingerprints.json` holds hashes of each split's sha256 order and of
+  the first 1000 feature rows.
+
+After the data step:
+```bash
+git status data/splits          # must show no modified files (split files are deterministic)
+.venv/bin/python - <<'EOF'
+import hashlib, json, sys
+import numpy as np
+sys.path.insert(0, ".")
+from src import data
+fp = json.load(open("data/splits/split_fingerprints.json"))
+for name in ["train", "test_random", "test_future"]:
+    rows = data.split_rows(name)
+    meta = data.load_cache_meta(data.SPLIT_SOURCE[name]).iloc[rows]
+    assert hashlib.sha256("\n".join(meta["sha256"]).encode()).hexdigest() == fp[name], name
+    X = np.asarray(data.open_cache_X(data.SPLIT_SOURCE[name])[rows[:1000]], dtype=np.float32)
+    ok = hashlib.sha256(X.tobytes()).hexdigest() == fp[name + "_X_first1000_sha256"]
+    print(name, "sha256 order OK;", "features identical" if ok else "FEATURES DIFFER (see note)")
+EOF
+.venv/bin/python -m pytest -q
+```
+**If the features differ but the sha256 order matches,** the thrember extraction is not
+bit-identical across OSes. Check the size of the difference first:
+- Tiny float noise: say so in `reports/repro_check.md` and carry on.
+- A real difference: score the committed Step 2 models on the rebuilt test sets and compare
+  with `tuning_summary.csv` before deciding anything. Tell the user.
+
+### 4.4 Models
+Committed:
+- the LightGBM models (`models/lgbm_*.txt` with their params)
+- `models/logreg.joblib`
+- FLAML (`models/flaml/`)
+- H2O (`models/h2o/`)
+
+**Not committed:** the AutoGluon Step 3 predictor (`models/autogluon/`, 1.8 GB). Its
+leaderboard, importances and saved test predictions are committed in
+`reports/leaderboards/` and `reports/predictions/automl_autogluon.npz`. Rebuild it only if a
+later step really needs the predictor object, and expect different timings on different
+hardware:
+```bash
+.venv/bin/python scripts/run_automl.py --tools autogluon
+```
+
+### 4.5 Hardware differences
+- Steps 2–3 ran on a 16-core Intel Core Ultra 9 285H (Windows, CPU only). `N_JOBS = 16` is
+  in `config.py`.
+- On a cloud machine, record its CPU count, RAM and OS in the Step 4 write-up.
+- Run every with/without-leak pair on the same machine with the same settings, so those
+  comparisons stay fair.
+- Do not compare cloud wall-clock times with the laptop times from Steps 2–3 without
+  saying so.
+- If the machine has fewer than 16 cores, set `N_JOBS` to what it has, and state the
+  deviation.
+
+## 5. Lessons from the first run (avoid repeating them)
+- **Raw duplicates.** Each weekly jsonl lists every sample twice. The global sha256 dedup
+  is essential; without it the random split leaks.
+- **signify pin.** `signify` 0.9.x breaks `import thrember`, so it is pinned to 0.8.1.
+- **Shell timeouts.** A long refit was killed by a shell call's 2-minute timeout. Run long
+  jobs as detached processes that write a log.
+- **Sleep and timed budgets.**
+  - The laptop slept during a timed AutoML run, which invalidates the budget.
+  - `src/automl_runs.py` now has a heartbeat sleep guard. It logs `heartbeat_max_gap_s`
+    and `timing_valid`, and `run_automl.py` reruns invalid attempts. Keep it for every
+    timed run, including the Step 4 leakage reruns.
+- **Network errors and false passes.**
+  - Transient API or DNS failures killed agents.
+  - In the first workflow version, a failed reviewer counted as "no issues", which caused
+    a false pass.
+  - The orchestration must treat a missing result as a failure.
+- **Early stopping on the refit.** Early stopping on a held-out slice cut the grid model to
+  187 trees, against about 719 in CV. The refit now uses a fixed round count taken from the
+  mean CV best iteration (`REFIT_VERSION = 2` in `src/tune.py`).

@@ -1,0 +1,5 @@
+[run_all] run_id=20261028T105459Z-e727ab quick=False steps=automl
+[run_all] === step 'automl' ===
+[run_all] >>> scripts\run_automl.py
+[flaml] start 2026-10-28 16:24:59
+[flaml] train (160000, 2568), budget 1200 s, n_jobs 16, quick=False

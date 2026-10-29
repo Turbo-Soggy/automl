@@ -1,0 +1,7 @@
+method,refit_version,refit_strategy,test_random_roc_auc,test_future_roc_auc,test_future_tpr_at_1pct_fpr,train_rows_fit,n_trees,model_file
+grid,1,early stopping on internal 10% stratified hold-out of train,0.9989374224574971,0.9977783124500121,0.968604709293606,144000,187,models/refit_v1/lgbm_grid.txt
+grid,2,"all of train, fixed n_estimators = round(mean CV fold best_iteration), no early stopping",0.9990567074622684,0.9980479174560782,0.9739039144128381,160000,719,models/lgbm_grid.txt
+random,1,early stopping on internal 10% stratified hold-out of train,0.9990673649626945,0.9980443324559974,0.9746038094285857,144000,1092,models/refit_v1/lgbm_random.txt
+random,2,"all of train, fixed n_estimators = round(mean CV fold best_iteration), no early stopping",0.999012077460483,0.9979592149540822,0.9745038244263361,160000,739,models/lgbm_random.txt
+optuna,1,early stopping on internal 10% stratified hold-out of train,0.9989981299599251,0.9979942574548708,0.9739039144128381,144000,426,models/refit_v1/lgbm_optuna.txt
+optuna,2,"all of train, fixed n_estimators = round(mean CV fold best_iteration), no early stopping",0.9991147924645917,0.9981052749573688,0.9758036294555816,160000,609,models/lgbm_optuna.txt

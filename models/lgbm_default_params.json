@@ -1,0 +1,13 @@
+{
+  "params": {
+    "objective": "binary",
+    "metric": "auc",
+    "seed": 42,
+    "deterministic": true,
+    "force_col_wise": true,
+    "num_threads": 16,
+    "verbosity": -1,
+    "feature_pre_filter": false
+  },
+  "num_trees": 100
+}

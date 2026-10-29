@@ -1,0 +1,671 @@
+{
+  "built_utc": "2026-10-27T19:32:40.343790+00:00",
+  "seconds": 286.4,
+  "raw_dir": "C:\\projects\\automl\\data\\raw\\win64",
+  "thrember_version": "0.1.0",
+  "thrember_commit": "0ef753e81d98bf209f71b03cd331dfc190b5b54d",
+  "feature_dim": 2568,
+  "feature_groups": [
+    [
+      "general",
+      0,
+      7
+    ],
+    [
+      "histogram",
+      7,
+      263
+    ],
+    [
+      "byteentropy",
+      263,
+      519
+    ],
+    [
+      "strings",
+      519,
+      696
+    ],
+    [
+      "header",
+      696,
+      770
+    ],
+    [
+      "section",
+      770,
+      994
+    ],
+    [
+      "imports",
+      994,
+      2276
+    ],
+    [
+      "exports",
+      2276,
+      2405
+    ],
+    [
+      "datadirectories",
+      2405,
+      2439
+    ],
+    [
+      "richheader",
+      2439,
+      2472
+    ],
+    [
+      "authenticode",
+      2472,
+      2480
+    ],
+    [
+      "pefilewarnings",
+      2480,
+      2568
+    ]
+  ],
+  "week_anchor_utc": "2023-09-24T00:00:00",
+  "splits": {
+    "train": {
+      "files": 52,
+      "lines": 1040000,
+      "duplicates_in_file": 520000,
+      "duplicates_across_files": 0,
+      "duplicates_of_earlier_split": 0,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "rows": 520000
+    },
+    "test": {
+      "files": 12,
+      "lines": 240000,
+      "duplicates_in_file": 120000,
+      "duplicates_across_files": 7,
+      "duplicates_of_earlier_split": 0,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "rows": 119993
+    }
+  },
+  "per_file": [
+    {
+      "source_file": "2023-09-24_2023-09-30_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 69.8
+    },
+    {
+      "source_file": "2023-10-01_2023-10-07_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.6
+    },
+    {
+      "source_file": "2023-10-08_2023-10-14_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 71.1
+    },
+    {
+      "source_file": "2023-10-15_2023-10-21_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 69.2
+    },
+    {
+      "source_file": "2023-10-22_2023-10-28_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 34.6
+    },
+    {
+      "source_file": "2023-10-29_2023-11-04_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 34.2
+    },
+    {
+      "source_file": "2023-11-05_2023-11-11_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 34.0
+    },
+    {
+      "source_file": "2023-11-12_2023-11-18_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.2
+    },
+    {
+      "source_file": "2023-11-19_2023-11-25_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 33.9
+    },
+    {
+      "source_file": "2023-11-26_2023-12-02_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 35.8
+    },
+    {
+      "source_file": "2023-12-03_2023-12-09_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 33.7
+    },
+    {
+      "source_file": "2023-12-10_2023-12-16_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 33.7
+    },
+    {
+      "source_file": "2023-12-17_2023-12-23_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.3
+    },
+    {
+      "source_file": "2023-12-24_2023-12-30_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.7
+    },
+    {
+      "source_file": "2023-12-31_2024-01-06_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 67.8
+    },
+    {
+      "source_file": "2024-01-07_2024-01-13_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.9
+    },
+    {
+      "source_file": "2024-01-14_2024-01-20_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 69.8
+    },
+    {
+      "source_file": "2024-01-21_2024-01-27_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 64.8
+    },
+    {
+      "source_file": "2024-01-28_2024-02-03_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 70.8
+    },
+    {
+      "source_file": "2024-02-04_2024-02-10_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 72.2
+    },
+    {
+      "source_file": "2024-02-11_2024-02-17_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 33.1
+    },
+    {
+      "source_file": "2024-02-18_2024-02-24_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 35.1
+    },
+    {
+      "source_file": "2024-02-25_2024-03-02_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 34.3
+    },
+    {
+      "source_file": "2024-03-03_2024-03-09_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 35.2
+    },
+    {
+      "source_file": "2024-03-10_2024-03-16_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 34.2
+    },
+    {
+      "source_file": "2024-03-17_2024-03-23_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 34.4
+    },
+    {
+      "source_file": "2024-03-24_2024-03-30_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 33.7
+    },
+    {
+      "source_file": "2024-03-31_2024-04-06_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 69.7
+    },
+    {
+      "source_file": "2024-04-07_2024-04-13_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 34.6
+    },
+    {
+      "source_file": "2024-04-14_2024-04-20_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 36.5
+    },
+    {
+      "source_file": "2024-04-21_2024-04-27_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 71.8
+    },
+    {
+      "source_file": "2024-04-28_2024-05-04_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.9
+    },
+    {
+      "source_file": "2024-05-05_2024-05-11_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 66.6
+    },
+    {
+      "source_file": "2024-05-12_2024-05-18_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.3
+    },
+    {
+      "source_file": "2024-05-19_2024-05-25_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 69.1
+    },
+    {
+      "source_file": "2024-05-26_2024-06-01_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.0
+    },
+    {
+      "source_file": "2024-06-02_2024-06-08_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 70.7
+    },
+    {
+      "source_file": "2024-06-09_2024-06-15_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 70.2
+    },
+    {
+      "source_file": "2024-06-16_2024-06-22_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 71.4
+    },
+    {
+      "source_file": "2024-06-23_2024-06-29_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 70.1
+    },
+    {
+      "source_file": "2024-06-30_2024-07-06_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 69.7
+    },
+    {
+      "source_file": "2024-07-07_2024-07-13_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.9
+    },
+    {
+      "source_file": "2024-07-14_2024-07-20_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.3
+    },
+    {
+      "source_file": "2024-07-21_2024-07-27_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 69.2
+    },
+    {
+      "source_file": "2024-07-28_2024-08-03_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 65.5
+    },
+    {
+      "source_file": "2024-08-04_2024-08-10_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.2
+    },
+    {
+      "source_file": "2024-08-11_2024-08-17_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 66.9
+    },
+    {
+      "source_file": "2024-08-18_2024-08-24_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 69.1
+    },
+    {
+      "source_file": "2024-08-25_2024-08-31_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 71.4
+    },
+    {
+      "source_file": "2024-09-01_2024-09-07_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 69.6
+    },
+    {
+      "source_file": "2024-09-08_2024-09-14_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 69.0
+    },
+    {
+      "source_file": "2024-09-15_2024-09-21_Win64_train.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.3
+    },
+    {
+      "source_file": "2024-09-22_2024-09-28_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 67.2
+    },
+    {
+      "source_file": "2024-09-29_2024-10-05_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.8
+    },
+    {
+      "source_file": "2024-10-06_2024-10-12_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 70.5
+    },
+    {
+      "source_file": "2024-10-13_2024-10-19_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 71.1
+    },
+    {
+      "source_file": "2024-10-20_2024-10-26_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 71.9
+    },
+    {
+      "source_file": "2024-10-27_2024-11-02_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 67.8
+    },
+    {
+      "source_file": "2024-11-03_2024-11-09_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 71.8
+    },
+    {
+      "source_file": "2024-11-10_2024-11-16_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 67.6
+    },
+    {
+      "source_file": "2024-11-17_2024-11-23_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 64.1
+    },
+    {
+      "source_file": "2024-11-24_2024-11-30_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 67.2
+    },
+    {
+      "source_file": "2024-12-01_2024-12-07_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 70.9
+    },
+    {
+      "source_file": "2024-12-08_2024-12-14_Win64_test.jsonl",
+      "lines": 20000,
+      "kept": 10000,
+      "duplicates_in_file": 10000,
+      "dropped_bad_label": 0,
+      "nonfinite_values": 0,
+      "seconds": 68.6
+    }
+  ]
+}

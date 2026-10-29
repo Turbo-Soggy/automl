@@ -1,0 +1,35 @@
+{
+  "seed": 42,
+  "quick": true,
+  "cv_folds": 3,
+  "splits": {
+    "train": {
+      "source_cache": "train",
+      "n": 8000,
+      "pos_rate": 0.49975,
+      "n_weeks": 52,
+      "date_min": "2023-09-24 00:31:50",
+      "date_max": "2024-09-21 22:43:43"
+    },
+    "test_random": {
+      "source_cache": "train",
+      "n": 2000,
+      "pos_rate": 0.501,
+      "n_weeks": 52,
+      "date_min": "2023-09-24 06:48:34",
+      "date_max": "2024-09-21 16:19:31"
+    },
+    "test_future": {
+      "source_cache": "test",
+      "n": 2000,
+      "pos_rate": 0.4995,
+      "n_weeks": 12,
+      "date_min": "2024-09-22 01:34:18",
+      "date_max": "2024-12-14 23:11:37"
+    }
+  },
+  "tune_subset": {
+    "n": 5000,
+    "pos_rate": 0.4998
+  }
+}

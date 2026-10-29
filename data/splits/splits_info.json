@@ -1,0 +1,35 @@
+{
+  "seed": 42,
+  "quick": false,
+  "cv_folds": 3,
+  "splits": {
+    "train": {
+      "source_cache": "train",
+      "n": 160000,
+      "pos_rate": 0.49998125,
+      "n_weeks": 52,
+      "date_min": "2023-09-24 00:01:40",
+      "date_max": "2024-09-21 23:52:55"
+    },
+    "test_random": {
+      "source_cache": "train",
+      "n": 40000,
+      "pos_rate": 0.5001,
+      "n_weeks": 52,
+      "date_min": "2023-09-24 00:07:46",
+      "date_max": "2024-09-21 23:39:36"
+    },
+    "test_future": {
+      "source_cache": "test",
+      "n": 40000,
+      "pos_rate": 0.500075,
+      "n_weeks": 12,
+      "date_min": "2024-09-22 00:04:03",
+      "date_max": "2024-12-14 23:55:32"
+    }
+  },
+  "tune_subset": {
+    "n": 60000,
+    "pos_rate": 0.49998333333333334
+  }
+}

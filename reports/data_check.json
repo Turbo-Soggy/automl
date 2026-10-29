@@ -1,0 +1,314 @@
+{
+  "quick": false,
+  "seed": 42,
+  "cache_info": {
+    "thrember_version": "0.1.0",
+    "thrember_commit": "0ef753e81d98bf209f71b03cd331dfc190b5b54d",
+    "feature_dim": 2568,
+    "week_anchor_utc": "2023-09-24T00:00:00",
+    "splits": {
+      "train": {
+        "files": 52,
+        "lines": 1040000,
+        "duplicates_in_file": 520000,
+        "duplicates_across_files": 0,
+        "duplicates_of_earlier_split": 0,
+        "dropped_bad_label": 0,
+        "nonfinite_values": 0,
+        "rows": 520000
+      },
+      "test": {
+        "files": 12,
+        "lines": 240000,
+        "duplicates_in_file": 120000,
+        "duplicates_across_files": 7,
+        "duplicates_of_earlier_split": 0,
+        "dropped_bad_label": 0,
+        "nonfinite_values": 0,
+        "rows": 119993
+      }
+    },
+    "built_utc": "2026-10-27T19:32:40.343790+00:00"
+  },
+  "cache": {
+    "feature_dim": 2568,
+    "feature_groups": [
+      {
+        "name": "general",
+        "start": 0,
+        "end": 7,
+        "width": 7
+      },
+      {
+        "name": "histogram",
+        "start": 7,
+        "end": 263,
+        "width": 256
+      },
+      {
+        "name": "byteentropy",
+        "start": 263,
+        "end": 519,
+        "width": 256
+      },
+      {
+        "name": "strings",
+        "start": 519,
+        "end": 696,
+        "width": 177
+      },
+      {
+        "name": "header",
+        "start": 696,
+        "end": 770,
+        "width": 74
+      },
+      {
+        "name": "section",
+        "start": 770,
+        "end": 994,
+        "width": 224
+      },
+      {
+        "name": "imports",
+        "start": 994,
+        "end": 2276,
+        "width": 1282
+      },
+      {
+        "name": "exports",
+        "start": 2276,
+        "end": 2405,
+        "width": 129
+      },
+      {
+        "name": "datadirectories",
+        "start": 2405,
+        "end": 2439,
+        "width": 34
+      },
+      {
+        "name": "richheader",
+        "start": 2439,
+        "end": 2472,
+        "width": 33
+      },
+      {
+        "name": "authenticode",
+        "start": 2472,
+        "end": 2480,
+        "width": 8
+      },
+      {
+        "name": "pefilewarnings",
+        "start": 2480,
+        "end": 2568,
+        "width": 88
+      }
+    ],
+    "groups_sum_to_dim": true,
+    "shapes": {
+      "train": {
+        "X_shape": [
+          520000,
+          2568
+        ],
+        "meta_rows": 520000
+      },
+      "test": {
+        "X_shape": [
+          119993,
+          2568
+        ],
+        "meta_rows": 119993
+      }
+    },
+    "rows_match_meta": true
+  },
+  "download": {
+    "files_checked": 64,
+    "line_count_mismatches": []
+  },
+  "labels_only_0_1": true,
+  "dates": {
+    "train": {
+      "date_min": "2023-09-24 00:01:40",
+      "date_max": "2024-09-21 23:59:41",
+      "weeks": [
+        0,
+        51
+      ],
+      "n_weeks": 52,
+      "week_ne_week_id": 0
+    },
+    "test": {
+      "date_min": "2024-09-22 00:01:48",
+      "date_max": "2024-12-14 23:59:37",
+      "weeks": [
+        52,
+        63
+      ],
+      "n_weeks": 12,
+      "week_ne_week_id": 6
+    }
+  },
+  "detection_ratio": {
+    "train": {
+      "format": "string 'positives/total', e.g. 0/77, 0/76, 0/76",
+      "share_matching_k_over_n": 1.0,
+      "unparseable": 0,
+      "denominators": {
+        "77": 186566,
+        "76": 152929,
+        "74": 66237,
+        "73": 52678,
+        "75": 52024,
+        "72": 5250,
+        "78": 3768,
+        "71": 393
+      },
+      "roc_auc_detection_ratio_float_vs_label": 1.0,
+      "benign_with_any_detection": 149,
+      "malicious_with_zero_detections": 0,
+      "min_detections_malicious": 5.0,
+      "max_detections_benign": 2.0
+    },
+    "test": {
+      "format": "string 'positives/total', e.g. 0/74, 0/73, 21/74",
+      "share_matching_k_over_n": 1.0,
+      "unparseable": 0,
+      "denominators": {
+        "73": 93417,
+        "74": 17259,
+        "72": 8472,
+        "77": 595,
+        "71": 215,
+        "70": 16,
+        "76": 7,
+        "69": 3
+      },
+      "roc_auc_detection_ratio_float_vs_label": 1.0,
+      "benign_with_any_detection": 12,
+      "malicious_with_zero_detections": 0,
+      "min_detections_malicious": 5.0,
+      "max_detections_benign": 1.0
+    }
+  },
+  "nonfinite": {
+    "train": {
+      "nonfinite_values": 0,
+      "constant_columns": 30
+    },
+    "test": {
+      "nonfinite_values": 0,
+      "constant_columns": 39
+    }
+  },
+  "alignment": {
+    "rows_checked": 20,
+    "mismatches": []
+  },
+  "splits": {
+    "sizes": {
+      "train": 160000,
+      "test_random": 40000,
+      "test_future": 40000
+    },
+    "pos_rate": {
+      "train": 0.5,
+      "test_random": 0.5001,
+      "test_future": 0.5001
+    },
+    "n_weeks": {
+      "train": 52,
+      "test_random": 52,
+      "test_future": 12
+    },
+    "sha256_overlap": {
+      "train&test_random": 0,
+      "train&test_future": 0,
+      "test_random&test_future": 0
+    },
+    "duplicate_sha256_within": {
+      "train": 0,
+      "test_random": 0,
+      "test_future": 0
+    },
+    "train_test_random_row_overlap": 0,
+    "official_train_test_sha256_overlap": 0,
+    "test_future_min_date": "2024-09-22 00:04:03",
+    "train_max_date": "2024-09-21 23:52:55",
+    "test_future_strictly_later": true,
+    "tune_subset": {
+      "n": 60000,
+      "unique": true,
+      "in_range": true
+    },
+    "cv_folds_partition_ok": true,
+    "cv_fold_sizes": [
+      53334,
+      53333,
+      53333
+    ]
+  },
+  "splits_info": {
+    "seed": 42,
+    "quick": false,
+    "cv_folds": 3,
+    "splits": {
+      "train": {
+        "source_cache": "train",
+        "n": 160000,
+        "pos_rate": 0.49998125,
+        "n_weeks": 52,
+        "date_min": "2023-09-24 00:01:40",
+        "date_max": "2024-09-21 23:52:55"
+      },
+      "test_random": {
+        "source_cache": "train",
+        "n": 40000,
+        "pos_rate": 0.5001,
+        "n_weeks": 52,
+        "date_min": "2023-09-24 00:07:46",
+        "date_max": "2024-09-21 23:39:36"
+      },
+      "test_future": {
+        "source_cache": "test",
+        "n": 40000,
+        "pos_rate": 0.500075,
+        "n_weeks": 12,
+        "date_min": "2024-09-22 00:04:03",
+        "date_max": "2024-12-14 23:55:32"
+      }
+    },
+    "tune_subset": {
+      "n": 60000,
+      "pos_rate": 0.49998333333333334
+    }
+  },
+  "hard_checks": {
+    "groups_sum_to_dim": true,
+    "rows_match_meta": true,
+    "labels_only_0_1": true,
+    "no_line_count_mismatch": true,
+    "no_sha256_overlap_across_splits": true,
+    "no_duplicate_sha256_within_splits": true,
+    "test_future_strictly_later": true,
+    "tune_subset_valid": true,
+    "cv_folds_partition_ok": true,
+    "alignment_ok": true
+  },
+  "ok": true,
+  "flags": [
+    "train: 520000 of 1040000 raw lines were in-file duplicate sha256 (each weekly file repeats its 10k samples); dropped, first occurrence kept.",
+    "test: 120000 of 240000 raw lines were in-file duplicate sha256 (each weekly file repeats its 10k samples); dropped, first occurrence kept.",
+    "test: 7 sha256 appeared in two different weeks; only the earliest week's row is kept.",
+    "train: detection_ratio_float alone gives ROC-AUC 1.0000 - a near-perfect label proxy. Expected (labels are derived from AV detections); it is kept only in meta, never in X.",
+    "test: detection_ratio_float alone gives ROC-AUC 1.0000 - a near-perfect label proxy. Expected (labels are derived from AV detections); it is kept only in meta, never in X.",
+    "test: 6 rows whose derived week != official week_id.",
+    "train: 30 constant feature columns (harmless, carry no signal).",
+    "test: 39 constant feature columns (harmless, carry no signal).",
+    "Classes are ~50/50 in every week by EMBER2024's construction, not real-world prevalence.",
+    "X contains time proxies: header coff.timestamp (col 696, compile time) and authenticode signing time; they can encode 'when' rather than 'what' under a random split."
+  ]
+}

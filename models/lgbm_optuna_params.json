@@ -1,0 +1,20 @@
+{
+  "params": {
+    "objective": "binary",
+    "metric": "auc",
+    "seed": 42,
+    "deterministic": true,
+    "force_col_wise": true,
+    "num_threads": 16,
+    "verbosity": -1,
+    "feature_pre_filter": false,
+    "num_leaves": 67,
+    "learning_rate": 0.09236270757525865,
+    "min_child_samples": 7,
+    "feature_fraction": 0.7232440545197732,
+    "bagging_fraction": 0.9976437975156278,
+    "lambda_l2": 4.7127667782104395e-07,
+    "bagging_freq": 1
+  },
+  "num_trees": 609
+}

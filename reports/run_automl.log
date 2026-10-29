@@ -1,0 +1,238 @@
+[run_all] run_id=20261029T014020Z-210e44 quick=False steps=automl
+[run_all] === step 'automl' ===
+[run_all] >>> scripts\run_automl.py
+[flaml] start 2026-10-29 07:10:22
+[flaml] train (160000, 2568), budget 1200 s, n_jobs 16, quick=False
+[flaml] alive 07:14:58, 300 s in, max gap 30 s
+[flaml] alive 07:19:58, 600 s in, max gap 30 s
+[flaml] alive 07:24:58, 900 s in, max gap 30 s
+[flaml] alive 07:29:58, 1200 s in, max gap 30 s
+[flaml] alive 07:34:58, 1500 s in, max gap 30 s
+[flaml] best=xgb_limitdepth wall_s=1542 (budget 1200) test_random_auc=0.9986 test_future_auc=0.9976 max_heartbeat_gap=30s timing_valid=True
+[flaml] done after 1586 s
+[autogluon] start 2026-10-29 07:36:48
+[autogluon] train (160000, 2568), budget 1200 s, n_jobs 16, quick=False
+Verbosity: 2 (Standard Logging)
+=================== System Info ===================
+AutoGluon Version:  1.6.3
+Python Version:     3.12.10
+Operating System:   Windows
+Platform Machine:   AMD64
+Platform Version:   10.0.26300
+CPU Count:          16
+Pytorch Version:    2.14.1+cpu
+CUDA Version:       CUDA is not available
+Memory Avail:       46.09 GB / 63.43 GB (72.7%)
+Disk Space Avail:   539.03 GB / 924.26 GB (58.3%)
+===================================================
+Presets specified: ['medium_quality']
+Using hyperparameters preset: hyperparameters='default'
+Beginning AutoGluon training ... Time limit = 1200s
+AutoGluon will save models to "C:\projects\automl\models\autogluon"
+Train Data Rows:    160000
+Train Data Columns: 2568
+Label Column:       label
+AutoGluon infers your prediction problem is: 'binary' (because only two unique label-values observed).
+	2 unique label values:  [np.int64(0), np.int64(1)]
+	If 'binary' is not the correct problem_type, please manually specify the problem_type parameter during Predictor init (You may specify problem_type as one of: ['binary', 'multiclass', 'regression', 'quantile'])
+Problem Type:       binary
+Preprocessing data...
+Selected class <--> label mapping:  class 1 = 1, class 0 = 0
+Using Feature Generators to preprocess the data ...
+Fitting AutoMLPipelineFeatureGenerator...
+	Available Memory:                    47193.08 MB
+	Train Data (Original)  Memory Usage: 1567.38 MB (3.3% of available memory)
+	Inferring data type of each feature based on column values. Set feature_metadata_in to manually specify special dtypes of the features.
+	Stage 1 Generators:
+		Fitting AsTypeFeatureGenerator...
+			Note: Converting 101 features to boolean dtype as they only contain 2 unique values.
+	Stage 2 Generators:
+		Fitting FillNaFeatureGenerator...
+	Stage 3 Generators:
+		Fitting IdentityFeatureGenerator...
+	Stage 4 Generators:
+		Fitting DropUniqueFeatureGenerator...
+	Stage 5 Generators:
+		Fitting DropDuplicatesFeatureGenerator...
+	Useless Original Features (Count: 35): ['strings__112', 'header__44', 'section__6', 'section__8', 'section__10', 'datadirectories__30', 'datadirectories__31', 'pefilewarnings__1', 'pefilewarnings__5', 'pefilewarnings__15', 'pefilewarnings__18', 'pefilewarnings__20', 'pefilewarnings__21', 'pefilewarnings__22', 'pefilewarnings__23', 'pefilewarnings__25', 'pefilewarnings__26', 'pefilewarnings__27', 'pefilewarnings__28', 'pefilewarnings__29', 'pefilewarnings__30', 'pefilewarnings__32', 'pefilewarnings__34', 'pefilewarnings__35', 'pefilewarnings__38', 'pefilewarnings__41', 'pefilewarnings__42', 'pefilewarnings__44', 'pefilewarnings__45', 'pefilewarnings__59', 'pefilewarnings__61', 'pefilewarnings__74', 'pefilewarnings__77', 'pefilewarnings__82', 'pefilewarnings__83']
+		These features carry no predictive signal and should be manually investigated.
+		This is typically a feature which has the same value for all rows.
+		These features do not need to be present at inference time.
+	Unused Original Features (Count: 18): ['strings__153', 'header__36', 'header__42', 'header__45', 'header__57', 'pefilewarnings__9', 'pefilewarnings__11', 'pefilewarnings__12', 'pefilewarnings__16', 'pefilewarnings__24', 'pefilewarnings__39', 'pefilewarnings__46', 'pefilewarnings__54', 'pefilewarnings__56', 'pefilewarnings__63', 'pefilewarnings__68', 'pefilewarnings__78', 'pefilewarnings__80']
+		These features were not used to generate any of the output features. Add a feature generator compatible with these features to utilize them.
+		Features can also be unused if they carry very little information, such as being categorical but having almost entirely unique values or being duplicates of other features.
+		These features do not need to be present at inference time.
+		('float', []) : 18 | ['strings__153', 'header__36', 'header__42', 'header__45', 'header__57', ...]
+	Types of features in original data (raw dtype, special dtypes):
+		('float', []) : 2515 | ['general__0', 'general__1', 'general__2', 'general__3', 'general__4', ...]
+	Types of features in processed data (raw dtype, special dtypes):
+		('float', [])     : 2431 | ['general__0', 'general__1', 'general__5', 'general__6', 'histogram__0', ...]
+		('int', ['bool']) :   84 | ['general__2', 'general__3', 'general__4', 'strings__114', 'header__30', ...]
+	28.9s = Fit runtime
+	2515 features in original data used to generate 2515 features in processed data.
+	Train Data (Processed) Memory Usage: 1496.58 MB (3.1% of available memory)
+Data preprocessing and feature engineering runtime = 34.29s ...
+AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'
+	This metric expects predicted probabilities rather than predicted class labels, so you'll need to use predict_proba() instead of predict()
+	To change this, specify the eval_metric parameter of Predictor()
+Automatically generating train/validation split with holdout_frac=0.0156, Train Rows: 157504, Val Rows: 2496
+User-specified model hyperparameters to be fit:
+{
+	'NN_TORCH': [{}],
+	'GBM': [{'extra_trees': True, 'ag_args': {'name_suffix': 'XT'}}, {}, {'learning_rate': 0.03, 'num_leaves': 128, 'feature_fraction': 0.9, 'min_data_in_leaf': 3, 'ag_args': {'name_suffix': 'Large', 'priority': 0, 'hyperparameter_tune_kwargs': None}}],
+	'CAT': [{}],
+	'XGB': [{}],
+	'FASTAI': [{}],
+	'RF': [{'criterion': 'gini', 'ag_args': {'name_suffix': 'Gini', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'entropy', 'ag_args': {'name_suffix': 'Entr', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'squared_error', 'ag_args': {'name_suffix': 'MSE', 'problem_types': ['regression', 'quantile']}}],
+	'XT': [{'criterion': 'gini', 'ag_args': {'name_suffix': 'Gini', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'entropy', 'ag_args': {'name_suffix': 'Entr', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'squared_error', 'ag_args': {'name_suffix': 'MSE', 'problem_types': ['regression', 'quantile']}}],
+}
+Fitting 11 L1 models, fit_strategy="sequential" ...
+Fitting model: LightGBMXT ... Training model for up to 1165.71s of the 1165.71s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=8.4/43.7 GB
+[1000]	valid_set's binary_logloss: 0.0357939
+[autogluon] alive 07:41:38, 300 s in, max gap 30 s
+[2000]	valid_set's binary_logloss: 0.0315645
+	0.9994	 = Validation score   (roc_auc)
+	394.4s	 = Training   runtime
+	0.22s	 = Validation runtime
+Fitting model: LightGBM ... Training model for up to 770.89s of the 770.89s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=8.4/43.4 GB
+[autogluon] alive 07:46:38, 600 s in, max gap 30 s
+[1000]	valid_set's binary_logloss: 0.0360816
+	0.9992	 = Validation score   (roc_auc)
+	297.62s	 = Training   runtime
+	0.15s	 = Validation runtime
+Fitting model: RandomForestGini ... Training model for up to 473.00s of the 473.00s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=6.5/44.0 GB
+[autogluon] alive 07:51:38, 900 s in, max gap 30 s
+	0.9979	 = Validation score   (roc_auc)
+	256.36s	 = Training   runtime
+	0.15s	 = Validation runtime
+Fitting model: RandomForestEntr ... Training model for up to 216.25s of the 216.25s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=6.5/41.9 GB
+	0.9981	 = Validation score   (roc_auc)
+	162.26s	 = Training   runtime
+	0.15s	 = Validation runtime
+Fitting model: CatBoost ... Training model for up to 53.62s of the 53.62s of remaining time.
+[autogluon] alive 07:56:38, 1200 s in, max gap 30 s
+	Fitting with cpus=16, gpus=0, mem=10.7/42.1 GB
+	Ran out of time, early stopping on iteration 114.
+	0.993	 = Validation score   (roc_auc)
+	53.18s	 = Training   runtime
+	0.04s	 = Validation runtime
+Fitting model: WeightedEnsemble_L2 ... Training model for up to 360.00s of the 0.29s of remaining time.
+	Fitting 1 model on all data | Fitting with cpus=16, gpus=0, mem=0.0/42.5 GB
+	Ensemble Weights: {'LightGBMXT': 1.0}
+	0.9994	 = Validation score   (roc_auc)
+	0.09s	 = Training   runtime
+	0.0s	 = Validation runtime
+AutoGluon training complete, total runtime = 1204.48s ... Best model: WeightedEnsemble_L2 | Estimated inference throughput: 11322.7 rows/s (2496 batch size)
+TabularPredictor saved. To load, use: predictor = TabularPredictor.load("C:\projects\automl\models\autogluon")
+[autogluon] alive 08:01:38, 1500 s in, max gap 30 s
+[autogluon] best=WeightedEnsemble_L2 wall_s=1215 (budget 1200) test_random_auc=0.9991 test_future_auc=0.9980 max_heartbeat_gap=30s timing_valid=True
+[autogluon] done after 1655 s
+[h2o] start 2026-10-29 08:04:23
+[h2o] train (160000, 2568), budget 1200 s, n_jobs 16, quick=False
+Checking whether there is an H2O instance running at http://localhost:54321..... not found.
+Attempting to start a local H2O server...
+  Java Version: openjdk version "21.0.12.1" 2026-08-18 LTS; OpenJDK Runtime Environment Microsoft-14941484 (build 21.0.12.1+1-LTS); OpenJDK 64-Bit Server VM Microsoft-14941484 (build 21.0.12.1+1-LTS, mixed mode, sharing)
+  Starting server from C:\projects\automl\.venv\Lib\site-packages\h2o\backend\bin\h2o.jar
+  Ice root: C:\Users\benja\AppData\Local\Temp\tmprl6spelz
+  JVM stdout: C:\Users\benja\AppData\Local\Temp\tmprl6spelz\h2o_benja_started_from_python.out
+  JVM stderr: C:\Users\benja\AppData\Local\Temp\tmprl6spelz\h2o_benja_started_from_python.err
+  Server is running at http://127.0.0.1:54321
+Connecting to H2O server at http://127.0.0.1:54321 ... successful.
+--------------------------  -----------------------------
+H2O_cluster_uptime:         02 secs
+H2O_cluster_timezone:       Asia/Kolkata
+H2O_data_parsing_timezone:  UTC
+H2O_cluster_version:        3.46.0.12
+H2O_cluster_version_age:    2 months and 17 days
+H2O_cluster_name:           H2O_from_python_benja_71hfe8
+H2O_cluster_total_nodes:    1
+H2O_cluster_free_memory:    23.98 Gb
+H2O_cluster_total_cores:    16
+H2O_cluster_allowed_cores:  16
+H2O_cluster_status:         locked, healthy
+H2O_connection_url:         http://127.0.0.1:54321
+H2O_connection_proxy:       {"http": null, "https": null}
+H2O_internal_security:      False
+Python_version:             3.12.10 final
+H2O_telemetry_server:       disabled
+H2O_telemetry_client:       disabled
+--------------------------  -----------------------------
+
++------------------------------------------------------------------+
+| You are running the community edition of H2O-3 OSS.              |
+|                                                                  |
+| For commercial use, H2O-3 Secure is now recommended.             |
+| This includes production support, CVE fixes, multi-node scaling, |
+| model artifact extraction, and more.                             |
+| See h2o.ai/h2o-3/oss-vs-secure for additional details.           |
+| Contact enterprise@h2o.ai to upgrade.                            |
++------------------------------------------------------------------+
+
+08:08:57.948: AutoML: XGBoost is not available; skipping it.
+08:08:58.271: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41]
+
+[h2o] alive 08:08:59, 300 s in, max gap 30 s
+[h2o] alive 08:13:59, 600 s in, max gap 30 s
+
+08:17:40.976: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41]
+
+[h2o] alive 08:18:59, 900 s in, max gap 30 s
+[h2o] alive 08:23:59, 1200 s in, max gap 30 s
+
+08:25:17.357: _train param, Dropping unused columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41]
+
+
+08:25:49.175: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41]
+
+
+08:26:29.443: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41]
+
+
+08:27:05.853: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41]
+
+
+08:27:41.638: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41]
+
+
+08:28:15.868: _train param, Dropping unused columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41]
+
+
+08:28:38.756: _train param, Dropping unused columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41]
+
+[h2o] alive 08:28:59, 1500 s in, max gap 30 s
+Warning: This model doesn't have variable importances
+Warning: This model doesn't have variable importances
+Warning: This model doesn't have variable importances
+
++-----------------------------------------------------------------+
+| H2O-3 SECURE REQUIRED  -  THIS ACTION IS BLOCKED                |
+|                                                                 |
+| MOJO export is a production capability available only in        |
+| H2O-3 Secure, the commercially supported tier of H2O-3.         |
+|                                                                 |
+| You are running self-managed H2O-3 OSS.                         |
+|                                                                 |
+| You must upgrade to H2O-3 Secure for:                           |
+|   - Hadoop and Kubernetes enterprise packages                   |
+|   - Audit-supporting capabilities (SOC 2, ISO 27001, ISO 42001) |
+|   - Commercial CVE patching & long-term support                 |
+|   - Premium support with SLAs                                   |
+|                                                                 |
+| If you need MOJO, we provide a free license for non-commercial  |
+| use. See h2o.ai/h2o-3/oss-vs-secure to compare the two tiers.   |
+|                                                                 |
+| Request a license or upgrade:  enterprise@h2o.ai                |
++-----------------------------------------------------------------+
+H2O session _sid_abcd closed.
+[h2o] best=StackedEnsemble_BestOfFamily_1_AutoML_1_20261029_80743 wall_s=1487 (budget 1200) test_random_auc=0.9984 test_future_auc=0.9970 max_heartbeat_gap=30s timing_valid=True
+[h2o] done after 1639 s
+wrote C:\projects\automl\reports\tables\automl_vs_manual.csv
+wrote C:\projects\automl\reports\tables\automl_pairwise.csv
+wrote C:\projects\automl\reports\figures\automl_vs_manual.png
+wrote C:\projects\automl\reports\automl_comparison.md
+[run_all] <<< run_automl.py finished in 5010 s
+[run_all] done in 5010 s

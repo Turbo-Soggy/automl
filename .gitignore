@@ -1,0 +1,24 @@
+# Environments
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Data: raw jsonl and the feature cache are 44 GB and are rebuilt by
+# `run_all.py --steps data`. Only the small split artefacts are committed, so a
+# fresh machine can check that its rebuilt splits match row for row.
+data/*
+!data/splits/
+
+# Large or regenerable model artefacts
+models/*.bin
+models/autogluon/
+models/autogluon_quick/
+models/refit_v1/
+AutogluonModels/
+catboost_info/
+third_party/
+
+# Local-only archive of work that was set aside (see docs/handoff/HANDOFF.md)
+_archive/

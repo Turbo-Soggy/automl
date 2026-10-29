@@ -1,0 +1,54 @@
+# Python 3.12 (AutoGluon and H2O do not support 3.14). Install with:
+#   py -3.12 -m venv .venv
+#   .venv/Scripts/python.exe -m pip install -r requirements.txt
+# Exact versions frozen from the working venv on 2026-10-28.
+
+# CPU-only torch (AutoGluon pulls torch; the CPU wheel is ~10x smaller and all tools run on CPU anyway)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.1+cpu
+
+# Modelling
+numpy==2.5.4
+pandas==2.3.3
+pyarrow==24.0.0
+scikit-learn==1.9.1
+lightgbm==4.7.0
+optuna==5.0.0
+FLAML[automl]==2.7.0
+autogluon.tabular==1.6.3
+h2o==3.46.0.12
+# CatBoost is in the default search space of both FLAML and AutoGluon (medium_quality), but the
+# base autogluon.tabular install leaves it out; without it both tools silently skip CatBoost.
+# (graphviz and plotly are catboost dependencies.)
+catboost==1.2.10
+graphviz==0.21
+plotly==7.1.0
+shap==0.54.1
+
+# Plots, serving, UI
+matplotlib==3.11.2
+seaborn==0.13.2
+fastapi==0.162.0
+uvicorn==0.54.0
+pydantic==2.14.1
+streamlit==1.66.1
+
+# Utilities
+orjson==3.13.0
+joblib==1.6.0
+pytest==9.1.1
+tqdm==4.70.1
+huggingface_hub==2.3.0
+ipykernel==7.4.0
+# Executing the notebooks headless (jupyter nbconvert --execute / nbclient)
+nbformat==5.11.1
+nbconvert==7.17.2
+nbclient==0.11.0
+
+# EMBER2024 feature extractor ("thrember"), pinned to a commit
+thrember @ git+https://github.com/FutureComputing4AI/EMBER2024.git@0ef753e81d98bf209f71b03cd331dfc190b5b54d
+# thrember imports signify.authenticode.SignedPEFile, which signify 0.9.x removed; 0.8.1 still has it.
+signify==0.8.1
+# thrember's own pinned-by-us deps (resolved versions)
+pefile==2024.8.26
+polars==2.1.0

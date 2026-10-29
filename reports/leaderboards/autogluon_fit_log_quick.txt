@@ -1,0 +1,109 @@
+Verbosity: 2 (Standard Logging)
+=================== System Info ===================
+AutoGluon Version:  1.6.3
+Python Version:     3.12.10
+Operating System:   Windows
+Platform Machine:   AMD64
+Platform Version:   10.0.26300
+CPU Count:          16
+Pytorch Version:    2.14.1+cpu
+CUDA Version:       CUDA is not available
+Memory Avail:       51.89 GB / 63.43 GB (81.8%)
+Disk Space Avail:   552.08 GB / 924.26 GB (59.7%)
+===================================================
+Presets specified: ['medium_quality']
+Using hyperparameters preset: hyperparameters='default'
+Beginning AutoGluon training ... Time limit = 60s
+AutoGluon will save models to "C:\projects\automl\models\autogluon_quick"
+Train Data Rows:    8000
+Train Data Columns: 2568
+Label Column:       label
+AutoGluon infers your prediction problem is: 'binary' (because only two unique label-values observed).
+	2 unique label values:  [np.int64(1), np.int64(0)]
+	If 'binary' is not the correct problem_type, please manually specify the problem_type parameter during Predictor init (You may specify problem_type as one of: ['binary', 'multiclass', 'regression', 'quantile'])
+Problem Type:       binary
+Preprocessing data...
+Selected class <--> label mapping:  class 1 = 1, class 0 = 0
+Using Feature Generators to preprocess the data ...
+Fitting AutoMLPipelineFeatureGenerator...
+	Available Memory:                    53137.26 MB
+	Train Data (Original)  Memory Usage: 78.37 MB (0.1% of available memory)
+	Inferring data type of each feature based on column values. Set feature_metadata_in to manually specify special dtypes of the features.
+	Stage 1 Generators:
+		Fitting AsTypeFeatureGenerator...
+			Note: Converting 201 features to boolean dtype as they only contain 2 unique values.
+	Stage 2 Generators:
+		Fitting FillNaFeatureGenerator...
+	Stage 3 Generators:
+		Fitting IdentityFeatureGenerator...
+	Stage 4 Generators:
+		Fitting DropUniqueFeatureGenerator...
+	Stage 5 Generators:
+		Fitting DropDuplicatesFeatureGenerator...
+	Useless Original Features (Count: 50): ['strings__112', 'header__36', 'header__37', 'header__42', 'header__44', 'header__45', 'header__50', 'section__6', 'section__8', 'section__10', 'datadirectories__30', 'datadirectories__31', 'pefilewarnings__1', 'pefilewarnings__5', 'pefilewarnings__9', 'pefilewarnings__15', 'pefilewarnings__16', 'pefilewarnings__18', 'pefilewarnings__20', 'pefilewarnings__21', 'pefilewarnings__22', 'pefilewarnings__23', 'pefilewarnings__24', 'pefilewarnings__25', 'pefilewarnings__26', 'pefilewarnings__27', 'pefilewarnings__28', 'pefilewarnings__29', 'pefilewarnings__30', 'pefilewarnings__32', 'pefilewarnings__34', 'pefilewarnings__35', 'pefilewarnings__38', 'pefilewarnings__39', 'pefilewarnings__41', 'pefilewarnings__42', 'pefilewarnings__44', 'pefilewarnings__45', 'pefilewarnings__46', 'pefilewarnings__54', 'pefilewarnings__59', 'pefilewarnings__61', 'pefilewarnings__62', 'pefilewarnings__63', 'pefilewarnings__68', 'pefilewarnings__74', 'pefilewarnings__77', 'pefilewarnings__78', 'pefilewarnings__82', 'pefilewarnings__83']
+		These features carry no predictive signal and should be manually investigated.
+		This is typically a feature which has the same value for all rows.
+		These features do not need to be present at inference time.
+	Unused Original Features (Count: 12): ['general__4', 'strings__153', 'header__31', 'header__34', 'header__38', 'header__41', 'header__57', 'pefilewarnings__11', 'pefilewarnings__43', 'pefilewarnings__49', 'pefilewarnings__51', 'pefilewarnings__80']
+		These features were not used to generate any of the output features. Add a feature generator compatible with these features to utilize them.
+		Features can also be unused if they carry very little information, such as being categorical but having almost entirely unique values or being duplicates of other features.
+		These features do not need to be present at inference time.
+		('float', []) : 12 | ['general__4', 'strings__153', 'header__31', 'header__34', 'header__38', ...]
+	Types of features in original data (raw dtype, special dtypes):
+		('float', []) : 2506 | ['general__0', 'general__1', 'general__2', 'general__3', 'general__5', ...]
+	Types of features in processed data (raw dtype, special dtypes):
+		('float', [])     : 2316 | ['general__0', 'general__1', 'general__5', 'general__6', 'histogram__0', ...]
+		('int', ['bool']) :  190 | ['general__2', 'general__3', 'strings__110', 'strings__114', 'header__30', ...]
+	3.4s = Fit runtime
+	2506 features in original data used to generate 2506 features in processed data.
+	Train Data (Processed) Memory Usage: 72.13 MB (0.1% of available memory)
+Data preprocessing and feature engineering runtime = 3.85s ...
+AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'
+	This metric expects predicted probabilities rather than predicted class labels, so you'll need to use predict_proba() instead of predict()
+	To change this, specify the eval_metric parameter of Predictor()
+Automatically generating train/validation split with holdout_frac=0.1, Train Rows: 7200, Val Rows: 800
+User-specified model hyperparameters to be fit:
+{
+	'NN_TORCH': [{}],
+	'GBM': [{'extra_trees': True, 'ag_args': {'name_suffix': 'XT'}}, {}, {'learning_rate': 0.03, 'num_leaves': 128, 'feature_fraction': 0.9, 'min_data_in_leaf': 3, 'ag_args': {'name_suffix': 'Large', 'priority': 0, 'hyperparameter_tune_kwargs': None}}],
+	'CAT': [{}],
+	'XGB': [{}],
+	'FASTAI': [{}],
+	'RF': [{'criterion': 'gini', 'ag_args': {'name_suffix': 'Gini', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'entropy', 'ag_args': {'name_suffix': 'Entr', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'squared_error', 'ag_args': {'name_suffix': 'MSE', 'problem_types': ['regression', 'quantile']}}],
+	'XT': [{'criterion': 'gini', 'ag_args': {'name_suffix': 'Gini', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'entropy', 'ag_args': {'name_suffix': 'Entr', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'squared_error', 'ag_args': {'name_suffix': 'MSE', 'problem_types': ['regression', 'quantile']}}],
+}
+Fitting 11 L1 models, fit_strategy="sequential" ...
+Fitting model: LightGBMXT ... Training model for up to 56.15s of the 56.15s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=0.9/51.7 GB
+	0.9909	 = Validation score   (roc_auc)
+	10.98s	 = Training   runtime
+	0.02s	 = Validation runtime
+Fitting model: LightGBM ... Training model for up to 45.13s of the 45.13s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=0.9/51.7 GB
+	0.99	 = Validation score   (roc_auc)
+	12.76s	 = Training   runtime
+	0.02s	 = Validation runtime
+Fitting model: RandomForestGini ... Training model for up to 32.33s of the 32.33s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=0.3/51.7 GB
+	0.9865	 = Validation score   (roc_auc)
+	3.27s	 = Training   runtime
+	0.09s	 = Validation runtime
+Fitting model: RandomForestEntr ... Training model for up to 28.94s of the 28.94s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=0.3/51.7 GB
+	0.9864	 = Validation score   (roc_auc)
+	3.14s	 = Training   runtime
+	0.08s	 = Validation runtime
+Fitting model: CatBoost ... Training model for up to 25.69s of the 25.69s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=3.1/51.7 GB
+	Ran out of time, early stopping on iteration 438.
+	0.9889	 = Validation score   (roc_auc)
+	25.63s	 = Training   runtime
+	0.05s	 = Validation runtime
+Fitting model: WeightedEnsemble_L2 ... Training model for up to 56.15s of the -0.11s of remaining time.
+	Fitting 1 model on all data | Fitting with cpus=16, gpus=0, mem=0.0/51.6 GB
+	Ensemble Weights: {'LightGBMXT': 0.864, 'CatBoost': 0.136}
+	0.9909	 = Validation score   (roc_auc)
+	0.03s	 = Training   runtime
+	0.0s	 = Validation runtime
+AutoGluon training complete, total runtime = 60.95s ... Best model: WeightedEnsemble_L2 | Estimated inference throughput: 11046.3 rows/s (800 batch size)
+TabularPredictor saved. To load, use: predictor = TabularPredictor.load("C:\projects\automl\models\autogluon_quick")

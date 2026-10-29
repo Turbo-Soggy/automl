@@ -1,0 +1,58 @@
+QUICK=False TUNE_TRIALS=36 refit_only=True refit_version=2 N_JOBS=16 log=C:\projects\automl\reports\experiments.jsonl
+train (160000, 2568), tuning subset (60000, 2568), 3 folds
+[baseline] start 2026-10-28 13:31:11
+[lgbm_default] cv_auc=0.9968 test_random_auc=0.9978 test_future_auc=0.9967
+[logreg] cv_auc=0.9842 test_random_auc=0.9929 test_future_auc=0.9297
+[baseline] done in 90.3s
+[grid] start 2026-10-28 13:32:42
+[grid] reusing logged search 907eacb46622; refit with 719 trees
+[grid] cv_auc=0.9977 test_random_auc=0.9991 test_future_auc=0.9980
+[grid] done in 199.4s
+[random] start 2026-10-28 13:36:01
+[random] reusing logged search a203659cb8d9; refit with 739 trees
+[random] cv_auc=0.9977 test_random_auc=0.9990 test_future_auc=0.9980
+[random] done in 99.2s
+[optuna] start 2026-10-28 13:37:40
+[optuna] reusing logged search 4e9e5d0517b0; refit with 609 trees
+[optuna] cv_auc=0.9978 test_random_auc=0.9991 test_future_auc=0.9981
+[optuna] done in 110.4s
+Traceback (most recent call last):
+  File "C:\projects\automl\.venv\Lib\site-packages\pandas\core\indexes\base.py", line 3812, in get_loc
+    return self._engine.get_loc(casted_key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/index.pyx", line 167, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/index.pyx", line 196, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7088, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7096, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'train_rows_fit'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\projects\automl\scripts\run_tuning.py", line 137, in <module>
+    main()
+  File "C:\projects\automl\scripts\run_tuning.py", line 76, in main
+    for path in tables.build_tuning_outputs(table_paths):
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\automl\src\tables.py", line 390, in build_tuning_outputs
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\automl\src\tuning_writeup.py", line 392, in write
+    path.write_text(render(inp, figures_rel), encoding="utf-8")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\automl\src\tuning_writeup.py", line 378, in render
+    _refit_section(inp),
+    ^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\automl\src\tuning_writeup.py", line 122, in _refit_section
+    f"{int(r['train_rows_fit']):,}", _auc(r["test_future_roc_auc"]),
+           ~^^^^^^^^^^^^^^^^^^
+  File "C:\projects\automl\.venv\Lib\site-packages\pandas\core\series.py", line 1133, in __getitem__
+    return self._get_value(key)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\automl\.venv\Lib\site-packages\pandas\core\series.py", line 1249, in _get_value
+    loc = self.index.get_loc(label)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\automl\.venv\Lib\site-packages\pandas\core\indexes\base.py", line 3819, in get_loc
+    raise KeyError(key) from err
+KeyError: 'train_rows_fit'
+EXIT CODE 1
