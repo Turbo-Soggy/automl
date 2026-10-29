@@ -7,7 +7,8 @@ Same inputs for every tool
   * features  : named "{family}__{i}" (feature_names()), so importances group by EMBER family.
   * budget    : AUTOML_BUDGET_S seconds of search per tool (1200 s; 60 s in quick mode).
   * metric    : ROC-AUC, the metric Step 2 tuned for.
-  * threads   : N_JOBS (16), the same cores the manual tuners used.
+  * threads   : N_JOBS (16 on the Steps 2-3 laptop, 4 on the cloud VM), the same cores the manual
+                tuners used. Each record logs its own n_jobs.
   * seed      : SEED (42), wherever a tool takes one. Parts of FLAML and AutoGluon use the
                 library's own fixed seed instead; automl_checks reads the seeds actually used
                 back from the fitted models and the write-up lists them.

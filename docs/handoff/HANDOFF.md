@@ -123,20 +123,28 @@ python3.12 -m venv .venv
 - If a pin has no Linux wheel, change only that pin and record why in `requirements.txt`.
 - **H2O needs Java** (Java 21 was used), for example
   `apt-get install -y openjdk-21-jre-headless` or `openjdk-17-jre-headless`.
-- `H2O_MAX_MEM` in `src/automl_runs.py` is set for a 63 GB machine. Lower it if the cloud
-  machine has less RAM.
+- `H2O_MAX_MEM` in `src/automl_runs.py` is computed at import: 24G (as on the 63 GB laptop
+  of Steps 2–3), capped at about 60% of RAM. It is 9G on the 15 GB cloud VM. No edit needed.
 
-### 4.2 Data (not in git: 38 GB raw plus 6.2 GB cache)
-- **Check the disk and RAM first** with `df -h .` and `free -g`. The full rebuild needs
-  about 50 GB of disk:
-  - 6.6 GB of zips
-  - 32 GB of extracted jsonl
+### 4.2 Data (not in git: 6.6 GB of zips, optionally 32 GB extracted, plus 6.2 GB cache)
+- **Check the disk and RAM first** with `df -h .` and `free -g`. Disk needed:
+  - 6.6 GB of zips (always kept in `data/raw/_zips/`)
   - 6.2 GB of cache
+  - plus 32 GB of extracted jsonl **only without `--keep-zipped`** (about 50 GB in total;
+    about 13 GB with `--keep-zipped`)
+- **`--keep-zipped`** (on `run_all.py` and `scripts/download_data.py`) leaves the Win64 zips
+  packed. `src.data.raw_files()` / `raw_file(name)` then return `RawFile` objects whose
+  `.open()` streams the zip member. The bytes and the byte offsets are identical to the
+  extracted files, so the cache and the splits are the same. Extracted files take
+  precedence when present; a partial extraction raises an error instead of silently hiding
+  weeks. Code that re-reads raw lines must use `data.raw_file(name).open()`, never a path
+  under `data/raw/win64/`. The cloud VM was built this way (only `challenge/` is extracted).
 - Loading the 160k-row train split takes about 1.6 GB of RAM.
 - If the machine is too small, stop and tell the user. Do not shrink the experiment.
 
 ```bash
-.venv/bin/python run_all.py --steps data      # download (sha256-checked) + build cache + verify
+.venv/bin/python run_all.py --steps data                  # download (sha256-checked) + extract + build cache + verify
+.venv/bin/python run_all.py --steps data --keep-zipped    # same, without extracting 32 GB of jsonl
 ```
 This downloads from Hugging Face `joyce8/EMBER2024` and needs network access to
 huggingface.co. It took about 5 min to build the cache on the laptop, plus the download time.
@@ -190,15 +198,27 @@ hardware:
 ```
 
 ### 4.5 Hardware differences
-- Steps 2–3 ran on a 16-core Intel Core Ultra 9 285H (Windows, CPU only). `N_JOBS = 16` is
-  in `config.py`.
+- Steps 2–3 ran on a 16-core Intel Core Ultra 9 285H, 63 GB RAM, Windows 11, CPU only, with
+  `N_JOBS = 16` and H2O at 24G.
+- Step 4 onwards runs on a cloud VM: 4 vCPU Intel Xeon @ 2.1 GHz, 15 GB RAM, no swap,
+  Linux, about 13 GB free disk. There `config.N_JOBS = min(16, cpu_count) = 4` and
+  `H2O_MAX_MEM = 9G`, both computed automatically. Each record in `experiments.jsonl` logs
+  its own `n_jobs`.
 - On a cloud machine, record its CPU count, RAM and OS in the Step 4 write-up.
 - Run every with/without-leak pair on the same machine with the same settings, so those
   comparisons stay fair.
 - Do not compare cloud wall-clock times with the laptop times from Steps 2–3 without
   saying so.
-- If the machine has fewer than 16 cores, set `N_JOBS` to what it has, and state the
-  deviation.
+- `N_JOBS` follows the core count automatically (capped at 16). State the deviation in
+  every write-up that reports times or budgets.
+
+### 4.6 Line endings in the history
+`.gitattributes` is `* -text` (files stored byte-exact). Most files were committed with
+CRLF on Windows. Commit `070f658` (cloud data path) rewrote 8 files with LF, so its plain
+diff shows whole-file rewrites (e.g. 1111 changed lines in `src/data.py`) that hide a
+~100-line real change, and the repo now has mixed endings (harmless at runtime). Review
+that commit with `git show -w --ignore-cr-at-eol 070f658`. When editing a CRLF file, keep
+its CRLF endings (`git ls-files --eol <file>` shows which a file has).
 
 ## 5. Lessons from the first run (avoid repeating them)
 - **Raw duplicates.** Each weekly jsonl lists every sample twice. The global sha256 dedup

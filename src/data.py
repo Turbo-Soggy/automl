@@ -226,24 +226,46 @@ def flat_jsonl_name(info: zipfile.ZipInfo) -> str | None:
     return name.split("/")[-1]
 
 
-def raw_files(raw_dir: Path, official: str) -> list[RawFile]:
+def _zip_members(zip_path: Path, pattern: str) -> list[RawFile]:
+    """The .jsonl members of zip_path whose flat name matches pattern, sorted by name."""
+    zipped: list[RawFile] = []
+    with zipfile.ZipFile(zip_path) as zf:
+        for info in zf.infolist():
+            name = flat_jsonl_name(info)
+            if name is not None and Path(name).match(pattern):
+                zipped.append(RawFile(name, info.file_size, zip_path=zip_path, member=info.filename))
+    zipped.sort(key=lambda r: r.name)
+    names = [r.name for r in zipped]
+    if len(set(names)) != len(names):
+        raise RuntimeError(f"{zip_path.name}: several members flatten to the same file name")
+    return zipped
+
+
+def raw_files(raw_dir: Path, official: str, zip_path: Path | None = None) -> list[RawFile]:
     """Sorted weekly files of one official split. Sorted names = chronological order.
 
-    Uses the extracted files in raw_dir when present, otherwise the members of
-    data/raw/_zips/Win64_{official}.zip (see scripts/download_data.py --keep-zipped).
+    Extracted files in raw_dir take precedence; without them, the members of
+    data/raw/_zips/Win64_{official}.zip are read directly (scripts/download_data.py
+    --keep-zipped). zip_path overrides that zip location (used by the tests).
+    Raises if an extraction is partial (the zip has weeks that raw_dir lacks), so a
+    half-extracted folder can never silently hide weeks, and if two members flatten
+    to the same file name.
     """
     pattern = f"*_Win64_{official}*.jsonl"
+    zip_path = zip_path or config.DATA_RAW / "_zips" / f"Win64_{official}.zip"
+    zipped = _zip_members(zip_path, pattern) if zip_path.exists() else []
+
     extracted = sorted(raw_dir.glob(pattern))
-    if extracted:
-        return [RawFile(p.name, p.stat().st_size, path=p) for p in extracted]
-    zip_path = config.DATA_RAW / "_zips" / f"Win64_{official}.zip"
-    if not zip_path.exists():
-        return []
-    with zipfile.ZipFile(zip_path) as zf:
-        members = [(flat_jsonl_name(i), i) for i in zf.infolist()]
-    found = [RawFile(name, i.file_size, zip_path=zip_path, member=i.filename)
-             for name, i in members if name is not None and Path(name).match(pattern)]
-    return sorted(found, key=lambda r: r.name)
+    if not extracted:
+        return zipped
+    # The zip is listed even when extracted files exist: comparing the two is how a
+    # half-finished extraction (some weeks missing) is caught instead of silently used.
+    missing = {r.name for r in zipped} - {p.name for p in extracted}
+    if missing:
+        raise RuntimeError(f"{raw_dir} holds a partial extraction: {len(missing)} weekly file(s) of "
+                           f"{zip_path.name} are missing (e.g. {sorted(missing)[0]}). Re-run "
+                           "scripts/download_data.py, or delete the extracted files to read the zip.")
+    return [RawFile(p.name, p.stat().st_size, path=p) for p in extracted]
 
 
 def raw_file(name: str) -> RawFile:

@@ -17,7 +17,7 @@ This plan covers Part B (30 marks) of the course project. The task is binary ben
   - Python 3.12 venv, because AutoGluon and H2O don't support 3.14.
   - `run_all.py` instead of a Makefile, since this is Windows.
   - `git init` with `data/` and `models/*.bin` gitignored.
-  - All tools on CPU (16 cores) so timing is comparable. GPU is noted as an optional extra.
+  - All tools on CPU (16 cores on the laptop for Steps 2–3; Step 4 onwards ran on a 4 vCPU / 15 GB Linux cloud VM, with `N_JOBS` and H2O memory scaled automatically) so timing is comparable within a machine. GPU is noted as an optional extra.
 
 ## Repo layout
 Same as the brief's §7, with these changes:

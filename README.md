@@ -40,7 +40,7 @@ catch them.
 | Feature extractor | `thrember` 0.1.0 at commit `0ef753e81d98bf209f71b03cd331dfc190b5b54d` (2025-08-22) of `github.com/FutureComputing4AI/EMBER2024` |
 | License | Apache-2.0 (see `third_party/EMBER2024/LICENSE` after setup) |
 | Files used | `Win64_train.zip` (5.85 GB), `Win64_test.zip` (1.18 GB), `challenge.zip` (32 MB, all file types) |
-| On disk | 6.6 GB of zips plus 32 GB of extracted jsonl under `data/raw/` |
+| On disk | 6.6 GB of zips under `data/raw/_zips/`, plus 32 GB of extracted jsonl unless `--keep-zipped` is used (see Download) |
 | Weeks | 52 training weeks (2023-09-24 to 2024-09-21) and 12 test weeks (2024-09-22 to 2024-12-14) |
 | Unique samples | 10,000 per week (5,000 benign, 5,000 malicious), which is 520,000 train and 119,993 test after the global sha256 dedup (120,000 before; see quirk 2) |
 | Feature vector | 2,568 float32 columns in 12 families (general, histogram, byteentropy, strings, header, section, imports, exports, datadirectories, richheader, authenticode, pefilewarnings) |
@@ -59,13 +59,24 @@ Citation:
 
 ### Download
 
+The commands in this README use the Windows interpreter path. On Linux or macOS use
+`.venv/bin/python` in place of `.venv/Scripts/python.exe` (and `python3.12 -m venv .venv`
+in place of `py -3.12 -m venv .venv`).
+
 ```
 .venv/Scripts/python.exe scripts/download_data.py            # Win64 train + test + challenge
 .venv/Scripts/python.exe scripts/download_data.py --no-challenge
+.venv/Scripts/python.exe scripts/download_data.py --keep-zipped  # do not extract the Win64 zips (32 GB less disk)
 ```
 
-`run_all.py --steps data` calls the same script. It skips the download when
-`data/raw/DOWNLOAD_DONE` already exists (pass `--redownload` to force it).
+`run_all.py --steps data` calls the same script (and forwards `--keep-zipped`). It
+skips the download when `data/raw/DOWNLOAD_DONE` already exists (pass
+`--redownload` to force it).
+
+With `--keep-zipped`, `src.data` streams each weekly jsonl straight out of its zip
+(`src.data.RawFile`). The bytes and byte offsets are identical to the extracted
+files, so the cache and the splits are the same either way. Extracted files take
+precedence when they exist; a partial extraction is an error.
 
 We do **not** use `thrember.download_dataset()`. It calls `os.chdir()` into the
 data folder, which would make untrusted downloaded data the working directory
@@ -107,11 +118,21 @@ script downloads the same files from the same Hugging Face repo, but it:
 
 ## Environment
 
-Hardware used for every timing in this project:
+Two machines were used. Wall-clock times are only compared between runs on the
+same machine.
 
-* Intel Core Ultra 9 285H, 16 cores
-* 63 GB RAM, about 640 GB free disk
-* Windows 11, no GPU used (see "all-CPU" below)
+| | Steps 0–3 (data, tuning, AutoML) | Step 4 onwards (and the cloud data rebuild) |
+|---|---|---|
+| CPU | Intel Core Ultra 9 285H, 16 cores | Intel Xeon @ 2.1 GHz, 4 vCPU (cloud VM) |
+| RAM / disk | 63 GB, about 640 GB free | 15 GB (no swap), about 13 GB free |
+| OS | Windows 11 | Linux |
+| `N_JOBS` / H2O memory | 16 / 24G | 4 / 9G |
+
+No GPU was used on either (see "all-CPU" below). `config.N_JOBS` is
+`min(16, cpu_count)` and the H2O memory is capped at about 60% of RAM, both
+computed automatically; every record in `reports/experiments.jsonl` logs its own
+`n_jobs`. The data rebuilt on the cloud VM matches the laptop exactly (split
+sha256 order and feature hashes in `data/splits/split_fingerprints.json`).
 
 Software: Python 3.12 (AutoGluon and H2O do not support 3.14) and Java 21
 (needed by H2O).
@@ -129,7 +150,8 @@ notebooks can be executed headless (`jupyter nbconvert --execute`).
 
 ## Reproducing
 
-From the project root:
+From the project root (on Linux or macOS, `.venv/bin/python` instead of
+`.venv/Scripts/python.exe`):
 
 ```
 .venv/Scripts/python.exe run_all.py --quick                   # smoke run on tiny samples
@@ -157,8 +179,8 @@ From the project root:
   results.
 * **`--quick` still needs the full download and the full feature cache.** Only
   the splits, models and logs are small: the quick splits are drawn from the same
-  `data/cache/` that the full raw data builds (6.6 GB of zips, 32 GB of
-  extracted jsonl, then the full cache build). So on a fresh machine,
+  `data/cache/` that the full raw data builds (6.6 GB of zips, plus 32 GB of
+  extracted jsonl unless `--keep-zipped`, then the full cache build). So on a fresh machine,
   run `run_all.py --steps data` once (or `run_all.py --quick`, which runs the data
   step first) before expecting a fast smoke run.
 * `scripts/run_tuning.py --refit-only` does not search again. It rebuilds each
@@ -233,7 +255,7 @@ maintained, whereas the 2018 extractor depends on an old LIEF version.
 its feature distribution is consistent. The 200k pool drawn from the 52
 training weeks is stratified by label and week, so every week keeps its share.
 It is large enough for stable AUC and TPR@1%FPR estimates, while each AutoML
-tool can still fit several models within 20 minutes on 16 cores. `SEED=42` is
+tool can still fit several models within 20 minutes on 16 cores (the Steps 2–3 laptop). `SEED=42` is
 passed to every split, sampler and model, because libraries keep their own
 random generators and ignore the global ones.
 
@@ -311,9 +333,11 @@ split). The tuners' CV AUC is slightly optimistic (early stopping picks its roun
 on the fold that is scored, and the value is the best of 36 trials), so compare
 CV AUC only among the tuners; the test scores compare tuners with baselines.
 
-**All tools on CPU (16 cores).** Not every tool can use the GPU in the same
-way, so a mix of GPU and CPU runs would make timings meaningless. Every
-library gets `n_jobs=16` (`config.N_JOBS`).
+**All tools on CPU (16 cores on the Steps 2–3 laptop, 4 on the cloud VM).** Not
+every tool can use the GPU in the same way, so a mix of GPU and CPU runs would
+make timings meaningless. Every library gets `n_jobs=config.N_JOBS` (16 for
+Steps 2–3, 4 for Step 4 onwards), and every pair of runs that is compared ran on
+the same machine.
 
 **20 minutes per AutoML tool.** `AUTOML_BUDGET_S=1200` gives each tool
 (FLAML, AutoGluon `medium_quality`, H2O) time to try several model families on

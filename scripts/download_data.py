@@ -21,6 +21,7 @@ Layout written under data/raw/:
   DOWNLOAD_FAILED              error + traceback, written on failure
 
 Usage (from the project root): .venv/Scripts/python.exe scripts/download_data.py [--no-challenge] [--keep-zipped]
+(on Linux or macOS the interpreter is .venv/bin/python)
 """
 from __future__ import annotations
 

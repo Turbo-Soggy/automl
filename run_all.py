@@ -1,7 +1,10 @@
 """Run the whole pipeline, or a chosen subset of steps, from the project root.
 
 Usage:
-    .venv/Scripts/python.exe run_all.py [--quick] [--steps data,tune,automl,eval,deploy] [--redownload]
+    .venv/Scripts/python.exe run_all.py [--quick] [--steps data,tune,automl,eval,deploy] [--redownload] [--keep-zipped]
+
+On Linux the interpreter is .venv/bin/python. --keep-zipped leaves the Win64 zips packed
+(saves 32 GB of disk); src.data then streams the weekly files straight out of the zips.
 
 Each step runs its scripts as separate processes with the venv's Python. A crash
 in one script then stops the pipeline with a clear message instead of leaving a
@@ -64,7 +67,7 @@ def child_env(quick: bool, run_id: str) -> dict[str, str]:
     return env
 
 
-def run_script(name: str, env: dict[str, str]) -> None:
+def run_script(name: str, env: dict[str, str], args: list[str] | None = None) -> None:
     """Run scripts/<name> with the venv Python from the project root; stop the pipeline if it fails."""
     script = SCRIPTS / name
     if not script.exists():
@@ -73,7 +76,7 @@ def run_script(name: str, env: dict[str, str]) -> None:
     t0 = time.time()
     # cwd is the project root, never data/raw: the downloaded data is untrusted and
     # Python puts the working directory on sys.path.
-    result = subprocess.run([str(venv_python()), str(script)], cwd=ROOT, env=env, check=False)
+    result = subprocess.run([str(venv_python()), str(script), *(args or [])], cwd=ROOT, env=env, check=False)
     elapsed = time.time() - t0
     if result.returncode != 0:
         raise SystemExit(f"[run_all] {name} failed with exit code {result.returncode} after {elapsed:.0f} s")
@@ -97,6 +100,8 @@ def main() -> None:
         help=f"comma-separated subset of {','.join(ALL_STEPS)} (default: all)",
     )
     parser.add_argument("--redownload", action="store_true", help="re-run the download even if DOWNLOAD_DONE exists")
+    parser.add_argument("--keep-zipped", action="store_true",
+                        help="download without extracting the Win64 zips (32 GB less disk; passed to download_data.py)")
     args = parser.parse_args()
 
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:6]
@@ -110,7 +115,8 @@ def main() -> None:
             continue
         print(f"[run_all] === step '{step}' ===", flush=True)
         for name in scripts_for(step, args.redownload):
-            run_script(name, env)
+            extra = ["--keep-zipped"] if name == "download_data.py" and args.keep_zipped else []
+            run_script(name, env, extra)
     print(f"[run_all] done in {time.time() - t0:.0f} s", flush=True)
 
 
