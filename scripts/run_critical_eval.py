@@ -6,10 +6,10 @@ Stages (run in this order, after scripts/run_explain.py, run_eval_bias.py and ru
             (a few minutes: one paired bootstrap over all eight models).
   writeup   reports/critical_eval.md and reports/limitations.md, from the tables only.
 
-Usage (from the project root):
-  .venv/bin/python scripts/run_critical_eval.py                    # both stages
-  .venv/bin/python scripts/run_critical_eval.py --quick            # smoke run on the _quick outputs
-  .venv/bin/python scripts/run_critical_eval.py --stages writeup   # re-render the markdown only
+Usage (from the project root; python = .venv/Scripts/python.exe on Windows, .venv/bin/python on Linux):
+  python scripts/run_critical_eval.py                    # both stages
+  python scripts/run_critical_eval.py --quick            # smoke run on the _quick outputs
+  python scripts/run_critical_eval.py --stages writeup   # re-render the markdown only
 """
 from __future__ import annotations
 

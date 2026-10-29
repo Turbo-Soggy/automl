@@ -39,7 +39,10 @@ def wilson_ci(successes: int, n: int, z: float = Z_95) -> tuple[float, float]:
     phat = successes / n
     centre = (phat + z * z / (2 * n)) / (1 + z * z / n)
     half = z * np.sqrt(phat * (1 - phat) / n + z * z / (4 * n * n)) / (1 + z * z / n)
-    return float(centre - half), float(centre + half)
+    # For 0 (or n) successes the bound is exactly 0 (or 1); the float formula would leave e.g. 8.7e-19
+    low = 0.0 if successes == 0 else max(0.0, float(centre - half))
+    high = 1.0 if successes == n else min(1.0, float(centre + half))
+    return low, high
 
 
 def class_balance_table(splits: dict[str, np.ndarray]) -> pd.DataFrame:

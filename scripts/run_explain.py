@@ -14,10 +14,10 @@ Stages (run in this order; each reads only what earlier stages or earlier steps 
               its test_future performance, and models/threshold.json for deployment.
   report      reports/explainability.md, generated from the tables above.
 
-Usage (from the project root):
-  .venv/bin/python scripts/run_explain.py --quick                 # smoke run, *_quick outputs
-  .venv/bin/python scripts/run_explain.py --stages oof            # the long one, run detached
-  .venv/bin/python scripts/run_explain.py --stages shap,agreement,calibration,threshold,report
+Usage (from the project root; python = .venv/Scripts/python.exe on Windows, .venv/bin/python on Linux):
+  python scripts/run_explain.py --quick                 # smoke run, *_quick outputs
+  python scripts/run_explain.py --stages oof            # the long one, run detached
+  python scripts/run_explain.py --stages shap,agreement,calibration,threshold,report
 """
 from __future__ import annotations
 
@@ -109,7 +109,7 @@ def saved_scores(name: str) -> dict[str, np.ndarray]:
 
 
 def write_csv(table: pd.DataFrame, path: Path) -> Path:
-    table.to_csv(path, index=False)
+    table.to_csv(path, index=False, lineterminator="\n")
     print(f"wrote {path.relative_to(ROOT)}")
     return path
 
@@ -324,7 +324,7 @@ def stage_shap(n_jobs: int) -> None:
              "flaml_model": fl["kind"], "flaml_explained": fl["values"] is not None,
              "flaml_n_features_used": fl.get("n_used"), "flaml_max_abs_diff_vs_saved": fl.get("max_abs_diff_vs_saved"),
              "shap_version": shap.__version__, "lightgbm_version": lgb.__version__}
-    out(TABLES, "shap_notes", ".json").write_text(json.dumps(notes, indent=2), encoding="utf-8")
+    out(TABLES, "shap_notes", ".json").write_text(json.dumps(notes, indent=2), encoding="utf-8", newline="\n")
     log_experiment({"step": "explain_shap", **notes})
 
 
@@ -569,14 +569,14 @@ def stage_threshold() -> None:
                        "(persisted 3-fold CV of the train split, data/splits/cv_fold_ids; tuned params, fixed "
                        f"{int(oof['n_rounds'])} rounds as the refit); cut placed midway to the next lower score. "
                        "No test set was used."),
-        "source_of_predictions": str(OOF_FILE.relative_to(ROOT)),
+        "source_of_predictions": OOF_FILE.relative_to(ROOT).as_posix(),
         "oof_rows": int(len(oof["y"])), "oof_cost_per_1000": float(pick["oof_cost_per_1000"]),
         "test_future_check": {k: float(pick[f"test_future_{k}"]) for k in
                               ("precision", "recall", "fpr", "fn", "fp", "cost_per_1000")},
         "caveat": "classes are 50/50 by construction; re-derive the threshold for a deployment with another prevalence",
         "seed": SEED,
     }
-    THRESHOLD_FILE.write_text(json.dumps(record, indent=2), encoding="utf-8")
+    THRESHOLD_FILE.write_text(json.dumps(record, indent=2), encoding="utf-8", newline="\n")
     print(f"wrote {THRESHOLD_FILE.relative_to(ROOT)}")
     log_experiment({"step": "threshold", **record})
 
@@ -876,11 +876,11 @@ def stage_report() -> None:
     lines += section_shap(notes) + section_time_proxies() + section_cases() + section_agreement()
     lines += section_calibration() + section_threshold(rec)
     lines += ["## Reproduce", "", "```bash",
-              ".venv/bin/python scripts/run_explain.py --stages oof        # long: run detached, writes a log",
-              ".venv/bin/python scripts/run_explain.py --stages shap,agreement,calibration,threshold,report",
+              "python scripts/run_explain.py --stages oof        # long: run detached, writes a log",
+              "python scripts/run_explain.py --stages shap,agreement,calibration,threshold,report",
               "```", ""]
     path = REPORTS / f"explainability{S}.md"
-    path.write_text("\n".join(lines), encoding="utf-8")
+    path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     print(f"wrote {path.relative_to(ROOT)}")
 
 

@@ -35,14 +35,16 @@ STEP_SCRIPTS: dict[str, list[str]] = {
     # Step 4, in dependency order: explain writes the train out-of-fold scores and models/threshold.json
     # that eval_bias reuses; critical_eval reads the tables of all three.
     "eval": ["run_explain.py", "run_eval_bias.py", "run_leakage.py", "run_critical_eval.py"],
+    # Step 5: copy the tuned LightGBM to models/final/ with schema.json; the API tests then run
+    # against it (see DEPLOY_TESTS). Starting the servers is manual (DEMO.md).
+    "deploy": ["export_model.py"],
 }
 # Extra arguments per script. run_leakage.py takes about 3-4 h on a 4-core machine, so a second
 # pipeline run reuses every run already logged with valid timing instead of repeating it
 # (the eval_bias fits resume the same way by default). Delete its log records to force a rerun.
 SCRIPT_ARGS: dict[str, list[str]] = {"run_leakage.py": ["--skip-done"]}
-NOT_IMPLEMENTED: dict[str, str] = {
-    "deploy": "Step 5 (FastAPI / Streamlit)",
-}
+NOT_IMPLEMENTED: dict[str, str] = {}
+DEPLOY_TESTS: str = "tests/test_api.py"  # pytest file run after the deploy step's scripts
 
 
 def venv_python() -> Path:
@@ -89,6 +91,14 @@ def run_script(name: str, env: dict[str, str], args: list[str] | None = None) ->
     print(f"[run_all] <<< {name} finished in {elapsed:.0f} s", flush=True)
 
 
+def run_deploy_tests(env: dict[str, str]) -> None:
+    """Run the API tests against the freshly exported model; stop the pipeline if any fails."""
+    print(f"[run_all] >>> pytest {DEPLOY_TESTS}", flush=True)
+    result = subprocess.run([str(venv_python()), "-m", "pytest", "-q", DEPLOY_TESTS], cwd=ROOT, env=env, check=False)
+    if result.returncode != 0:
+        raise SystemExit(f"[run_all] {DEPLOY_TESTS} failed with exit code {result.returncode}")
+
+
 def scripts_for(step: str, redownload: bool) -> list[str]:
     """Scripts of one step; the 6.6 GB download is skipped once it has completed and been verified."""
     names = list(STEP_SCRIPTS.get(step, []))
@@ -125,6 +135,8 @@ def main() -> None:
             if name == "download_data.py" and args.keep_zipped:
                 extra.append("--keep-zipped")
             run_script(name, env, extra)
+        if step == "deploy":
+            run_deploy_tests(env)
     print(f"[run_all] done in {time.time() - t0:.0f} s", flush=True)
 
 

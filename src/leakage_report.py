@@ -70,8 +70,15 @@ def latest_records(log: Path = EXPERIMENT_LOG) -> dict[tuple[str, str], dict[str
 
 
 def load_predictions(rec: dict[str, Any]) -> dict[str, tuple[np.ndarray, np.ndarray]]:
-    """{test set: (y, p)} of one record; refuses a file written by a different evaluation."""
+    """{test set: (y, p)} of one record; refuses a file written by a different evaluation.
+
+    The record's predictions_path is absolute on the machine that ran it (the Step 4 cloud VM
+    logged /home/user/automl/...). When that path does not exist here, the file is found by its
+    name under this checkout's predictions folder. The eval_id check below proves it is the right file.
+    """
     path = Path(rec["predictions_path"])
+    if not path.exists():
+        path = leakage.LEAKAGE_PREDICTIONS / Path(str(rec["predictions_path"]).replace("\\", "/")).name
     with np.load(path) as saved:
         if str(saved["eval_id"]) != rec["eval_id"]:
             raise RuntimeError(f"{path} belongs to another evaluation than the logged record {rec['eval_id']}")
@@ -139,7 +146,7 @@ def scan_logs(model: str, variant: str) -> dict[str, Any]:
             if FLAG_WORDS.search(blanked):
                 flags.append(line.strip())
     dropped = _notes(model, variant).get("dropped_features")
-    return {"files": [str(p.relative_to(REPORTS.parent)) for p in files if p.exists()],
+    return {"files": [p.relative_to(REPORTS.parent).as_posix() for p in files if p.exists()],
             "n_warning_lines": len(warnings), "warning_lines": warnings[:30],
             "n_lines_mentioning_leak": len(mentions), "leak_mention_lines": mentions[:30],
             "n_flag_word_lines": len(flags), "flag_word_lines": flags[:30],
@@ -192,15 +199,25 @@ def table_row(rec: dict[str, Any], clean: dict[str, Any] | None, scan: dict[str,
     return row
 
 
+# Native importances that count splits rather than measure contribution. FLAML's
+# feature_importances_ of its LightGBM learner is the split count, which favours continuous
+# high-cardinality columns (a raw date is split on often even when it adds little).
+SPLIT_COUNT_KINDS: tuple[str, ...] = ("FLAML feature_importances_",)
+
+
 def relied_on_leak(row: dict[str, Any]) -> bool | None:
     """True when the model kept the leak column AND ranked it first by its own importance or SHAP.
 
-    That is what "fell for it" means here: the tool built its model mainly on the leak. None for
-    variants without a leak column.
+    That is what "fell for it" means here: the tool built its model mainly on the leak. A split-count
+    importance is not evidence of reliance, so for those tools only the SHAP rank counts (when SHAP
+    exists). None for variants without a leak column.
     """
     if not row.get("leak_column"):
         return None
-    return bool(row.get("leak_in_model")) and 1 in (row.get("leak_rank_native"), row.get("leak_rank_shap"))
+    shap_rank = row.get("leak_rank_shap")
+    split_count = str(row.get("importance_native_kind") or "").startswith(SPLIT_COUNT_KINDS)
+    ranks = [shap_rank] if split_count and pd.notna(shap_rank) else [row.get("leak_rank_native"), shap_rank]
+    return bool(row.get("leak_in_model")) and 1 in ranks
 
 
 def build_table(records: dict[tuple[str, str], dict[str, Any]]) -> tuple[pd.DataFrame, dict[str, Any]]:
@@ -290,10 +307,10 @@ def build_outputs(log: Path = EXPERIMENT_LOG) -> list[Path]:
     table, scans = build_table(records)
     TABLES.mkdir(parents=True, exist_ok=True)
     csv_path = TABLES / f"leakage{RUN_SUFFIX}.csv"
-    table.to_csv(csv_path, index=False)
+    table.to_csv(csv_path, index=False, lineterminator="\n")
     scan_path = leakage.LEAKAGE_LEADERBOARDS / f"log_scan{RUN_SUFFIX}.json"
     scan_path.parent.mkdir(parents=True, exist_ok=True)
-    scan_path.write_text(json.dumps(scans, indent=2), encoding="utf-8")
+    scan_path.write_text(json.dumps(scans, indent=2), encoding="utf-8", newline="\n")
     figure = plot_jump(table)
     context = {"records": records, "scans": scans, "dates": date_ranges(),
                "provenance": leakage.time_proxy_provenance(), "step3_budget_s": AUTOML_BUDGET_S}

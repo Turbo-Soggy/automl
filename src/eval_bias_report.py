@@ -22,6 +22,7 @@ import config
 from config import MODELS, PREDICTIONS, QUICK, RUN_SUFFIX, SEED, TABLES
 from src import bias, challenge, data, drift, tables, temporal
 from src.eval import paired_bootstrap, percentile_ci
+from src.logging_utils import read_records
 from src.temporal import DEFAULT_THRESHOLD, EVAL_N_JOBS, write_csv
 
 ADVERSARIAL_N: int = 2_000 if QUICK else 20_000   # rows per side of each adversarial-validation run
@@ -72,9 +73,18 @@ def model_predictors() -> tuple[dict[str, Any], dict[str, str], Any]:
         predictors["flaml"] = lambda X: automl.predict_proba(to_frame(X, names))[:, 1]
     else:
         notes["flaml"] = f"{flaml_path} not on disk"
+    # The 1.8 GB Step 3 AutoGluon predictor is gitignored: the Step 4 cloud VM did not have it,
+    # the laptop that ran Step 3 does. Load it when present (our own Step 3 output, so its
+    # pickles are trusted); reload_check() then proves it is the model that was scored.
     ag_dir = MODELS / f"autogluon{RUN_SUFFIX}"
-    notes["autogluon"] = (f"{ag_dir.relative_to(config.ROOT)} not on disk: the 1.8 GB Step 3 predictor was not "
-                          "committed and is not rebuilt (its test scores are saved, so it is in every other table)")
+    if (ag_dir / "predictor.pkl").exists():
+        from autogluon.tabular import TabularPredictor
+
+        ag = TabularPredictor.load(str(ag_dir), verbosity=0)
+        predictors["autogluon"] = lambda X: ag.predict_proba(to_frame(X, names), as_multiclass=False).to_numpy()
+    else:
+        notes["autogluon"] = (f"{ag_dir.relative_to(config.ROOT).as_posix()} not on this machine: the 1.8 GB Step 3 "
+                              "predictor is not committed (its test scores are saved, so it is in every other table)")
 
     cleanup = lambda: None  # noqa: E731
     automl_recs = tables.automl_records()
@@ -136,8 +146,9 @@ def build_challenge() -> None:
     np.savez_compressed(CHALLENGE_SCORES, sha256=meta["sha256"].to_numpy(str),
                         **{f"p_{label}": p for label, p in scores.items()})
     CHALLENGE_SCORES.with_suffix(".json").write_text(json.dumps(
-        {"reload_check_max_abs_diff": check, "reload_check_rows": RELOAD_CHECK_ROWS, "not_scored": notes},
-        indent=2), encoding="utf-8")
+        {"reload_check_max_abs_diff": check, "reload_check_rows": RELOAD_CHECK_ROWS, "not_scored": notes,
+         "machine": temporal.machine_info()},  # where this scoring ran (the fits ran elsewhere)
+        indent=2), encoding="utf-8", newline="\n")
     print(f"[challenge] scored {len(X)} rows with {', '.join(scores)}; reload check {check}", flush=True)
 
 
@@ -285,11 +296,27 @@ def split_meta(name: str) -> pd.DataFrame:
     return data.load_cache_meta(data.SPLIT_SOURCE[name]).iloc[data.split_rows(name)].reset_index(drop=True)
 
 
+def fits_machine() -> dict[str, Any]:
+    """The machine the Step 4 part B fits ran on, read from their own experiment-log records.
+
+    Not the machine rendering the tables: a rebuild on another computer must not change the
+    hardware the write-up reports. Falls back to this machine only when no fit is logged.
+    """
+    machines = [r["machine"] for r in read_records()
+                if r.get("step") == "eval" and r.get("kind") == "fit" and r.get("quick") == QUICK and r.get("machine")]
+    if not machines:
+        return temporal.machine_info()
+    m = dict(machines[-1])
+    if "ram_gib" not in m and m.get("ram_gb") is not None:  # the fit records log decimal GB
+        m["ram_gib"] = round(m.pop("ram_gb") * 1e9 / 2**30, 1)
+    return m
+
+
 def build_tables() -> dict[str, Path]:
     """Every Step 4 part B table and figure. Returns {name: path}."""
     out: dict[str, Path] = {}
     facts: dict[str, Any] = {"quick": QUICK, "seed": SEED, "n_bootstrap": config.N_BOOTSTRAP,
-                             "eval_n_jobs": EVAL_N_JOBS, "machine": temporal.machine_info()}
+                             "eval_n_jobs": EVAL_N_JOBS, "machine": fits_machine()}
     cfg = temporal.tuned_config()
     tuned = cfg.tuner
     scores = temporal.load_step23_scores()
@@ -395,6 +422,6 @@ def build_tables() -> dict[str, Path]:
         facts["challenge_scoring"] = json.loads(CHALLENGE_SCORES.with_suffix(".json").read_text(encoding="utf-8"))
         print("[tables] challenge", flush=True)
 
-    FACTS.write_text(json.dumps(facts, indent=2, default=str), encoding="utf-8")
+    FACTS.write_text(json.dumps(facts, indent=2, default=str), encoding="utf-8", newline="\n")
     out["facts"] = FACTS
     return out

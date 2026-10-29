@@ -361,8 +361,11 @@ def machine_info() -> dict[str, Any]:
     ram_gib = None
     try:
         ram_gib = round(os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 2**30, 1)
-    except (ValueError, OSError, AttributeError):  # not available on Windows
-        pass
+    except (ValueError, OSError, AttributeError):  # no sysconf on Windows: ask kernel32 instead
+        from src.leakage import _windows_ram_gb
+
+        ram = _windows_ram_gb()
+        ram_gib = None if ram is None else round(ram, 1)
     return {"cpu_count": os.cpu_count(), "ram_gib": ram_gib, "os": platform.platform(),
             "processor": platform.processor() or platform.machine()}
 
@@ -432,7 +435,7 @@ def tuned_stratified_folds(y_train: np.ndarray, cfg: TunedConfig) -> tuple[list[
     shared = shared_oof_folds(y_train, cfg)
     if shared is None:
         raise RuntimeError("No stratified OOF scores of the tuned config: run --stages fits")
-    return shared, f"shared with the explain job ({SHARED_OOF.relative_to(config.ROOT)})"
+    return shared, f"shared with the explain job ({SHARED_OOF.relative_to(config.ROOT).as_posix()})"
 
 
 def threshold_at_fpr(y: np.ndarray, p: np.ndarray, max_fpr: float = TARGET_FPR) -> float:
@@ -611,7 +614,7 @@ def adversarial_validation(X_past: np.ndarray, X_future: np.ndarray, names: list
 def write_csv(table: pd.DataFrame, stem: str, out_dir: Path = TABLES) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{stem}{RUN_SUFFIX}.csv"
-    table.to_csv(path, index=False)
+    table.to_csv(path, index=False, lineterminator="\n")
     return path
 
 

@@ -5,9 +5,9 @@
   "eval_n_jobs": 2,
   "machine": {
     "cpu_count": 4,
-    "ram_gib": 15.7,
     "os": "Linux-6.18.44-fc-v185-x86_64-with-glibc2.39",
-    "processor": "x86_64"
+    "processor": "x86_64",
+    "ram_gib": 15.7
   },
   "tuned_tuner": "optuna",
   "tuned_rounds": 609,
@@ -36,19 +36,19 @@
   },
   "drift_slopes_per_week": {
     "roc_auc": {
-      "expanding": -0.00011045759166577115,
-      "size_matched": -3.801530925919917e-05,
-      "sliding_12w": -4.808344559557626e-05
+      "expanding": -0.00011045759166576448,
+      "size_matched": -3.8015309259209185e-05,
+      "sliding_12w": -4.808344559557959e-05
     },
     "f1": {
-      "expanding": -0.00023420046889989211,
-      "size_matched": 0.00013310750460266977,
-      "sliding_12w": 0.00025351127113714376
+      "expanding": -0.00023420046889989482,
+      "size_matched": 0.0001331075046026747,
+      "sliding_12w": 0.00025351127113714203
     },
     "tpr_at_1pct_fpr": {
-      "expanding": -0.00035810171892201544,
-      "size_matched": 0.0009930786951853105,
-      "sliding_12w": 0.00010995542645512101
+      "expanding": -0.00035810171892202265,
+      "size_matched": 0.000993078695185298,
+      "sliding_12w": 0.00010995542645512036
     }
   },
   "drift_train_rows": {
@@ -57,8 +57,8 @@
     "expanding": 160000
   },
   "challenge_info": {
-    "built_utc": "2026-10-29T12:52:29.173116+00:00",
-    "seconds": 7.3,
+    "built_utc": "2026-10-29T16:01:26.482498+00:00",
+    "seconds": 2.5,
     "source": "data/raw/challenge",
     "files": 64,
     "file_type": "Win64",
@@ -92,17 +92,22 @@
   },
   "challenge_scoring": {
     "reload_check_max_abs_diff": {
-      "lgbm_default": 1.734723475976807e-18,
-      "grid": 1.3234889800848443e-23,
+      "lgbm_default": 0.0,
+      "grid": 0.0,
       "random": 0.0,
       "optuna": 0.0,
       "logreg": 1.30385160446167e-08,
       "flaml": 0.0,
+      "autogluon": 0.0,
       "h2o": 0.0
     },
     "reload_check_rows": 300,
-    "not_scored": {
-      "autogluon": "models/autogluon not on disk: the 1.8 GB Step 3 predictor was not committed and is not rebuilt (its test scores are saved, so it is in every other table)"
+    "not_scored": {},
+    "machine": {
+      "cpu_count": 16,
+      "ram_gib": 63.4,
+      "os": "Windows-11-10.0.26300-SP0",
+      "processor": "Intel64 Family 6 Model 197 Stepping 2, GenuineIntel"
     }
   }
 }

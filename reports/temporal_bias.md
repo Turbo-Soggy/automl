@@ -111,21 +111,22 @@ others.** Time-proxy columns of X (`gap_time_proxies.csv`; indices from thrember
 | signing_time_diff | 2479 | 2 | 8.00% | 0.6% | 0.1% | -0.041 |
 
 - The COFF timestamp carries 40.0% of the adversarial model's gain but is only rank
-  49 (0.18% of gain) in the detector. Its training range
+  49 (0.18% of gain) in the detector, though mean |SHAP| on test_future ranks it 17 (`explainability.md`). Its training range
   already reaches year 2106 (some files carry build dates far in the
   future), so no future file lies above it.
 - 39.4% of future benign files were signed after every
   training file. A tree sends such a value to the same leaf as the newest training values (a split
   has no slope), so these files are scored like the most recently signed training files. Evidence that
-  this does no harm: benign FPR on signed files is 0.23% on test_random
-  and 0.19% on test_future (section 4a). A linear model instead adds
+  this does no harm: at the train 1%-FPR threshold, benign FPR on signed files is
+  0.23% on test_random and 0.19% on
+  test_future (section 4a). A linear model instead adds
   weight x value without limit.
 
 **(c) Where LogReg's separation goes** (`gap_logreg_shift.csv`). LogReg's logit is a sum over
 columns, so its change from test_random to test_future splits exactly into feature families.
 "Separation lost" = benign shift minus malicious shift (positive = the family pulls the classes
 together), for the median file and for the mean. "Extreme" = share of files with a standardized
-value beyond +-10 in that family (random / future). Top 5 families by the median:
+value beyond +-10 in that family (random / future). Top 5 families by the median, plus header (the top family by the mean):
 
 | family | columns | separation lost (median) | separation lost (mean) | extreme files random / future |
 |---|---|---|---|---|
@@ -163,8 +164,9 @@ of section 2 asks the same question inside train, and the drift monitor (section
 score moves week by week after the training period.
 
 **In short:** the tuned LightGBM loses 0.0010 AUC from test_random to test_future
-because (1) it barely uses the column that gives the date away most (COFF timestamp, rank
-49), (2) its splits treat
+because (1) it gives little gain to the column that gives the date away most (COFF timestamp, gain
+rank 49, SHAP rank 17; the stronger evidence is the time-proxy ablation in
+`leakage.md`, which barely changes the gap), (2) its splits treat
 out-of-range dates like the newest training dates instead of extrapolating them, (3) the class mix
 does not change, and (4) 12 weeks is a short horizon (section 5). LogReg has no protection like
 (2): its gap is 0.0632.
@@ -208,8 +210,10 @@ entropy > 7 slice is a feature-based packing proxy that covers both classes.
   far more than the -0.66 pp of the whole test set at this threshold.
 - Per week (`bias_slices.csv`, slice_family = week): benign FPR ranges from 0.00%
   to 3.12% over the 52 test_random weeks and from 0.84% to
-  1.86% over the 12 future weeks (about 1667 benign
-  files per future week, so one week's FPR has a wide CI).
+  1.86% over the 12 future weeks. One week holds only about
+  385 benign files in test_random and 1667 in test_future, so
+  a single week's FPR is noisy, in test_random most of all (Wilson upper bound
+  0.99% even for its lowest week).
 
 ### 4b. Class weights (`class_weight.csv`)
 
@@ -315,8 +319,8 @@ All are malicious, so the only metric is the detection rate (recall). Thresholds
 model, the 1%-FPR threshold from TRAIN out-of-fold scores where such scores exist (tuned LightGBM,
 default LightGBM, LogReg), and for the tuned LightGBM the deployment threshold:
 models/threshold.json: cost-minimising on train OOF scores at C_FN/C_FP = 10.
-Not scored: AutoGluon: models/autogluon not on disk: the 1.8 GB Step 3 predictor was not committed and is not rebuilt (its test scores are saved, so it is in every other table). Each loaded model was checked against its saved test scores on the first
-300 test_future rows (max abs difference: LightGBM default 1.7e-18, LightGBM grid 1.3e-23, LightGBM random 0.0e+00, LightGBM Optuna 0.0e+00, LogReg 1.3e-08, FLAML 0.0e+00, H2O AutoML 0.0e+00).
+Not scored: none. The challenge cache and scores were built on 16-CPU Windows (63.4 GiB RAM), the machine that holds every saved Step 2-3 model; scoring is deterministic, which the reload check below confirms. Each loaded model was checked against its saved test scores on the first
+300 test_future rows (max abs difference: LightGBM default 0.0e+00, LightGBM grid 0.0e+00, LightGBM random 0.0e+00, LightGBM Optuna 0.0e+00, LogReg 1.3e-08, FLAML 0.0e+00, AutoGluon 0.0e+00, H2O AutoML 0.0e+00).
 
 | model | threshold | t | detection rate [Wilson CI] | detected | TPR on ordinary test_future malware, same t | median score |
 |---|---|---|---|---|---|---|
@@ -330,6 +334,7 @@ Not scored: AutoGluon: models/autogluon not on disk: the 1.8 GB Step 3 predictor
 | LogReg | 0.5 | 0.5000 | 52.0% [48.5%, 55.4%] | 423/814 | 88.0% | 0.535 |
 | LogReg | train_oof_1pct_fpr | 0.9204 | 24.0% [21.2%, 27.0%] | 195/814 | 81.4% | 0.535 |
 | FLAML | 0.5 | 0.5000 | 50.6% [47.2%, 54.0%] | 412/814 | 97.7% | 0.517 |
+| AutoGluon | 0.5 | 0.5000 | 55.0% [51.6%, 58.4%] | 448/814 | 98.1% | 0.662 |
 | H2O AutoML | 0.5 | 0.5000 | 53.6% [50.1%, 57.0%] | 436/814 | 97.9% | 0.578 |
 
 **Recall collapses.** At its train 1%-FPR threshold the tuned LightGBM detects
@@ -355,5 +360,4 @@ nothing about this hard tail.
   control addresses this for the drift monitor only.
 - The 12 future weeks are a short horizon; drift over a year or more is likely larger.
 - Slice CIs are Wilson intervals per slice, with no correction for looking at many slices.
-- The challenge set is malicious only, so it measures misses, not false alarms; AutoGluon could not
-  be scored on it (its predictor is not on disk).
+- The challenge set is malicious only, so it measures misses, not false alarms.

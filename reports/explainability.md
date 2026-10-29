@@ -235,6 +235,6 @@ A missed malware file (FN) is taken to cost C_FN = 10 false alarms (C_FP = 1). T
 ## Reproduce
 
 ```bash
-.venv/bin/python scripts/run_explain.py --stages oof        # long: run detached, writes a log
-.venv/bin/python scripts/run_explain.py --stages shap,agreement,calibration,threshold,report
+python scripts/run_explain.py --stages oof        # long: run detached, writes a log
+python scripts/run_explain.py --stages shap,agreement,calibration,threshold,report
 ```

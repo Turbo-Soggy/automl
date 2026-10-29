@@ -51,7 +51,8 @@ def load_inputs() -> dict[str, Any]:
     """Every table and fact the two reports use, read once."""
     stems = ["random_vs_future", "precision_both_sets", "prevalence", "challenge", "leakage", "gap_vs_tuned",
              "automl_self_estimate", "cv_comparison", "drift", "gap_adversarial", "gap_adversarial_top_features",
-             "class_weight", "calibration", "bias_slices", "class_balance"]
+             "class_weight", "calibration", "bias_slices", "class_balance", "shap_family_importance",
+             "cross_tool_agreement", "cross_tool_top20"]
     inputs: dict[str, Any] = {stem: _csv(stem) for stem in stems}
     inputs["facts"] = _json(TABLES / f"eval_bias_facts{RUN_SUFFIX}.json")
     inputs["data_check"] = _json(REPORTS / f"data_check{RUN_SUFFIX}.json")
@@ -181,7 +182,18 @@ def _machine_text(t: dict[str, Any]) -> str:
             f"{vm['n_jobs']} threads (the part B and C fits {t['facts']['eval_n_jobs']}, because those two jobs "
             "shared the machine). Every with/without comparison inside Step 4 was run on the VM with the same "
             "settings. No wall-clock time is compared across the two machines, and the AutoML scores at the "
-            "Step 4 budget are not the Step 3 scores (fewer cores search fewer configurations in the same time).")
+            "Step 4 budget are not the Step 3 scores (fewer cores search fewer configurations in the same time)."
+            + _challenge_machine_clause(t))
+
+
+def _challenge_machine_clause(t: dict[str, Any]) -> str:
+    """Where the challenge-set scoring ran, from its own record (it needs every saved model)."""
+    sm = t["facts"].get("challenge_scoring", {}).get("machine") or {}
+    if not sm or sm.get("cpu_count") == t["vm"]["cpu_count"]:
+        return ""
+    return (f" The challenge-set scores (sections 1, 2 and the verdict) were computed on a {sm['cpu_count']}-CPU "
+            f"{sm['os'].split('-')[0]} machine (the laptop), which holds every saved Step 2-3 model; scoring "
+            "fits nothing, so the hardware does not change those numbers.")
 
 
 # =============================================================================
@@ -258,7 +270,8 @@ def _short_answer(t: dict[str, Any]) -> str:
             else f"{len(auto_dr) - auto_fell} of {len(auto_dr)} AutoML tools did not rely on the label leak.")
     lines.append(
         f"4. **{head}** With `detection_ratio` added, {fell} of "
-        f"{len(dr)} models (tuned LightGBM and the three AutoML tools) ranked it first and scored test_future AUC "
+        f"{len(dr)} models (tuned LightGBM and the three AutoML tools) ranked it first, by their own importance "
+        f"or by SHAP, and scored test_future AUC "
         f"{_range(dr['test_future_roc_auc'])}; {named} log lines named the column and {dropped} "
         "tools dropped it. The future split does not expose this leak either: a post-hoc label proxy is just "
         "as available (and perfect) in later weeks.")
@@ -402,6 +415,13 @@ def _why_small(t: dict[str, Any]) -> str:
     drift = t["drift"]
     exp = _one(drift, model="expanding", week="all_test_future")
     slid = _one(drift, model="sliding_12w", week="all_test_future")
+    # Size-matched control: same row count as sliding_12w, random weeks 0-51 (separates recency from size)
+    size_m = _one(drift, model="size_matched", week="all_test_future")
+    weekly = drift[drift["week"] != "all_test_future"]
+    weekly = weekly[weekly["week"] != "all_test_random"]
+    sl_w = weekly[weekly["model"] == "sliding_12w"].set_index("week")["roc_auc"]
+    sm_w = weekly[weekly["model"] == "size_matched"].set_index("week")["roc_auc"]
+    sl_beats = int((sl_w > sm_w.reindex(sl_w.index)).sum())
     top = t["gap_adversarial_top_features"]
     top = top[~top["comparison"].str.contains("control")]
     proxy_share = top.loc[top["column"].isin(TIME_PROXY_COLUMNS), "gain_share"].sum()
@@ -424,7 +444,10 @@ def _why_small(t: dict[str, Any]) -> str:
         f"* **Short horizon, slow decay.** Over the 12 future weeks the weekly AUC slope is {slope:+.5f} per "
         f"week ({_src('drift')}); a model retrained on only the last 12 training weeks scores "
         f"{_f4(slid['roc_auc'])} on test_future, against {_f4(exp['roc_auc'])} for the model trained on all 52"
-        + (": at this horizon, more data beats recency." if slid["roc_auc"] < exp["roc_auc"] else "."),
+        + (": at this horizon, more data beats recency" if slid["roc_auc"] < exp["roc_auc"] else "")
+        + f". At equal size, recent weeks are {'worth slightly more' if slid['roc_auc'] > size_m['roc_auc'] else 'not worth more'}"
+        f" than random weeks 0-51: {_f4(slid['roc_auc'])} vs {_f4(size_m['roc_auc'])} for a size-matched random "
+        f"sample (higher in {sl_beats} of {len(sl_w)} future weeks).",
         "* **Weekly stratification** makes test_random an interpolation test: every test_random file has "
         "training files from its own week, which is the main reason it is the optimistic one.", ""])
 
@@ -451,6 +474,9 @@ def _leakage(t: dict[str, Any]) -> str:
     n_sig = int(sum(_excludes_zero(r, "delta_test_future_roc_auc") for _, r in fs.iterrows()))
     est = t["automl_self_estimate"]
     own_leak = est[est["variant"] == "leak_detection_ratio"]
+    # Did the date inflate test_random, as the plan expected of a time leak? (CI above 0)
+    raised_random = [_name(r["model"]) for _, r in fs.iterrows() if r["delta_test_random_roc_auc_ci_low"] > 0]
+    h2o_spread = _h2o_search_spread(t)
     lines = [
         "## 4. Does AutoML protect against leakage?", "",
         f"Each model was trained with and without one leak column at the same budget "
@@ -460,14 +486,27 @@ def _leakage(t: dict[str, Any]) -> str:
         "`reports/leaderboards/leakage/log_scan.json`.", "",
         _table(["leak", "model", "AUC test_future clean -> leak", "delta", "leak rank (own / SHAP)",
                 "log lines naming it", "dropped by tool", "relied on it (rank 1)"], rows), "",
+        "*Relied on it* = kept the column and ranked it first by its own importance or by SHAP. FLAML's own "
+        "importance (`feature_importances_` of its LightGBM learner) is the split count, which favours "
+        "continuous high-cardinality columns such as a date, so for FLAML only its SHAP rank counts.", "",
         f"* **`detection_ratio` is a label leak, and {'every tool took it' if all_took else 'not every tool took it'}.** "
         "It is the share of antivirus engines that flagged the file, i.e. the thing the label was made from. "
         f"A column with AUC {leak_auc:.4f} against the label (`reports/data_check{RUN_SUFFIX}.json`) is exactly what a search for the best score is built to find, so no tool can be "
         "expected to reject it from the data alone; only a human question about provenance ('is this known "
         "when the file first arrives?') catches it.",
-        f"* **`first_submission_date` is mostly harmless here, but for a fragile reason.** It changed "
-        f"test_future AUC beyond its CI for {n_sig} of {len(fs)} models, by at most "
-        f"{fs['delta_test_future_roc_auc'].abs().max():.4f}. Every future date lies after the last training "
+        f"* **`first_submission_date` is mostly harmless here, but for a fragile reason.** It moved "
+        f"test_future AUC by at most {fs['delta_test_future_roc_auc'].abs().max():.4f}. For {n_sig} of {len(fs)} "
+        "models that move excludes 0, but only under test-set resampling: the CIs do not cover the run-to-run "
+        "variation of a time-budgeted AutoML search"
+        + (f", and H2O's move ({h2o_spread['delta']:+.4f}) is smaller than the spread between H2O's own clean "
+           f"searches (test_future AUC {_f4(h2o_spread['step3'])} in Step 3 vs {_f4(h2o_spread['clean'])} in the "
+           "Step 4 clean run)" if h2o_spread else "")
+        + ", so no effect of the date column on the AutoML tools is shown. "
+        "Contrary to the plan's expectation (a time leak that helps under the random split and fails on "
+        "test_future), the date did not inflate test_random AUC"
+        + (f" except for {', '.join(raised_random)}, within the same search noise" if raised_random else "")
+        + ", so this run does not demonstrate a time leak under the random split. "
+        "Every future date lies after the last training "
         "date, so for a tree the column is a constant on test_future; with a 50/50 class mix in every week it "
         "carries almost no label information. In data where the malware share changes over time, the same "
         "column would let a model learn the calendar.",
@@ -479,6 +518,19 @@ def _leakage(t: dict[str, Any]) -> str:
             f"({_src('automl_self_estimate')}). A near-perfect AUC on malware detection should itself be "
             "treated as a bug report.")
     return "\n".join(lines) + "\n"
+
+
+def _h2o_search_spread(t: dict[str, Any]) -> dict[str, float] | None:
+    """H2O's date-leak delta next to its Step 3 and Step 4 clean test_future AUCs (two searches)."""
+    leak = t["leakage"]
+    fs = leak[(leak["model"] == "h2o") & (leak["variant"] == "leak_first_submission")]
+    clean = leak[(leak["model"] == "h2o") & (leak["variant"] == "clean")]
+    est = t["automl_self_estimate"]
+    step3 = est[(est["tool"] == "h2o") & (est["run"] == "step3")]
+    if not (len(fs) and len(clean) and len(step3)):
+        return None
+    return {"delta": float(fs.iloc[0]["delta_test_future_roc_auc"]),
+            "clean": float(clean.iloc[0]["test_future_roc_auc"]), "step3": float(step3.iloc[0]["test_future_roc_auc"])}
 
 
 def _drift(t: dict[str, Any]) -> str:
@@ -545,6 +597,51 @@ def _same_scores_lines(est: pd.DataFrame) -> list[str]:
             "holdout; both runs reached that iteration (the shorter run's fit log reports running out of time "
             "after it), so the budget did not change the model.")
     return lines
+
+
+def _bias_explain(t: dict[str, Any]) -> str:
+    """Worst bias slices, top SHAP families and tool agreement: do the AutoML winners share blind spots?"""
+    slices = t["bias_slices"]
+    fut = slices[(slices["test_set"] == "test_future") & (slices["threshold_name"] == OOF_THRESHOLD)
+                 & (slices["slice_family"] != "week")]
+    # Only slices with enough files of the class the rate is about (Wilson CIs are wide below 100)
+    worst_fpr = fut[fut["n_benign"] >= 100].sort_values("fpr").iloc[-1]
+    worst_tpr = fut[fut["n_malicious"] >= 100].sort_values("tpr").iloc[0]
+    fam_imp = t["shap_family_importance"]
+    fams = ", ".join(f"{r.family} ({_pct(r.share)})" for r in fam_imp.sort_values("rank").head(3).itertuples())
+    # The summed per-column share favours large families; the grouped |sum of SHAP| does not
+    grouped = ", ".join(f"{r.family} ({r.grouped_mean_abs_shap:.2f}, {int(r.n_features)} columns)"
+                        for r in fam_imp.sort_values("grouped_mean_abs_shap", ascending=False).head(3).itertuples())
+    agree = t["cross_tool_agreement"].sort_values("family_spearman")
+    most, least = agree.iloc[-1], agree.iloc[0]
+    top5 = t["cross_tool_top20"].head(5)
+    shared = sorted(set.intersection(*(set(top5[c]) for c in top5.columns if c != "rank")))
+    return "\n".join([
+        "## 5b. Bias slices, explanations and cross-tool agreement", "",
+        f"Sources: {_src('bias_slices')} (tuned LightGBM, train 1%-FPR threshold), "
+        f"{_src('shap_family_importance')}, {_src('cross_tool_agreement')}, {_src('cross_tool_top20')}; "
+        "details in `temporal_bias.md` section 4a and `explainability.md`.", "",
+        f"* **Weakest slices on test_future** (slices with at least 100 files of the class): the highest benign "
+        f"FPR is `{worst_fpr['slice_family']}` = {worst_fpr['slice']}, {_pct(worst_fpr['fpr'], 2)} "
+        f"[{_pct(worst_fpr['fpr_ci_low'], 2)}, {_pct(worst_fpr['fpr_ci_high'], 2)}] of "
+        f"{int(worst_fpr['n_benign']):,} benign files; the lowest detection rate is "
+        f"`{worst_tpr['slice_family']}` = {worst_tpr['slice']}, {_pct(worst_tpr['tpr'])} "
+        f"[{_pct(worst_tpr['tpr_ci_low'])}, {_pct(worst_tpr['tpr_ci_high'])}] of "
+        f"{int(worst_tpr['n_malicious']):,} malicious files.",
+        f"* **What the tuned model uses** (test_future): by the summed per-column mean |SHAP| share, which "
+        f"favours families with many columns, {fams}; by the grouped measure (mean |sum of the family's SHAP|), "
+        f"{grouped}. The ranking depends on the measure; `explainability.md` explains both.",
+        f"* **Do the tools agree?** By the rank correlation of feature-group importance, the most similar pair "
+        f"is {_name(most['tool_a'])} / {_name(most['tool_b'])} (Spearman {most['family_spearman']:.2f}, "
+        f"{int(most['top5_overlap'])} of their top 5 features shared) and the least similar "
+        f"{_name(least['tool_a'])} / {_name(least['tool_b'])} ({least['family_spearman']:.2f}). Features in "
+        "the top 5 of every tool: " + (", ".join(f"`{f}`" for f in shared) if shared else "none")
+        + ". The measures differ by tool (SHAP, permutation importance, H2O varimp), so these are rough "
+        "comparisons.",
+        "* **What this means for AutoML:** the AutoML winners are tree ensembles on the same features and, "
+        "where the measures are comparable, they rank the same signals high. So they are likely to share the "
+        "same blind spots, such as the weaker detection of signed malware: AutoML changes how a model is "
+        "searched for, not what it can see.", ""])
 
 
 def _what_protects(t: dict[str, Any]) -> str:
@@ -628,7 +725,7 @@ def _verdict(t: dict[str, Any]) -> str:
 
 def critical_eval_markdown(t: dict[str, Any]) -> str:
     return "\n".join([_header(t), _short_answer(t), _ladder(t), _all_models(t), _why_small(t), _leakage(t),
-                      _drift(t), _what_protects(t), _verdict(t)])
+                      _drift(t), _bias_explain(t), _what_protects(t), _verdict(t)])
 
 
 # =============================================================================
@@ -733,31 +830,47 @@ def limitations_markdown(t: dict[str, Any]) -> str:
         "training randomness or another draw of the splits; time-budgeted AutoML searches are not "
         "repeatable, so deltas of about 1e-4 AUC between AutoML runs are within run-to-run variation.",
         "* **Many slices, no multiple-comparison correction.** Slice CIs are per slice; with dozens of slices "
-        "some differences will look significant by chance.",
+        "some differences will look significant by chance. A test_random week has only about 385 benign "
+        "files, so a single week's FPR there is very noisy.",
+        "* **Thresholds and calibrators come from smaller models.** They are fitted on train out-of-fold "
+        "scores of fold models trained on two thirds of train, while the deployed model is trained on all "
+        f"of it (stated, not corrected; `threshold{RUN_SUFFIX}.csv` shows the effect at high cost ratios, "
+        "where the test_future FPR is above the out-of-fold FPR).",
+        "* **The forward CV confounds recency with training-set size:** later folds are both closer in time "
+        f"and trained on more weeks. A size-matched control exists only for drift (`drift{RUN_SUFFIX}.csv`).",
+        "* **The AutoGluon leakage predictors were deleted** after scoring (about 2 GB each, little disk on "
+        "the VM); their leaderboards, importances and test scores are saved, but those rows can be "
+        "re-scored only by re-running them.",
         f"* **The challenge set is small and malicious only:** {int(ch['n']) if ch is not None else 'n/a'} Win64 "
-        "files, so it measures misses, not false alarms" + (
-            f"; {', '.join(_name(m) for m in facts.get('challenge_scoring', {}).get('not_scored', {}))} "
-            "could not be scored on it (its predictor is not on disk)."
-            if facts.get("challenge_scoring", {}).get("not_scored") else "."), "",
+        "files, so it measures misses, not false alarms" + "".join(
+            f"; {_name(m)} was not scored on it ({why})"
+            for m, why in facts.get("challenge_scoring", {}).get("not_scored", {}).items()) + ".", "",
         "## Compute, hardware and budgets", "",
         f"* **CPU only, and two machines.** Steps 2-3 ran on {LAPTOP} with 16 threads; Step 4 on a cloud VM "
         f"({vm['cpu']}, {vm['cpu_count']} logical CPUs, {vm['ram_gb']:.1f} GB RAM, {vm['os']}). Every "
         "comparison inside a step ran on one machine with the same settings, but times are not comparable "
-        "across steps, and an AutoML tool searches fewer configurations per second on the VM.",
-        "* **Memory forced runner changes on the VM**, the same for every leakage variant: a lean FLAML "
-        "preprocessing, a smaller H2O heap without XGBoost, and AutoGluon skipping models it could not fit in "
-        "memory (the details and the values are in `leakage.md`). On the VM, AutoGluon was in effect a single "
-        "LightGBM model.",
+        "across steps, and an AutoML tool searches fewer configurations per second on the VM."
+        + (f" The challenge-set scoring alone was re-run on a {sm['cpu_count']}-CPU {sm['os'].split('-')[0]} "
+           "machine (the laptop), which holds every saved Step 2-3 model including AutoGluon's; scoring "
+           "fits nothing, so the hardware does not change its result."
+           if (sm := facts.get("challenge_scoring", {}).get("machine")) and sm.get("cpu_count") != vm["cpu_count"]
+           else ""),
+        "* **Memory forced runner changes on the VM.** The runner settings were the same for every leakage "
+        "variant: a lean FLAML preprocessing and a smaller H2O heap without XGBoost. AutoGluon itself skipped "
+        "memory-heavy models (only in the detection_ratio run; in the clean and date runs its first LightGBM used the whole "
+        "budget), so on the VM it was in effect a single LightGBM model (per-run counts in `leakage.md`).",
         f"* **The {config.LEAKAGE_BUDGET_S} s leakage budget** is a stated deviation from the "
         f"{config.AUTOML_BUDGET_S} s of Step 3, to keep nine AutoML runs within a few hours. The clean "
-        "reruns used the same budget, so each with/without-leak pair is fair, but the clean scores are not "
+        "reruns used the same budget and hardware, so each with/without-leak pair is equal-budget (not "
+        "equal-compute: see below), but the clean scores are not "
         "the Step 3 scores"
         + (f" (H2O: test_future AUC {_f4(h2o_clean.iloc[0]['test_future_roc_auc'])} at "
            f"{config.LEAKAGE_BUDGET_S} s on the VM vs {_f4(h2o3.iloc[0]['test_future_roc_auc'])} at "
            f"{config.AUTOML_BUDGET_S} s on the laptop)" if len(h2o_clean) and len(h2o3) else "")
         + f". Budgets are not hard limits: the AutoML runs ended {over.min():+.0f} s to {over.max():+.0f} s "
-        f"from their budget (wall minus budget, `leakage{RUN_SUFFIX}.csv`), because tools finish or ensemble "
-        "after the search.",
+        f"from their budget (wall minus budget, `leakage{RUN_SUFFIX}.csv`): the budget caps the search, and "
+        "FLAML's final refit and H2O's data import, ensemble and scoring come on top, so the effective compute "
+        "of one tool's variants differed by minutes (`leakage.md`, *Run times*).",
         "* **Default AutoML settings.** We tested what a user gets by default (random-split validation, "
         "default presets); other settings, such as time-ordered validation, could behave differently.", ""]
     return "\n".join(lines)
@@ -768,6 +881,6 @@ def write_reports() -> list[Path]:
     out = []
     for stem, render in (("critical_eval", critical_eval_markdown), ("limitations", limitations_markdown)):
         path = REPORTS / f"{stem}{RUN_SUFFIX}.md"
-        path.write_text(render(t), encoding="utf-8")
+        path.write_text(render(t), encoding="utf-8", newline="\n")
         out.append(path)
     return out

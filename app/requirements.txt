@@ -1,0 +1,21 @@
+# Slim requirements for deploying only the demo (Streamlit Community Cloud or a Hugging Face Space).
+# The full project needs ../requirements.txt; this list is just what app/ imports at run time
+# (thrember itself imports lightgbm, polars, tqdm, scikit-learn and huggingface_hub).
+# Versions are the same pins as ../requirements.txt. Python 3.12.
+numpy==2.5.4
+pandas==2.3.3
+scikit-learn==1.9.1
+lightgbm==4.7.0
+fastapi==0.162.0
+uvicorn==0.54.0
+pydantic==2.14.1
+python-multipart==0.0.32
+streamlit==1.66.1
+requests==2.34.2
+tqdm==4.70.1
+huggingface_hub==2.3.0
+pefile==2024.8.26
+polars==2.1.0
+signify==0.8.1
+oscrypto @ git+https://github.com/wbond/oscrypto.git@1547f535001ba568b239b8797465536759c742a3
+thrember @ git+https://github.com/FutureComputing4AI/EMBER2024.git@0ef753e81d98bf209f71b03cd331dfc190b5b54d

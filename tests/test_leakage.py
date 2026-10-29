@@ -127,6 +127,11 @@ def test_relied_on_leak_rule() -> None:
     assert leakage_report.relied_on_leak({**base, "leak_rank_native": 2, "leak_rank_shap": None}) is False
     assert leakage_report.relied_on_leak({**base, "leak_in_model": False, "leak_rank_native": 1}) is False
     assert leakage_report.relied_on_leak({"leak_column": None}) is None
+    # A split-count importance (FLAML) ranking the leak first is not reliance; only SHAP counts then
+    flaml = {**base, "importance_native_kind": "FLAML feature_importances_ of lgbm"}
+    assert leakage_report.relied_on_leak({**flaml, "leak_rank_native": 1, "leak_rank_shap": 23}) is False
+    assert leakage_report.relied_on_leak({**flaml, "leak_rank_native": 2, "leak_rank_shap": 1}) is True
+    assert leakage_report.relied_on_leak({**flaml, "leak_rank_native": 1, "leak_rank_shap": None}) is True
 
 
 # --- Config lookup, deltas and log scan ------------------------------------------------------
@@ -162,6 +167,18 @@ def test_delta_vs_clean_detects_a_real_jump(tmp_path: Path) -> None:
     assert delta["delta_test_random_roc_auc"] > 0 and delta["delta_test_random_roc_auc_significant"]
     same = leakage_report.delta_vs_clean(clean, clean)
     assert same["delta_test_future_roc_auc"] == 0 and not same["delta_test_future_roc_auc_significant"]
+
+
+def test_load_predictions_finds_a_file_logged_on_another_machine(tmp_path: Path,
+                                                                  monkeypatch: pytest.MonkeyPatch) -> None:
+    """Step 4 records hold /home/user/automl/... paths; the file is then looked up by name here."""
+    y = np.array([0, 1, 0, 1])
+    rec = _fake_record(tmp_path, "clean", y, np.array([0.1, 0.9, 0.2, 0.8]))
+    monkeypatch.setattr(leakage, "LEAKAGE_PREDICTIONS", tmp_path)
+    moved = {**rec, "predictions_path": "/home/user/automl/reports/predictions/leakage/clean.npz"}
+    assert np.array_equal(leakage_report.load_predictions(moved)["test_future"][0], y)
+    with pytest.raises(RuntimeError):  # same name, different evaluation: refused
+        leakage_report.load_predictions({**moved, "eval_id": "another-run"})
 
 
 def test_scan_logs_blanks_the_column_name(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

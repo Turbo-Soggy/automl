@@ -113,7 +113,7 @@ def build_challenge_cache(out_dir: Path | None = None) -> dict[str, Any]:
     meta.to_parquet(paths["meta"], index=False)
     info = {
         "built_utc": pd.Timestamp.now(tz="UTC").isoformat(), "seconds": round(time.time() - start, 1),
-        "source": str(challenge_dir().relative_to(config.ROOT)), "files": len(challenge_files()),
+        "source": challenge_dir().relative_to(config.ROOT).as_posix(), "files": len(challenge_files()),
         "file_type": FILE_TYPE, **counts, "rows": int(len(meta)), "feature_dim": int(X.shape[1]),
         "nonfinite_values": int((~np.isfinite(X)).sum()), "label_counts": meta["label"].value_counts().to_dict(),
         "week_min": int(meta["week"].min()), "week_max": int(meta["week"].max()),

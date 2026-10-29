@@ -101,6 +101,7 @@ def test_logreg_shift_parts_add_up_to_the_logit(monkeypatch: pytest.MonkeyPatch)
 def test_wilson_ci_known_values() -> None:
     lo, hi = bias.wilson_ci(0, 10)
     assert lo == pytest.approx(0.0, abs=1e-12) and hi == pytest.approx(0.2775, abs=1e-3)
+    assert bias.wilson_ci(0, 384)[0] == 0.0 and bias.wilson_ci(384, 384)[1] == 1.0  # clipped exactly
     lo, hi = bias.wilson_ci(50, 100)
     assert lo < 0.5 < hi and hi - 0.5 == pytest.approx(0.5 - lo)
     assert np.isnan(bias.wilson_ci(0, 0)[0])

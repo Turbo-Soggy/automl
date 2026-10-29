@@ -10,10 +10,10 @@ Stages (run in this order; each one only reads what the stages before it saved):
   tables     every CSV and figure, from the saved scores and models only.
   writeup    reports/temporal_bias.md, from the tables only.
 
-Usage (from the project root):
-  .venv/bin/python scripts/run_eval_bias.py                       # all stages
-  .venv/bin/python scripts/run_eval_bias.py --quick               # smoke run on the quick splits (_quick files)
-  .venv/bin/python scripts/run_eval_bias.py --stages tables,writeup
+Usage (from the project root; python = .venv/Scripts/python.exe on Windows, .venv/bin/python on Linux):
+  python scripts/run_eval_bias.py                       # all stages
+  python scripts/run_eval_bias.py --quick               # smoke run on the quick splits (_quick files)
+  python scripts/run_eval_bias.py --stages tables,writeup
 Run it as a detached process for the fits stage; it prints one line per finished fit.
 """
 from __future__ import annotations

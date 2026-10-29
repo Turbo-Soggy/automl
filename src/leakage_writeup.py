@@ -108,12 +108,14 @@ def _setup(table: pd.DataFrame, context: dict[str, Any]) -> str:
         f"* **AutoML:** FLAML, AutoGluon (`medium_quality`) and H2O through the Step 3 runners, with "
         f"**{LEAKAGE_BUDGET_S} s per run**. This is a stated deviation from the {context['step3_budget_s']} s "
         "of Step 3, made to save time. The `clean` variant is re-run at the same budget, so in every "
-        "with/without comparison the leak column is the only difference.",
+        "with/without comparison the leak column is the only intended difference. The budget caps the "
+        "search only, so the effective run times differed (see *Run times* below).",
         f"* Same `train` ({_rows(lgbm)} rows), seed 42, {(lgbm or {}).get('n_jobs', 'n/a')} threads, ROC-AUC as the "
         "tools' metric. Importance and SHAP use rows of `train` or the tool's own validation rows, never a test set.",
         f"* **Machine:** {_machine(context)}. Steps 2 and 3 ran on a different machine (a 16-core Intel Core "
         "Ultra 9 285H laptop, 63 GB RAM, Windows, 16 threads). Every run in this step, clean and leaky, ran on "
-        "the machine above with the same settings, one run at a time, so the with/without comparisons are fair; "
+        "the machine above with the same settings, one run at a time, so the with/without comparisons are "
+        "equal-hardware and equal-budget (not equal-compute, see *Run times*); "
         "times here must not be compared with the times of Steps 2-3. With 4 cores instead of 16, an AutoML "
         "tool searches far fewer configurations in the same budget.",
         f"* **Memory (15 GB RAM) forced runner settings that differ from Step 3, the same for every variant:** {_tool_settings(context)}",
@@ -212,7 +214,8 @@ def _run_times(table: pd.DataFrame, context: dict[str, Any]) -> str:
     deleted = [r for r in context["records"].values() if r.get("model_folder_deleted_after_scoring")]
     text = ["Run times on this machine, seconds (`fit` = the tool's fit call; `wall` = everything the budget "
             "covers; `over budget` = wall minus budget; `timing valid` = the sleep guard saw no gap):", "",
-            _md_table(["Model", "Variant", "fit", "wall", "over budget", "scoring", "timing valid"], rows)]
+            _md_table(["Model", "Variant", "fit", "wall", "over budget", "scoring", "timing valid"], rows),
+            "", _compute_spread(table, context)]
     if deleted:
         text += ["", f"Disk: the machine had little free disk, so each AutoGluon predictor folder (about 2 GB) was "
                  f"deleted right after its run was scored, once its leaderboard, importances, preprocessing notes "
@@ -220,6 +223,29 @@ def _run_times(table: pd.DataFrame, context: dict[str, Any]) -> str:
                  f"`{deleted[0]['model_folder_deleted_after_scoring']}`). The AutoGluon rows can therefore be "
                  "re-scored only by re-running them."]
     return "\n".join(text)
+
+
+def _compute_spread(table: pd.DataFrame, context: dict[str, Any]) -> str:
+    """Why the variants of one AutoML tool did not get equal compute, with the spread per tool."""
+    spreads, clean_most = [], []
+    for model in table.loc[table["budget_s"].notna(), "model"].unique():
+        walls = {row["variant"]: context["records"][(model, row["variant"])].get("wall_s")
+                 for _, row in table[table["model"] == model].iterrows()}
+        walls = {v: w for v, w in walls.items() if w is not None}
+        if len(walls) < 2:
+            continue
+        spreads.append(f"{MODEL_LABEL[model]} {max(walls.values()) - min(walls.values()):.0f} s")
+        if max(walls, key=walls.get) == leakage.CLEAN:
+            clean_most.append(MODEL_LABEL[model])
+    if not spreads:
+        return ""
+    return ("**The pairs are equal-budget, not equal-compute.** The budget is each tool's soft limit on its "
+            "*search*: FLAML's final refit on all rows, H2O's data import and its post-search ensemble and scoring "
+            "come on top, and a tool may also stop before the budget. So the wall times of one tool's variants "
+            f"differ by up to {', '.join(spreads)}; the clean run had the most time for "
+            f"{', '.join(clean_most) or 'no tool'}. This cannot explain the `{leakage.LEAK_DR}` jump (where the "
+            "clean run had more time, a leak gain is, if anything, understated), but it is one more reason to "
+            f"read the deltas of about 1e-4 AUC for `{leakage.LEAK_DATE}` as run-to-run noise.")
 
 
 def _results(table: pd.DataFrame) -> str:
@@ -239,10 +265,12 @@ def _results(table: pd.DataFrame) -> str:
                    "Leak rank (tool's own / SHAP)"], rows),
         "",
         "Leak rank: 1 = the most important of all columns, by the tool's own importance (LightGBM gain, "
-        "FLAML `feature_importances_`, AutoGluon permutation importance, H2O varimp) and by mean |TreeSHAP| "
+        "FLAML `feature_importances_`, which for its LightGBM learner is the split count and so favours "
+        "continuous high-cardinality columns such as a date, AutoGluon permutation importance, H2O varimp) and by mean |TreeSHAP| "
         "on 2,000 `train` rows where the model is a tree model (n/a = not computed; the reason is in the "
-        "`importance_shap_kind` column of the CSV). The full table, with F1, FPR, TPR CIs, time-proxy "
-        "ranks and timings, is the CSV.",
+        "`importance_shap_kind` column of the CSV). AutoGluon's own ranks are among the features its "
+        "permutation importance reached before its time cap, and its shares can exceed 100% (see Caveats). "
+        "The full table, with F1, FPR, TPR CIs, time-proxy ranks and timings, is the CSV.",
     ])
 
 
@@ -270,7 +298,8 @@ def _leak_dr(table: pd.DataFrame) -> str:
     lines += [
         "",
         f"**{fell} of {len(part)} models fell for the leak**: they kept the column and ranked it first "
-        "(rule: rank 1 by the tool's own importance or by SHAP). No tool can know from the data alone that "
+        "(rule: rank 1 by the tool's own importance or by SHAP; for FLAML, whose own importance is a split "
+        "count, by SHAP only). No tool can know from the data alone that "
         "this column is post-hoc: a column with AUC 1.0 against the label looks like the best feature there "
         "is, and every tool's job is to find exactly such features.",
         "",
@@ -371,7 +400,8 @@ def _ablation(table: pd.DataFrame, context: dict[str, Any]) -> str:
                                                   f"{_rank(row.get(f'rank_shap_{p.name}'))}"
                                                   for p in leakage.TIME_PROXIES])
     if proxy_rows:
-        lines += ["Rank of each proxy in the clean runs (own importance / SHAP, out of all features):", "",
+        lines += ["Rank of each proxy in the clean runs (own importance / SHAP, out of all features; AutoGluon's own "
+                  "ranks are out of the features its permutation importance reached, see Caveats):", "",
                   _md_table(["Model"] + [f"`{p.name}`" for p in leakage.TIME_PROXIES], proxy_rows), ""]
     clean, ablated = _row(table, leakage.LGBM, leakage.CLEAN), _row(table, leakage.LGBM, leakage.ABLATE)
     if clean is not None and ablated is not None:
@@ -475,7 +505,32 @@ STATIC_TAIL = """## Why this matters
 """
 
 
+def _autogluon_permutation_coverage() -> str:
+    """How much of AutoGluon's permutation importance was computed per run, from the saved importance files.
+
+    AutoGluon stops the importance at a time cap (the watched columns go first, see leakage.run_tool), so
+    the features it did not reach have no value; `n` is the number of shuffles per feature.
+    """
+    parts, all_shuffles = [], set()
+    for variant in leakage.VARIANTS:
+        path = leakage.LEAKAGE_LEADERBOARDS / variant / f"autogluon_feature_importance{RUN_SUFFIX}.csv"
+        if not path.exists():
+            continue
+        imp = pd.read_csv(path)
+        done = imp["importance"].notna()
+        all_shuffles |= {int(n) for n in imp.loc[done, "n"].dropna()}
+        parts.append(f"`{variant}` {int(done.sum()):,} of the {len(imp):,} features it kept")
+    if not parts:
+        return ""
+    shuffle_txt = (" Each feature was shuffled once, so the values carry shuffle noise." if all_shuffles == {1}
+                   else f" Shuffles per feature: {sorted(all_shuffles)}.")
+    return ("* AutoGluon's permutation importance runs under a time cap (the watched columns are computed "
+            "first) and was computed for: " + "; ".join(parts) + ". Its ranks are among the computed "
+            "features only." + shuffle_txt)
+
+
 def _caveats(table: pd.DataFrame) -> str:
+    coverage = _autogluon_permutation_coverage()
     return "\n".join([
         "## Caveats",
         "",
@@ -488,8 +543,11 @@ def _caveats(table: pd.DataFrame) -> str:
         "things), so only ranks are compared. H2O's varimp and SHAP come from the best H2O model that has "
         "them (a GBM or DRF), which may not be the stacked-ensemble leader. AutoGluon's permutation "
         "importance uses its own internal validation rows (a few thousand rows of `train`). Permutation "
-        "importances can be negative, so a column's share of their sum can exceed 100%.",
-        "* `relied_on_leak` is our rule (kept the column and ranked it first), not a statement by the tool.",
+        "importances can be negative, so a column's share of their sum can exceed 100% (or be negative "
+        "when the sum is negative).",
+        *([coverage] if coverage else []),
+        "* `relied_on_leak` is our rule (kept the column and ranked it first; a split-count importance, "
+        "FLAML's, does not count, only its SHAP rank), not a statement by the tool.",
     ])
 
 
@@ -508,5 +566,5 @@ def write(table: pd.DataFrame, context: dict[str, Any], csv_path: Path, figure: 
              _leak_date(table, context), "", _ablation(table, context), "", _warnings(table, context), "",
              STATIC_TAIL, _caveats(table), ""]
     path = REPORTS / f"leakage{RUN_SUFFIX}.md"
-    path.write_text("\n".join(parts), encoding="utf-8")
+    path.write_text("\n".join(parts), encoding="utf-8", newline="\n")
     return path

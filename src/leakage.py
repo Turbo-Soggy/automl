@@ -318,9 +318,29 @@ def machine_info() -> dict[str, Any]:
                    if line.startswith("model name"))
     except (OSError, StopIteration):
         pass
-    ram = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 2**30 if hasattr(os, "sysconf") else None
+    ram = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 2**30 if hasattr(os, "sysconf") else _windows_ram_gb()
     return {"cpu": cpu, "cpu_count": os.cpu_count(), "ram_gb": None if ram is None else round(ram, 1),
             "os": f"{platform.system()} {platform.release()}", "python": platform.python_version()}
+
+
+def _windows_ram_gb() -> float | None:
+    """Total RAM on Windows, which has no os.sysconf (GlobalMemoryStatusEx from kernel32)."""
+    import ctypes
+
+    class MemoryStatus(ctypes.Structure):
+        _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong),
+                    ("ullTotalPhys", ctypes.c_ulonglong), ("ullAvailPhys", ctypes.c_ulonglong),
+                    ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
+                    ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong),
+                    ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+
+    status = MemoryStatus(dwLength=ctypes.sizeof(MemoryStatus))
+    try:
+        if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+            return status.ullTotalPhys / 2**30
+    except AttributeError:  # not Windows either: leave RAM unknown
+        pass
+    return None
 
 
 def free_disk_gb(path: Path = ROOT) -> float:
