@@ -1,0 +1,36 @@
+{
+  "method": "random",
+  "sample_n": 2000,
+  "sample_malicious": 999,
+  "sample_weeks": [
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63
+  ],
+  "base_value": 0.9532706971660678,
+  "max_abs_diff_vs_saved_scores": 2.168404344971009e-19,
+  "additivity_max_abs_error": 9.82782921710168e-09,
+  "shap_seconds": 17.917864701001236,
+  "n_jobs": 2,
+  "machine": {
+    "cpu_count": 4,
+    "ram_gb": 15.7,
+    "os": "Linux-6.18.44-fc-v185-x86_64-with-glibc2.39",
+    "processor": "x86_64"
+  },
+  "flaml_model": "LGBMClassifier",
+  "flaml_explained": true,
+  "flaml_n_features_used": 2518,
+  "flaml_max_abs_diff_vs_saved": 6.661338147750939e-16,
+  "shap_version": "0.54.1",
+  "lightgbm_version": "4.7.0"
+}

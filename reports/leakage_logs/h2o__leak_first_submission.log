@@ -1,0 +1,85 @@
+[leakage] h2o on leak_first_submission: budget 600 s, quick=False
+Checking whether there is an H2O instance running at http://localhost:54321..... not found.
+Attempting to start a local H2O server...
+  Java Version: Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=36883 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=; openjdk version "21.0.12.1" 2026-08-18; OpenJDK Runtime Environment (build 21.0.12.1+1-1-24.04.4-Ubuntu); OpenJDK 64-Bit Server VM (build 21.0.12.1+1-1-24.04.4-Ubuntu, mixed mode, sharing)
+  Starting server from /home/user/automl/.venv/lib/python3.12/site-packages/h2o/backend/bin/h2o.jar
+  Ice root: /tmp/tmpwbnz49ei
+  JVM stdout: /tmp/tmpwbnz49ei/h2o_unknownUser_started_from_python.out
+  JVM stderr: /tmp/tmpwbnz49ei/h2o_unknownUser_started_from_python.err
+  Server is running at http://127.0.0.1:54321
+Connecting to H2O server at http://127.0.0.1:54321 ... successful.
+--------------------------  ----------------------------------
+H2O_cluster_uptime:         02 secs
+H2O_cluster_timezone:       Etc/UTC
+H2O_data_parsing_timezone:  UTC
+H2O_cluster_version:        3.46.0.12
+H2O_cluster_version_age:    2 months and 17 days
+H2O_cluster_name:           H2O_from_python_unknownUser_71hfe8
+H2O_cluster_total_nodes:    1
+H2O_cluster_free_memory:    6.984 Gb
+H2O_cluster_total_cores:    4
+H2O_cluster_allowed_cores:  4
+H2O_cluster_status:         locked, healthy
+H2O_connection_url:         http://127.0.0.1:54321
+H2O_connection_proxy:       {"http": null, "https": null}
+H2O_internal_security:      False
+Python_version:             3.12.3 final
+H2O_telemetry_server:       disabled
+H2O_telemetry_client:       disabled
+--------------------------  ----------------------------------
+
++------------------------------------------------------------------+
+| You are running the community edition of H2O-3 OSS.              |
+|                                                                  |
+| For commercial use, H2O-3 Secure is now recommended.             |
+| This includes production support, CVE fixes, multi-node scaling, |
+| model artifact extraction, and more.                             |
+| See h2o.ai/h2o-3/oss-vs-secure for additional details.           |
+| Contact enterprise@h2o.ai to upgrade.                            |
++------------------------------------------------------------------+
+[h2o:leak_first_submission] alive 11:51:39, 300 s in, max gap 30 s
+
+11:52:58.908: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]
+
+[h2o:leak_first_submission] alive 11:56:39, 600 s in, max gap 30 s
+
+11:57:37.686: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]
+
+
+12:01:16.357: _train param, Dropping unused columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]
+
+[h2o:leak_first_submission] alive 12:01:39, 900 s in, max gap 30 s
+
+12:01:51.455: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]
+
+
+12:02:09.115: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]
+
+
+12:02:30.165: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]
+
+
+12:02:48.387: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]
+
+
++-----------------------------------------------------------------+
+| H2O-3 SECURE REQUIRED  -  THIS ACTION IS BLOCKED                |
+|                                                                 |
+| MOJO export is a production capability available only in        |
+| H2O-3 Secure, the commercially supported tier of H2O-3.         |
+|                                                                 |
+| You are running self-managed H2O-3 OSS.                         |
+|                                                                 |
+| You must upgrade to H2O-3 Secure for:                           |
+|   - Hadoop and Kubernetes enterprise packages                   |
+|   - Audit-supporting capabilities (SOC 2, ISO 27001, ISO 42001) |
+|   - Commercial CVE patching & long-term support                 |
+|   - Premium support with SLAs                                   |
+|                                                                 |
+| If you need MOJO, we provide a free license for non-commercial  |
+| use. See h2o.ai/h2o-3/oss-vs-secure to compare the two tiers.   |
+|                                                                 |
+| Request a license or upgrade:  enterprise@h2o.ai                |
++-----------------------------------------------------------------+
+H2O session _sid_995d closed.
+[leakage] h2o leak_first_submission best=GBM_1_AutoML_1_20261029_115111 wall_s=963 test_random_auc=0.99623 test_future_auc=0.99310 timing_valid=True

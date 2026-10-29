@@ -1,0 +1,4 @@
+[leakage] flaml on leak_detection_ratio: budget 600 s, quick=False
+[flaml:leak_detection_ratio] alive 09:23:31, 300 s in, max gap 30 s
+[flaml:leak_detection_ratio] alive 09:28:31, 600 s in, max gap 30 s
+[leakage] flaml leak_detection_ratio best=lgbm wall_s=772 test_random_auc=1.00000 test_future_auc=1.00000 timing_valid=True

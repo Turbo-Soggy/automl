@@ -1,0 +1,247 @@
+{
+  "lgbm_tuned__clean": {
+    "files": [
+      "reports/leakage_logs/lgbm_tuned__clean.log"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "lgbm_tuned__leak_detection_ratio": {
+    "files": [
+      "reports/leakage_logs/lgbm_tuned__leak_detection_ratio.log"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "lgbm_tuned__leak_first_submission": {
+    "files": [
+      "reports/leakage_logs/lgbm_tuned__leak_first_submission.log"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "lgbm_tuned__ablate_time_proxies": {
+    "files": [
+      "reports/leakage_logs/lgbm_tuned__ablate_time_proxies.log"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "flaml__clean": {
+    "files": [
+      "reports/leakage_logs/flaml__clean.log",
+      "reports/leaderboards/leakage/clean/flaml_fit_log.txt"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "flaml__leak_detection_ratio": {
+    "files": [
+      "reports/leakage_logs/flaml__leak_detection_ratio.log",
+      "reports/leaderboards/leakage/leak_detection_ratio/flaml_fit_log.txt"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": false
+  },
+  "flaml__leak_first_submission": {
+    "files": [
+      "reports/leakage_logs/flaml__leak_first_submission.log",
+      "reports/leaderboards/leakage/leak_first_submission/flaml_fit_log.txt"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": false
+  },
+  "autogluon__clean": {
+    "files": [
+      "reports/leakage_logs/autogluon__clean.log",
+      "reports/leaderboards/leakage/clean/autogluon_fit_log.txt"
+    ],
+    "n_warning_lines": 6,
+    "warning_lines": [
+      "Warning: Data size prior to feature transformation consumes 12.2% of available memory. Consider increasing memory or subsampling the data to avoid instability.",
+      "Warning: Potentially not enough memory to safely train model. Estimated to require 8.425 GB out of 9.409 GB available memory (89.538%)... (90.000% of avail memory is the max safe size)",
+      "To avoid this warning, specify the model hyperparameter \"ag.max_memory_usage_ratio\" to a larger value (currently 1.0, set to >=1.24 to avoid the warning)",
+      "Warning: Data size prior to feature transformation consumes 12.2% of available memory. Consider increasing memory or subsampling the data to avoid instability.",
+      "Warning: Potentially not enough memory to safely train model. Estimated to require 8.425 GB out of 9.409 GB available memory (89.538%)... (90.000% of avail memory is the max safe size)",
+      "To avoid this warning, specify the model hyperparameter \"ag.max_memory_usage_ratio\" to a larger value (currently 1.0, set to >=1.24 to avoid the warning)"
+    ],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 4,
+    "flag_word_lines": [
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'",
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'"
+    ],
+    "leak_dropped_by_tool": null
+  },
+  "autogluon__leak_detection_ratio": {
+    "files": [
+      "reports/leakage_logs/autogluon__leak_detection_ratio.log",
+      "reports/leaderboards/leakage/leak_detection_ratio/autogluon_fit_log.txt"
+    ],
+    "n_warning_lines": 26,
+    "warning_lines": [
+      "Warning: Data size prior to feature transformation consumes 12.2% of available memory. Consider increasing memory or subsampling the data to avoid instability.",
+      "Warning: Potentially not enough memory to safely train model. Estimated to require 8.428 GB out of 9.454 GB available memory (89.151%)... (90.000% of avail memory is the max safe size)",
+      "To avoid this warning, specify the model hyperparameter \"ag.max_memory_usage_ratio\" to a larger value (currently 1.0, set to >=1.24 to avoid the warning)",
+      "Warning: Not enough memory to safely train model. Estimated to require 8.428 GB out of 7.140 GB available memory (118.036%)... (90.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 6.495 GB out of 7.140 GB available memory (90.965%)... (50.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 6.495 GB out of 7.140 GB available memory (90.964%)... (50.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 10.709 GB out of 7.140 GB available memory (149.979%)... (100.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 6.495 GB out of 7.142 GB available memory (90.939%)... (50.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 6.495 GB out of 7.143 GB available memory (90.938%)... (50.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 14.405 GB out of 7.142 GB available memory (201.680%)... (90.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 11.730 GB out of 7.142 GB available memory (164.238%)... (100.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 7.202 GB out of 7.144 GB available memory (100.822%)... (90.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 9.864 GB out of 7.144 GB available memory (138.085%)... (90.000% of avail memory is the max safe size)",
+      "Warning: Data size prior to feature transformation consumes 12.2% of available memory. Consider increasing memory or subsampling the data to avoid instability.",
+      "Warning: Potentially not enough memory to safely train model. Estimated to require 8.428 GB out of 9.454 GB available memory (89.151%)... (90.000% of avail memory is the max safe size)",
+      "To avoid this warning, specify the model hyperparameter \"ag.max_memory_usage_ratio\" to a larger value (currently 1.0, set to >=1.24 to avoid the warning)",
+      "Warning: Not enough memory to safely train model. Estimated to require 8.428 GB out of 7.140 GB available memory (118.036%)... (90.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 6.495 GB out of 7.140 GB available memory (90.965%)... (50.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 6.495 GB out of 7.140 GB available memory (90.964%)... (50.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 10.709 GB out of 7.140 GB available memory (149.979%)... (100.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 6.495 GB out of 7.142 GB available memory (90.939%)... (50.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 6.495 GB out of 7.143 GB available memory (90.938%)... (50.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 14.405 GB out of 7.142 GB available memory (201.680%)... (90.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 11.730 GB out of 7.142 GB available memory (164.238%)... (100.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 7.202 GB out of 7.144 GB available memory (100.822%)... (90.000% of avail memory is the max safe size)",
+      "Warning: Not enough memory to safely train model. Estimated to require 9.864 GB out of 7.144 GB available memory (138.085%)... (90.000% of avail memory is the max safe size)"
+    ],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 4,
+    "flag_word_lines": [
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'",
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'"
+    ],
+    "leak_dropped_by_tool": false
+  },
+  "autogluon__leak_first_submission": {
+    "files": [
+      "reports/leakage_logs/autogluon__leak_first_submission.log",
+      "reports/leaderboards/leakage/leak_first_submission/autogluon_fit_log.txt"
+    ],
+    "n_warning_lines": 6,
+    "warning_lines": [
+      "Warning: Data size prior to feature transformation consumes 12.1% of available memory. Consider increasing memory or subsampling the data to avoid instability.",
+      "Warning: Potentially not enough memory to safely train model. Estimated to require 8.428 GB out of 9.386 GB available memory (89.796%)... (90.000% of avail memory is the max safe size)",
+      "To avoid this warning, specify the model hyperparameter \"ag.max_memory_usage_ratio\" to a larger value (currently 1.0, set to >=1.25 to avoid the warning)",
+      "Warning: Data size prior to feature transformation consumes 12.1% of available memory. Consider increasing memory or subsampling the data to avoid instability.",
+      "Warning: Potentially not enough memory to safely train model. Estimated to require 8.428 GB out of 9.386 GB available memory (89.796%)... (90.000% of avail memory is the max safe size)",
+      "To avoid this warning, specify the model hyperparameter \"ag.max_memory_usage_ratio\" to a larger value (currently 1.0, set to >=1.25 to avoid the warning)"
+    ],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 4,
+    "flag_word_lines": [
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'",
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'"
+    ],
+    "leak_dropped_by_tool": false
+  },
+  "h2o__clean": {
+    "files": [
+      "reports/leakage_logs/h2o__clean.log",
+      "reports/leaderboards/leakage/clean/h2o_event_log.csv"
+    ],
+    "n_warning_lines": 7,
+    "warning_lines": [
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping unused columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]"
+    ],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "h2o__leak_detection_ratio": {
+    "files": [
+      "reports/leakage_logs/h2o__leak_detection_ratio.log",
+      "reports/leaderboards/leakage/leak_detection_ratio/h2o_event_log.csv"
+    ],
+    "n_warning_lines": 7,
+    "warning_lines": [
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping unused columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]"
+    ],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": false
+  },
+  "h2o__leak_first_submission": {
+    "files": [
+      "reports/leakage_logs/h2o__leak_first_submission.log",
+      "reports/leaderboards/leakage/leak_first_submission/h2o_event_log.csv"
+    ],
+    "n_warning_lines": 7,
+    "warning_lines": [
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping unused columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]",
+      "WARN: _train param, Dropping bad and constant columns: [pefilewarnings__1, strings__112, pefilewarnings__5, header__44, pefilewarnings__35, pefilewarnings__34, pefilewarnings__77, pefilewarnings__18, pefilewarnings__38, pefilewarnings__15, pefilewarnings__59, pefilewarnings__32, pefilewarnings__54, pefilewarnings__30, pefilewarnings__74, section__10, section__6, pefilewarnings__25, section__8, pefilewarnings__23, pefilewarnings__45, pefilewarnings__22, pefilewarnings__44, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__83, pefilewarnings__82, datadirectories__30, pefilewarnings__21, datadirectories__31, pefilewarnings__20, pefilewarnings__42, pefilewarnings__41, pefilewarnings__63]"
+    ],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": false
+  }
+}

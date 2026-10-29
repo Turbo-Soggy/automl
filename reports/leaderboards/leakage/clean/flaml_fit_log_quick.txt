@@ -1,0 +1,49 @@
+2026-10-29 08:49:51,279 INFO task = classification
+2026-10-29 08:49:51,279 INFO Evaluation method: holdout
+2026-10-29 08:49:52,446 INFO Minimizing error metric: 1-roc_auc
+2026-10-29 08:49:52,564 INFO List of ML learners in AutoML Run: ['lgbm', 'rf', 'xgboost', 'extra_tree', 'xgb_limitdepth', 'sgd', 'catboost', 'lrl1']
+2026-10-29 08:49:52,566 INFO iteration 0, current learner lgbm
+2026-10-29 08:49:54,148 INFO Estimated sufficient time budget=15816s. Estimated necessary time budget=390s.
+2026-10-29 08:49:54,149 INFO  at 2.9s,	estimator lgbm's best error=3.8587e-02,	best estimator lgbm's best error=3.8587e-02
+2026-10-29 08:49:54,149 INFO iteration 1, current learner lgbm
+2026-10-29 08:49:55,689 INFO  at 4.4s,	estimator lgbm's best error=3.8587e-02,	best estimator lgbm's best error=3.8587e-02
+2026-10-29 08:49:55,689 INFO iteration 2, current learner lgbm
+2026-10-29 08:49:57,132 INFO  at 5.9s,	estimator lgbm's best error=3.0675e-02,	best estimator lgbm's best error=3.0675e-02
+2026-10-29 08:49:57,132 INFO iteration 3, current learner sgd
+2026-10-29 08:50:03,930 INFO  at 12.7s,	estimator sgd's best error=3.0898e-01,	best estimator lgbm's best error=3.0675e-02
+2026-10-29 08:50:03,931 INFO iteration 4, current learner xgboost
+2026-10-29 08:50:05,941 INFO  at 14.7s,	estimator xgboost's best error=3.7763e-02,	best estimator lgbm's best error=3.0675e-02
+2026-10-29 08:50:05,941 INFO iteration 5, current learner lgbm
+2026-10-29 08:50:07,326 INFO  at 16.0s,	estimator lgbm's best error=2.5084e-02,	best estimator lgbm's best error=2.5084e-02
+2026-10-29 08:50:07,327 INFO iteration 6, current learner lgbm
+2026-10-29 08:50:08,730 INFO  at 17.5s,	estimator lgbm's best error=2.5084e-02,	best estimator lgbm's best error=2.5084e-02
+2026-10-29 08:50:08,731 INFO iteration 7, current learner lgbm
+2026-10-29 08:50:10,169 INFO  at 18.9s,	estimator lgbm's best error=1.9313e-02,	best estimator lgbm's best error=1.9313e-02
+2026-10-29 08:50:10,169 INFO iteration 8, current learner lgbm
+2026-10-29 08:50:12,138 INFO  at 20.9s,	estimator lgbm's best error=8.4500e-03,	best estimator lgbm's best error=8.4500e-03
+2026-10-29 08:50:12,139 INFO iteration 9, current learner lgbm
+2026-10-29 08:50:13,757 INFO  at 22.5s,	estimator lgbm's best error=8.4500e-03,	best estimator lgbm's best error=8.4500e-03
+2026-10-29 08:50:13,757 INFO iteration 10, current learner lgbm
+2026-10-29 08:50:15,385 INFO  at 24.1s,	estimator lgbm's best error=8.4500e-03,	best estimator lgbm's best error=8.4500e-03
+2026-10-29 08:50:15,385 INFO iteration 11, current learner extra_tree
+2026-10-29 08:50:15,501 INFO  at 24.2s,	estimator extra_tree's best error=5.2041e-02,	best estimator lgbm's best error=8.4500e-03
+2026-10-29 08:50:15,501 INFO iteration 12, current learner extra_tree
+2026-10-29 08:50:15,666 INFO  at 24.4s,	estimator extra_tree's best error=5.1559e-02,	best estimator lgbm's best error=8.4500e-03
+2026-10-29 08:50:15,666 INFO iteration 13, current learner xgboost
+2026-10-29 08:50:17,567 INFO  at 26.3s,	estimator xgboost's best error=3.7763e-02,	best estimator lgbm's best error=8.4500e-03
+2026-10-29 08:50:17,567 INFO iteration 14, current learner rf
+2026-10-29 08:50:17,726 INFO  at 26.4s,	estimator rf's best error=5.7634e-02,	best estimator lgbm's best error=8.4500e-03
+2026-10-29 08:50:17,726 INFO iteration 15, current learner rf
+2026-10-29 08:50:17,971 INFO  at 26.7s,	estimator rf's best error=5.7231e-02,	best estimator lgbm's best error=8.4500e-03
+2026-10-29 08:50:17,972 INFO iteration 16, current learner xgboost
+2026-10-29 08:50:19,812 INFO  at 28.5s,	estimator xgboost's best error=3.1900e-02,	best estimator lgbm's best error=8.4500e-03
+2026-10-29 08:50:19,812 INFO iteration 17, current learner catboost
+2026-10-29 08:50:34,118 INFO  at 42.8s,	estimator catboost's best error=9.9375e-03,	best estimator lgbm's best error=8.4500e-03
+2026-10-29 08:50:36,405 INFO retrain lgbm for 2.3s
+2026-10-29 08:50:36,407 INFO retrained model: LGBMClassifier(colsample_bytree=np.float64(0.996498378007316),
+               learning_rate=np.float64(0.21480951571013288), max_bin=63,
+               min_child_samples=13, n_estimators=43, n_jobs=4, num_leaves=10,
+               reg_alpha=np.float64(0.002255250947893723),
+               reg_lambda=np.float64(0.10239167483099826), verbose=-1)
+2026-10-29 08:50:36,407 INFO fit succeeded
+2026-10-29 08:50:36,407 INFO Time taken to find the best model: 20.860285758972168

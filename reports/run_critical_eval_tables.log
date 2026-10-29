@@ -1,0 +1,6 @@
+[tables] precision at prevalence on both test sets
+[tables] drift gap of every model against the tuned LightGBM's
+[tables] AutoML own validation estimates
+wrote reports/tables/precision_both_sets.csv
+wrote reports/tables/gap_vs_tuned.csv
+wrote reports/tables/automl_self_estimate.csv

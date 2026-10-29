@@ -1,0 +1,22 @@
+{
+  "threshold": 0.004855266673744436,
+  "cost_ratio_fn_to_fp": 10.0,
+  "c_fn": 10.0,
+  "c_fp": 1.0,
+  "rule": "flag as malicious if P(malicious) >= threshold",
+  "model": "models/lgbm_random_quick.txt",
+  "how_chosen": "minimises C_FN*FN + C_FP*FP over every distinct score on TRAIN out-of-fold predictions (persisted 3-fold CV of the train split, data/splits/cv_fold_ids; tuned params, fixed 479 rounds as the refit); cut placed midway to the next lower score. No test set was used.",
+  "source_of_predictions": "reports/predictions/oof_lgbm_tuned_quick.npz",
+  "oof_rows": 8000,
+  "oof_cost_per_1000": 121.875,
+  "test_future_check": {
+    "precision": 0.8837209302325582,
+    "recall": 0.988988988988989,
+    "fpr": 0.12987012987012986,
+    "fn": 11.0,
+    "fp": 130.0,
+    "cost_per_1000": 120.0
+  },
+  "caveat": "classes are 50/50 by construction; re-derive the threshold for a deployment with another prevalence",
+  "seed": 42
+}

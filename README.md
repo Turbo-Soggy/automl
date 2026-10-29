@@ -7,7 +7,8 @@ AutoML tools (FLAML, AutoGluon, H2O).
 
 > **Status (2026-10-29):** Steps 0-3 (environment, data and splits, baselines and
 > tuning, AutoML) are done and passed adversarial review. Step 4 (critical
-> evaluation) is being redone from scratch, and Steps 5-6 are not started. See
+> evaluation) has been redone on a 4-core cloud VM; its outputs and write-ups exist and
+> await their review gate. Steps 5-6 are not started. See
 > [`docs/handoff/HANDOFF.md`](docs/handoff/HANDOFF.md) for the current state and
 > how to continue on a fresh machine. No results are typed into this README. All
 > numbers live in `reports/` and are generated from the experiment log and the
@@ -166,12 +167,16 @@ From the project root (on Linux or macOS, `.venv/bin/python` instead of
 .venv/Scripts/python.exe scripts/run_leakage.py              # Step 4A: leakage experiments (~3 h), then outputs
 .venv/Scripts/python.exe scripts/run_leakage.py --skip-done  # resume: only runs not yet logged
 .venv/Scripts/python.exe scripts/run_leakage.py --tables-only  # rebuild leakage table, figure, write-up
+.venv/Scripts/python.exe scripts/run_explain.py               # Step 4C: OOF scores, SHAP, agreement, calibration, threshold
+.venv/Scripts/python.exe scripts/run_eval_bias.py             # Step 4B: random vs future, CV, bias, drift, challenge set
+.venv/Scripts/python.exe scripts/run_critical_eval.py         # Step 4 synthesis: critical_eval.md, limitations.md
+.venv/Scripts/python.exe run_all.py --steps eval              # all of Step 4 in that order (leakage with --skip-done)
 .venv/Scripts/python.exe scripts/run_automl.py --refresh-notes  # re-derive notes from saved models (no refit)
 .venv/Scripts/jupyter.exe nbconvert --to notebook --execute --inplace notebooks/02_baseline_tuning.ipynb
 ```
 
 * `--steps` takes a comma-separated subset of `data,tune,automl,eval,deploy`.
-  Steps always run in that order. `eval` and `deploy` are not
+  Steps always run in that order. `deploy` is not
   implemented yet and say so.
 * `--quick` sets `EMBER_QUICK=1`. That shrinks every size in `config.py` (10k
   pool, 2k future test, 5k tuning subset, 4 trials, 60 s AutoML budget) and
@@ -195,7 +200,8 @@ From the project root (on Linux or macOS, `.venv/bin/python` instead of
 | `data` | `scripts/download_data.py`, `scripts/build_cache.py`, `scripts/verify_data.py` | `data/raw/`, `data/cache/`, `data/splits/` (incl. `splits_info.json`), `reports/data_check.json`, `reports/tables/class_balance_by_week.csv` |
 | `tune` | `scripts/run_tuning.py` | `reports/experiments.jsonl`, `reports/predictions/*.npz` (test-set scores), `reports/tables/tuning_summary.csv` (with 95% CIs), `tuning_pairwise.csv`, `tuning_trials.csv`, `tuning_refit_versions.csv`, `reports/figures/tuning_compare.png`, `reports/figures/tuning_convergence.png`, `reports/tuning_writeup.md` |
 | `automl` | `scripts/run_automl.py` (one child process per tool, with a sleep guard) | `reports/leaderboards/` (per tool: leaderboard, fit/search/event log, preprocessing notes JSON with saved-model checks, importances), `reports/predictions/automl_*.npz`, `reports/tables/automl_vs_manual.csv`, `reports/tables/automl_pairwise.csv`, `reports/figures/automl_vs_manual.png`, `reports/automl_comparison.md`, `models/flaml/`, `models/autogluon/`, `models/h2o/` |
-| `eval`, `deploy` | not implemented yet in `run_all.py`; draft Step 4A (leakage) code runs on its own with `scripts/run_leakage.py` (unreviewed, outputs not yet produced) | `reports/tables/leakage.csv`, `reports/figures/leakage_jump.png`, `reports/leakage.md`, `reports/leakage_logs/`, `reports/leaderboards/leakage/`, `reports/predictions/leakage/`, `models/leakage/` |
+| `eval` | `scripts/run_explain.py`, `scripts/run_eval_bias.py`, `scripts/run_leakage.py --skip-done`, `scripts/run_critical_eval.py` (in that order: explain writes the train out-of-fold scores and `models/threshold.json` that the others reuse) | `reports/critical_eval.md`, `reports/limitations.md`, `reports/leakage.md`, `reports/temporal_bias.md`, `reports/explainability.md`; tables in `reports/tables/` (`random_vs_future`, `precision_both_sets`, `gap_vs_tuned`, `automl_self_estimate`, `leakage`, `cv_comparison`, `bias_slices`, `prevalence`, `challenge`, `drift`, `shap_*`, `calibration`, `threshold`, ...), figures in `reports/figures/`, `reports/leakage_logs/`, `reports/leaderboards/leakage/`, `reports/predictions/{eval,leakage}/`, `models/threshold.json`, `models/eval/`, `models/leakage/` |
+| `deploy` | not implemented yet in `run_all.py` | |
 
 ## Repository layout
 
@@ -218,6 +224,15 @@ src/
                        tuned-LightGBM and AutoML reruns, importance ranks and TreeSHAP of the leak column
   leakage_report.py    Step 4A table, figure and log scan (did a tool warn about or drop the leak?)
   leakage_writeup.py   renders reports/leakage.md from the leakage table and log records
+  temporal.py          Step 4B: random-vs-future gaps, stratified and forward CV, the extra train-only fits
+  bias.py              Step 4B: class balance, per-slice TPR/FPR, class weights, precision at a base rate
+  drift.py             Step 4B: weekly scores of expanding, sliding and size-matched training windows
+  challenge.py         Step 4B: vectorises the Win64 challenge-set rows into separate cache files
+  eval_bias_report.py  Step 4B tables and figures; temporal_writeup.py renders reports/temporal_bias.md
+  explain.py           Step 4C: TreeSHAP, feature-family grouping, cross-tool agreement
+  calibration.py       Step 4C: out-of-fold scores, reliability, Brier/ECE, cost-sensitive threshold
+  critical_eval.py     Step 4 synthesis tables (precision on both sets, gap vs tuned, AutoML self-estimates)
+  critical_eval_writeup.py  renders reports/critical_eval.md and reports/limitations.md from the tables
 scripts/
   download_data.py     verified download of the raw jsonl
   probe_raw.py         looks at the first rows of one remote file (setup only)
@@ -226,12 +241,18 @@ scripts/
   run_tuning.py        Step 2 entry point
   run_automl.py        Step 3 entry point (--tools, --tables-only, --refresh-notes, --quick)
   run_leakage.py       Step 4A entry point (--runs, --skip-done, --tables-only, --quick)
+  run_eval_bias.py     Step 4B entry point (--stages fits,challenge,tables,writeup, --quick)
+  run_explain.py       Step 4C entry point (--stages oof,shap,agreement,calibration,threshold,report, --quick)
+  run_critical_eval.py Step 4 synthesis entry point (--stages tables,writeup, --quick)
 tests/
   conftest.py          puts the project root on sys.path; skip helpers
   test_splits.py       disjointness, temporal order, sizes, balance, CV folds, feature groups
   test_tune.py         tuners, seeding, refit rule, bootstrap, tables (synthetic data, no cache needed)
   test_automl.py       Step 3 tables, pairwise rows, FLAML log parser, sleep guard (synthetic data)
   test_leakage.py      Step 4A variants, time-proxy positions in thrember's source, ranks, SHAP, log scan
+  test_eval_bias.py    Step 4B folds, metrics, thresholds, base-rate maths, challenge filtering (synthetic)
+  test_explain.py      Step 4C SHAP checks, family grouping, calibration and threshold maths (synthetic)
+  test_critical_eval.py  Step 4 synthesis tables and the sentences chosen from them
 notebooks/
   01_eda.ipynb                 narrative EDA (imports from src, no own logic)
   02_baseline_tuning.ipynb     narrative view of the Step 2 tables and figures
@@ -381,6 +402,6 @@ row-aligned.
 | 1 | Cache, splits, CV folds | done: [`data/splits/splits_info.json`](data/splits/splits_info.json) (committed, with `split_sha256.parquet` for checking a rebuild), [`reports/tables/class_balance_by_week.csv`](reports/tables/class_balance_by_week.csv); `pytest` passes with no skips |
 | 2 | Baselines (LightGBM default, logistic regression) and Grid / Random / Optuna tuning | done, passed adversarial review (refit version 2 for all five methods; run log [`reports/run_tuning_refit_v2.log`](reports/run_tuning_refit_v2.log); its final table step failed because the running process mixed the old `tables.py` with the edited `tuning_writeup.py`, so the outputs were rebuilt with `--tables-only`, see [`reports/run_tuning_tables_v2.log`](reports/run_tuning_tables_v2.log)): [`reports/tuning_writeup.md`](reports/tuning_writeup.md), [`reports/tables/tuning_summary.csv`](reports/tables/tuning_summary.csv), [`reports/tables/tuning_pairwise.csv`](reports/tables/tuning_pairwise.csv), [`reports/tables/tuning_trials.csv`](reports/tables/tuning_trials.csv), [`reports/tables/tuning_refit_versions.csv`](reports/tables/tuning_refit_versions.csv), [`reports/figures/tuning_compare.png`](reports/figures/tuning_compare.png), [`reports/figures/tuning_convergence.png`](reports/figures/tuning_convergence.png), raw log [`reports/experiments.jsonl`](reports/experiments.jsonl) |
 | 3 | AutoML: FLAML, AutoGluon, H2O (1200 s each) | done, passed adversarial review (run log [`reports/run_automl.log`](reports/run_automl.log); a first attempt where the laptop slept is in [`reports/run_automl_attempt1_slept.log`](reports/run_automl_attempt1_slept.log); notes re-derived from the saved models with `--refresh-notes`, no refit): [`reports/automl_comparison.md`](reports/automl_comparison.md), [`reports/tables/automl_vs_manual.csv`](reports/tables/automl_vs_manual.csv), [`reports/tables/automl_pairwise.csv`](reports/tables/automl_pairwise.csv), [`reports/figures/automl_vs_manual.png`](reports/figures/automl_vs_manual.png), [`reports/leaderboards/`](reports/leaderboards/) |
-| 4 | Critical evaluation: random vs future, leakage, bias slices, SHAP, calibration, drift | to redo from scratch; draft leakage code (`src/leakage*.py`, `scripts/run_leakage.py`) exists but is unreviewed and its outputs were discarded |
+| 4 | Critical evaluation: random vs future, leakage, bias slices, SHAP, calibration, drift | outputs produced on the 4-core cloud VM, review gate pending: [`reports/critical_eval.md`](reports/critical_eval.md) (the answer to the research question), [`reports/limitations.md`](reports/limitations.md), [`reports/leakage.md`](reports/leakage.md), [`reports/temporal_bias.md`](reports/temporal_bias.md), [`reports/explainability.md`](reports/explainability.md) |
 | 5 | Deployment: FastAPI, Streamlit, model card | pending |
 | 6 | Report and slides | pending |

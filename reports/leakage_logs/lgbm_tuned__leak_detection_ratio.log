@@ -1,0 +1,2 @@
+[leakage] lgbm_tuned on leak_detection_ratio: budget 600 s, quick=False
+[leakage] lgbm_tuned leak_detection_ratio best=LightGBM (optuna config, 609 trees) wall_s=122 test_random_auc=1.00000 test_future_auc=1.00000 timing_valid=True

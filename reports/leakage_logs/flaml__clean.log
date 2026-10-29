@@ -1,0 +1,5 @@
+[leakage] flaml on clean: budget 600 s, quick=False
+[flaml:clean] alive 09:02:55, 300 s in, max gap 30 s
+[flaml:clean] alive 09:07:55, 600 s in, max gap 30 s
+[flaml:clean] alive 09:12:55, 900 s in, max gap 30 s
+[leakage] flaml clean best=lgbm wall_s=1021 test_random_auc=0.99902 test_future_auc=0.99799 timing_valid=True

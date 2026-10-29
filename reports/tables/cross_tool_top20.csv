@@ -1,0 +1,21 @@
+rank,lgbm_tuned,flaml,autogluon,h2o
+1,header: coff.char.DLL,datadirectories: EXPORT.size,pefilewarnings: warning[Suspicious flags set for section...],exports: has_exports(0/128)
+2,authenticode: latest_signing_time,header: coff.char.DLL,header: coff.char.DLL,header: coff.char.DLL
+3,datadirectories: EXPORT.size,authenticode: latest_signing_time,datadirectories: DEBUG.size,authenticode: latest_signing_time
+4,pefilewarnings: warning[Suspicious flags set for section...],pefilewarnings: warning[Suspicious flags set for section...],authenticode: latest_signing_time,histogram: byte_0x7a_freq
+5,datadirectories: SECURITY.size,exports: has_exports(0/128),exports: has_exports(0/128),strings: entropy
+6,section: n_rx,datadirectories: SECURITY.size,header: optional.subsystem,strings: char_'Q'_freq
+7,authenticode: chain_max_depth,header: optional.minor_linker_version,datadirectories: EXPORT.size,strings: char_'Y'_freq
+8,section: vsize[hash 5],authenticode: signing_time_diff,header: optional.dll_char.GUARD_CF,pefilewarnings: warning[Suspicious flags set for section...]
+9,datadirectories: RESOURCE.size,datadirectories: RESOURCE.size,datadirectories: SECURITY.size,section: overlay.entropy
+10,authenticode: signing_time_diff,datadirectories: DEBUG.size,authenticode: empty_program_name,header: optional.dll_char.TERMINAL_SERVER_AWARE
+11,header: optional.minor_linker_version,strings: entropy,header: optional.dll_char.TERMINAL_SERVER_AWARE,authenticode: chain_max_depth
+12,datadirectories: DEBUG.size,header: optional.subsystem,header: optional.sizeof_stack_reserve,header: optional.dll_char.GUARD_CF
+13,section: max_entropy,strings: char_'_'_freq,section: vsize[hash 5],datadirectories: DEBUG.size
+14,exports: has_exports(0/128),header: optional.checksum,section: size[hash 5],strings: char_'q'_freq
+15,imports: function[hash 989],imports: n_imported_functions,histogram: byte_0x5f_freq,header: optional.minor_linker_version
+16,header: optional.checksum,imports: function[hash 989],imports: library[hash 30],section: size[hash 19]
+17,header: coff.timestamp,section: max_entropy,datadirectories: has_relocs,imports: function[hash 215]
+18,strings: char_'_'_freq,strings: char_'Q'_freq,strings: count[process],imports: function[hash 170]
+19,pefilewarnings: warning[AddressOfEntryPoint lies outside the sec],strings: char_'q'_freq,header: optional.sizeof_uninitialized_data,exports: export[hash 44]
+20,section: entropy[hash 32],histogram: byte_0x7a_freq,authenticode: self_signed,imports: function[hash 319]

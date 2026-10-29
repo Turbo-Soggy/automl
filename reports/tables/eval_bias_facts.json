@@ -1,0 +1,108 @@
+{
+  "quick": false,
+  "seed": 42,
+  "n_bootstrap": 1000,
+  "eval_n_jobs": 2,
+  "machine": {
+    "cpu_count": 4,
+    "ram_gib": 15.7,
+    "os": "Linux-6.18.44-fc-v185-x86_64-with-glibc2.39",
+    "processor": "x86_64"
+  },
+  "tuned_tuner": "optuna",
+  "tuned_rounds": 609,
+  "saved_model_threads": 16,
+  "oof_1pct_fpr_thresholds": {
+    "optuna": 0.566572086377204,
+    "lgbm_default": 0.6667795848594614,
+    "logreg": 0.9204009771347046
+  },
+  "oof_threshold_sources": {
+    "optuna": "shared with the explain job (reports/predictions/oof_lgbm_tuned.npz)",
+    "lgbm_default": "reports/predictions/eval/oof_lgbm_default_fold*.npz",
+    "logreg": "reports/predictions/eval/oof_logreg_fold*.npz"
+  },
+  "deployment_threshold": 0.006865195909782736,
+  "deployment_threshold_source": "models/threshold.json: cost-minimising on train OOF scores at C_FN/C_FP = 10",
+  "file_size_quartile_edges_train": [
+    174572.0,
+    1017892.0,
+    4248132.0
+  ],
+  "class_weight_notes": {
+    "class_weight_none": "no class weights (reference refit on this machine)",
+    "class_weight_balanced": "scale_pos_weight = n_benign/n_malicious = 1.000075",
+    "class_weight_prior_10pct": "scale_pos_weight = 0.1111 (malware weighted as 10% of the data)"
+  },
+  "drift_slopes_per_week": {
+    "roc_auc": {
+      "expanding": -0.00011045759166577115,
+      "size_matched": -3.801530925919917e-05,
+      "sliding_12w": -4.808344559557626e-05
+    },
+    "f1": {
+      "expanding": -0.00023420046889989211,
+      "size_matched": 0.00013310750460266977,
+      "sliding_12w": 0.00025351127113714376
+    },
+    "tpr_at_1pct_fpr": {
+      "expanding": -0.00035810171892201544,
+      "size_matched": 0.0009930786951853105,
+      "sliding_12w": 0.00010995542645512101
+    }
+  },
+  "drift_train_rows": {
+    "sliding_12w": 36924,
+    "size_matched": 36924,
+    "expanding": 160000
+  },
+  "challenge_info": {
+    "built_utc": "2026-10-29T12:52:29.173116+00:00",
+    "seconds": 7.3,
+    "source": "data/raw/challenge",
+    "files": 64,
+    "file_type": "Win64",
+    "lines": 6315,
+    "by_file_type": {
+      "Win32": 3225,
+      "ELF": 386,
+      "PDF": 805,
+      "Win64": 814,
+      "Dot_Net": 829,
+      "APK": 256
+    },
+    "duplicates": 0,
+    "dropped_bad_label": 0,
+    "rows": 814,
+    "feature_dim": 2568,
+    "nonfinite_values": 0,
+    "label_counts": {
+      "1": 814
+    },
+    "week_min": 0,
+    "week_max": 63,
+    "week_matches_week_id": true,
+    "overlap": {
+      "in_train_cache": 0,
+      "in_test_cache": 0,
+      "in_train_split": 0,
+      "in_test_random_split": 0,
+      "in_test_future_split": 0
+    }
+  },
+  "challenge_scoring": {
+    "reload_check_max_abs_diff": {
+      "lgbm_default": 1.734723475976807e-18,
+      "grid": 1.3234889800848443e-23,
+      "random": 0.0,
+      "optuna": 0.0,
+      "logreg": 1.30385160446167e-08,
+      "flaml": 0.0,
+      "h2o": 0.0
+    },
+    "reload_check_rows": 300,
+    "not_scored": {
+      "autogluon": "models/autogluon not on disk: the 1.8 GB Step 3 predictor was not committed and is not rebuilt (its test scores are saved, so it is in every other table)"
+    }
+  }
+}

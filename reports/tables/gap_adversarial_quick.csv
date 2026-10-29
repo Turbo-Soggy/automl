@@ -1,0 +1,3 @@
+comparison,auc,n_past,n_future
+train split vs same weeks 0-51 (control),0.514750875,2000,2000
+train split vs future weeks 52-63,0.9081509999999999,2000,2000

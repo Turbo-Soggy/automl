@@ -1,0 +1,199 @@
+{
+  "lgbm_tuned__clean": {
+    "files": [
+      "reports/leakage_logs/lgbm_tuned__clean_quick.log"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "lgbm_tuned__leak_detection_ratio": {
+    "files": [
+      "reports/leakage_logs/lgbm_tuned__leak_detection_ratio_quick.log"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "lgbm_tuned__leak_first_submission": {
+    "files": [
+      "reports/leakage_logs/lgbm_tuned__leak_first_submission_quick.log"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "lgbm_tuned__ablate_time_proxies": {
+    "files": [
+      "reports/leakage_logs/lgbm_tuned__ablate_time_proxies_quick.log"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "flaml__clean": {
+    "files": [
+      "reports/leakage_logs/flaml__clean_quick.log",
+      "reports/leaderboards/leakage/clean/flaml_fit_log_quick.txt"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "flaml__leak_detection_ratio": {
+    "files": [
+      "reports/leakage_logs/flaml__leak_detection_ratio_quick.log",
+      "reports/leaderboards/leakage/leak_detection_ratio/flaml_fit_log_quick.txt"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": false
+  },
+  "flaml__leak_first_submission": {
+    "files": [
+      "reports/leakage_logs/flaml__leak_first_submission_quick.log",
+      "reports/leaderboards/leakage/leak_first_submission/flaml_fit_log_quick.txt"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": false
+  },
+  "autogluon__clean": {
+    "files": [
+      "reports/leakage_logs/autogluon__clean_quick.log",
+      "reports/leaderboards/leakage/clean/autogluon_fit_log_quick.txt"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 4,
+    "flag_word_lines": [
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'",
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'"
+    ],
+    "leak_dropped_by_tool": null
+  },
+  "autogluon__leak_detection_ratio": {
+    "files": [
+      "reports/leakage_logs/autogluon__leak_detection_ratio_quick.log",
+      "reports/leaderboards/leakage/leak_detection_ratio/autogluon_fit_log_quick.txt"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 4,
+    "flag_word_lines": [
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'",
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'"
+    ],
+    "leak_dropped_by_tool": false
+  },
+  "autogluon__leak_first_submission": {
+    "files": [
+      "reports/leakage_logs/autogluon__leak_first_submission_quick.log",
+      "reports/leaderboards/leakage/leak_first_submission/autogluon_fit_log_quick.txt"
+    ],
+    "n_warning_lines": 0,
+    "warning_lines": [],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 4,
+    "flag_word_lines": [
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'",
+      "These features carry no predictive signal and should be manually investigated.",
+      "AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'"
+    ],
+    "leak_dropped_by_tool": false
+  },
+  "h2o__clean": {
+    "files": [
+      "reports/leakage_logs/h2o__clean_quick.log",
+      "reports/leaderboards/leakage/clean/h2o_event_log_quick.csv"
+    ],
+    "n_warning_lines": 4,
+    "warning_lines": [
+      "Warning: This model doesn't have variable importances",
+      "WARN: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]",
+      "WARN: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]",
+      "WARN: _train param, Dropping unused columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]"
+    ],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": null
+  },
+  "h2o__leak_detection_ratio": {
+    "files": [
+      "reports/leakage_logs/h2o__leak_detection_ratio_quick.log",
+      "reports/leaderboards/leakage/leak_detection_ratio/h2o_event_log_quick.csv"
+    ],
+    "n_warning_lines": 5,
+    "warning_lines": [
+      "Warning: This model doesn't have variable importances",
+      "WARN: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]",
+      "WARN: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]",
+      "WARN: _train param, Dropping unused columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]",
+      "WARN: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]"
+    ],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": false
+  },
+  "h2o__leak_first_submission": {
+    "files": [
+      "reports/leakage_logs/h2o__leak_first_submission_quick.log",
+      "reports/leaderboards/leakage/leak_first_submission/h2o_event_log_quick.csv"
+    ],
+    "n_warning_lines": 5,
+    "warning_lines": [
+      "Warning: This model doesn't have variable importances",
+      "WARN: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]",
+      "WARN: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]",
+      "WARN: _train param, Dropping unused columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]",
+      "WARN: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]"
+    ],
+    "n_lines_mentioning_leak": 0,
+    "leak_mention_lines": [],
+    "n_flag_word_lines": 0,
+    "flag_word_lines": [],
+    "leak_dropped_by_tool": false
+  }
+}

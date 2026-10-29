@@ -1,0 +1,15 @@
+{
+  "reload_check_max_abs_diff": {
+    "lgbm_default": 1.734723475976807e-18,
+    "grid": 1.3234889800848443e-23,
+    "random": 0.0,
+    "optuna": 0.0,
+    "logreg": 1.30385160446167e-08,
+    "flaml": 0.0,
+    "h2o": 0.0
+  },
+  "reload_check_rows": 300,
+  "not_scored": {
+    "autogluon": "models/autogluon not on disk: the 1.8 GB Step 3 predictor was not committed and is not rebuilt (its test scores are saved, so it is in every other table)"
+  }
+}

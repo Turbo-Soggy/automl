@@ -316,41 +316,61 @@ def flaml_leaderboard(trials: pd.DataFrame) -> pd.DataFrame:
 
 
 def run_flaml(X: np.ndarray, y: np.ndarray, budget_s: int, paths: AutomlPaths,
-              names: list[str] | None = None) -> FitResult:
+              names: list[str] | None = None, lean_preprocessing: bool = False) -> FitResult:
     """FLAML AutoML: its own estimator list, holdout/CV choice and search, within budget_s.
 
     names: column names of X; None = the standard 2568 EMBER features (the Step 4 leakage runs
     pass their own list, with an extra or a removed column).
+    lean_preprocessing: do FLAML's input preprocessing ourselves, with far less memory (Step 4 ran
+    on a 15 GB machine, where FLAML's own DataTransformer ran out of memory on the 160k-row train:
+    its median SimpleImputer needs several float64 copies of X). For data without missing values
+    the result is the same data: we drop the constant columns, exactly as FLAML would (it drops
+    columns with fewer than 2 distinct values), and its median imputation would change nothing.
+    FLAML then runs with skip_transform=True.
     """
     from flaml import AutoML
 
     names, timings = names or feature_names(), {}
+    keep = np.arange(len(names))
     with timed(timings, "convert_s"):
-        X_df = to_frame(X, names)
+        if lean_preprocessing:
+            if missing_values(X):
+                raise ValueError("lean_preprocessing replaces FLAML's imputation, so X must have no missing values")
+            keep = np.flatnonzero(np.ptp(X, axis=0) > 0)  # FLAML's rule: drop columns with < 2 distinct values
+            X_df = to_frame(X[:, keep], [names[i] for i in keep])
+        else:
+            X_df = to_frame(X, names)
+    kept_names = list(X_df.columns)
     log_file = _out(paths, "flaml_search_log", ".json")
     automl = AutoML()
     with timed(timings, "fit_s"), capture_log("flaml.automl.logger", _out(paths, "flaml_fit_log", ".txt")):
         # log_type="all" logs every trial, not only improvements, so trials can be counted.
         automl.fit(X_df, y, task="classification", metric="roc_auc", time_budget=budget_s, seed=SEED,
-                   n_jobs=N_JOBS, log_file_name=str(log_file), log_type="all", verbose=3)
+                   n_jobs=N_JOBS, log_file_name=str(log_file), log_type="all", verbose=3,
+                   skip_transform=lean_preprocessing)
     finish_timings(timings)
+    del X_df
 
     with timed(timings, "artifacts_s"):
         board = flaml_leaderboard(read_flaml_log(log_file))
         board.to_csv(_out(paths, "flaml_leaderboard", ".csv"), index=False)
-        info = _flaml_artifacts(automl, X, names, board, paths)
+        info = _flaml_artifacts(automl, X, names, board, paths, kept_names if lean_preprocessing else None)
     learner = automl.best_estimator
     kind = "tree model: native importances and TreeSHAP" if learner in TREE_LEARNERS else "non-tree model"
     return FitResult(
         tool="flaml", best_model=learner, timings=timings, info=info,
-        predict=lambda X_new: automl.predict_proba(to_frame(X_new, names))[:, 1],
+        predict=lambda X_new: automl.predict_proba(to_frame(X_new[:, keep], kept_names))[:, 1],
         interpretability=f"single {learner} model ({kind})",
     )
 
 
 def _flaml_artifacts(automl: Any, X: np.ndarray, names: list[str], board: pd.DataFrame,
-                     paths: AutomlPaths) -> dict[str, Any]:
-    """Save the winner (joblib), its config and FLAML's evaluation / preprocessing choices."""
+                     paths: AutomlPaths, lean_kept: list[str] | None = None) -> dict[str, Any]:
+    """Save the winner (joblib), its config and FLAML's evaluation / preprocessing choices.
+
+    lean_kept: the columns run_flaml(lean_preprocessing=True) passed to FLAML (None = FLAML's own
+    DataTransformer did the preprocessing).
+    """
     model_dir = paths.models / "flaml"
     model_dir.mkdir(parents=True, exist_ok=True)
     joblib.dump(automl.model, model_dir / f"best_estimator{RUN_SUFFIX}.joblib")   # the winning estimator
@@ -358,7 +378,8 @@ def _flaml_artifacts(automl: Any, X: np.ndarray, names: list[str], board: pd.Dat
     # FLAML's DataTransformer (DataFrame input): drops columns with < 2 distinct values and
     # median-imputes the numeric ones. The columns it kept are the transformer's numeric list.
     transformer = automl._transformer  # no public accessor; read-only use
-    kept = list(transformer._num_columns) + list(transformer._cat_columns)
+    kept = lean_kept if lean_kept is not None else \
+        list(transformer._num_columns) + list(transformer._cat_columns)
     state = automl._state
     notes = {
         "tool": "flaml", "version": _version("flaml"),
@@ -387,7 +408,10 @@ def _flaml_artifacts(automl: Any, X: np.ndarray, names: list[str], board: pd.Dat
         "new_features_created": sorted(set(kept) - set(names)),  # empty = no feature engineering
         "constant_in_train": constant_columns(X, names),
         "missing_values_in_train": missing_values(X),
-        "imputation": "SimpleImputer(strategy='median') on numeric columns (FLAML DataTransformer)",
+        "imputation": "SimpleImputer(strategy='median') on numeric columns (FLAML DataTransformer)"
+        if lean_kept is None else "none needed: no missing values (lean preprocessing, skip_transform=True)",
+        "preprocessing": "FLAML DataTransformer" if lean_kept is None else
+        "lean: constant columns dropped by our code with FLAML's rule, then FLAML with skip_transform=True",
         "feature_engineering": "none (FLAML only converts types, drops constant columns and imputes)",
         "checks": flaml_checks(automl, X),  # seeds actually used, feature scale (see automl_checks)
     }
@@ -400,7 +424,8 @@ def _flaml_artifacts(automl: Any, X: np.ndarray, names: list[str], board: pd.Dat
         fi.sort_values("importance", ascending=False).to_csv(
             _out(paths, "flaml_feature_importance", ".csv"), index=False)
     return {k: notes[k] for k in ("best_config", "best_val_auc", "eval_method", "holdout_rows_expected",
-                                  "n_trials_total", "estimators_tried", "n_features_used", "version")}
+                                  "n_trials_total", "estimators_tried", "n_features_used", "version",
+                                  "preprocessing")}
 
 
 # --- AutoGluon ----------------------------------------------------------------------------
@@ -420,10 +445,12 @@ def ag_log_highlights(log_text: str) -> list[str]:
 
 
 def run_autogluon(X: np.ndarray, y: np.ndarray, budget_s: int, paths: AutomlPaths,
-                  names: list[str] | None = None) -> FitResult:
+                  names: list[str] | None = None, fi_first: tuple[str, ...] = ()) -> FitResult:
     """AutoGluon TabularPredictor, medium_quality preset (no stacking or bagging), within budget_s.
 
     names: column names of X, as in run_flaml().
+    fi_first: columns whose permutation importance is computed first, so the time cap never
+    leaves them out (the Step 4 leak column comes last in X and would otherwise never be reached).
     """
     from autogluon.tabular import TabularPredictor
 
@@ -445,7 +472,7 @@ def run_autogluon(X: np.ndarray, y: np.ndarray, budget_s: int, paths: AutomlPath
     del train_df
 
     with timed(timings, "artifacts_s"):
-        info = _autogluon_artifacts(predictor, X, y, names, model_dir, paths)
+        info = _autogluon_artifacts(predictor, X, y, names, model_dir, paths, fi_first)
     best = predictor.model_best
     return FitResult(
         tool="autogluon", best_model=best, timings=timings, info=info,
@@ -474,7 +501,7 @@ def _ensemble_weights(predictor: Any, best: str) -> dict[str, float]:
 
 
 def _autogluon_artifacts(predictor: Any, X: np.ndarray, y: np.ndarray, names: list[str], model_dir: Path,
-                         paths: AutomlPaths) -> dict[str, Any]:
+                         paths: AutomlPaths, fi_first: tuple[str, ...] = ()) -> dict[str, Any]:
     """Leaderboard (internal validation only), preprocessing notes, fit log and importances."""
     board = predictor.leaderboard(silent=True, extra_info=True)  # no data passed: validation scores only
     # fit_time is cumulative (an ensemble's includes its base models); fit_time_marginal is its own.
@@ -519,7 +546,7 @@ def _autogluon_artifacts(predictor: Any, X: np.ndarray, y: np.ndarray, names: li
     }
     # Seeds actually used, and how rare the dropped non-constant columns are (see automl_checks).
     notes["checks"] = ag_checks(predictor, X, y, names, sorted(notes["dropped_nonconstant_duplicate_of"]))
-    notes["feature_importance"] = _ag_feature_importance(predictor, names, paths)
+    notes["feature_importance"] = _ag_feature_importance(predictor, names, paths, fi_first)
     _write_json(notes, _out(paths, "autogluon_preprocessing", ".json"))
     return {k: notes[k] for k in ("best_val_auc", "ensemble_weights", "models_trained", "holdout_rows",
                                   "n_features_used", "version", "feature_importance")}
@@ -541,7 +568,8 @@ def _ag_generators(predictor: Any) -> list[str]:
     return [" + ".join(type(g).__name__ for g in stage) for stage in stages]
 
 
-def _ag_feature_importance(predictor: Any, names: list[str], paths: AutomlPaths) -> dict[str, Any]:
+def _ag_feature_importance(predictor: Any, names: list[str], paths: AutomlPaths,
+                           fi_first: tuple[str, ...] = ()) -> dict[str, Any]:
     """Permutation importance on AutoGluon's internal validation rows (data=None), never a test set.
 
     data=None only works with feature_stage="transformed": AutoGluon keeps its validation rows
@@ -568,6 +596,8 @@ def _ag_feature_importance(predictor: Any, names: list[str], paths: AutomlPaths)
     family_s = time.perf_counter() - start
 
     features = [n for n in names if n in used]
+    first = [n for n in fi_first if n in used]  # the columns we must have a value for go first
+    features = first + [n for n in features if n not in first]
     parts, start = [], time.perf_counter()
     for i in range(0, len(features), AG_FI_FEATURE_CHUNK):
         if time.perf_counter() - start > AG_FI_TIME_LIMIT_S:
@@ -604,10 +634,16 @@ def write_parquet(X: np.ndarray, y: np.ndarray | None, names: list[str], path: P
 
 
 def run_h2o(X: np.ndarray, y: np.ndarray, budget_s: int, paths: AutomlPaths,
-            names: list[str] | None = None) -> FitResult:
+            names: list[str] | None = None, exclude_algos: tuple[str, ...] = (),
+            max_mem: str | None = None) -> FitResult:
     """H2OAutoML with its default algorithms (XGBoost is unavailable on Windows), within budget_s.
 
     names: column names of X, as in run_flaml().
+    exclude_algos: H2O algorithms to leave out. The Step 4 runs on Linux exclude "XGBoost": it
+    is available there (not on the Windows laptop of Step 3), and its memory lives outside the
+    H2O heap, which on the 15 GB machine killed the H2O server. Excluding it also keeps the
+    algorithm set the same as in Step 3.
+    max_mem: H2O heap size; None = H2O_MAX_MEM.
     """
     import h2o
     from h2o.automl import H2OAutoML
@@ -616,19 +652,22 @@ def run_h2o(X: np.ndarray, y: np.ndarray, budget_s: int, paths: AutomlPaths,
     model_dir = paths.models / f"h2o{RUN_SUFFIX}"
     data_dir = model_dir / "data"
     with timed(timings, "init_s"):
-        h2o.init(max_mem_size=H2O_MAX_MEM, nthreads=N_JOBS)
+        h2o.init(max_mem_size=max_mem or H2O_MAX_MEM, nthreads=N_JOBS)
         h2o.no_progress()
     with timed(timings, "convert_s"):
         train_path = write_parquet(X, y, names, data_dir / "train.parquet")
         train = h2o.import_file(str(train_path), destination_frame=f"train{RUN_SUFFIX}")
         train[LABEL] = train[LABEL].asfactor()  # a factor label makes H2O treat this as classification
-    aml = H2OAutoML(max_runtime_secs=budget_s, seed=SEED, sort_metric="AUC", project_name=f"ember{RUN_SUFFIX}")
+    aml = H2OAutoML(max_runtime_secs=budget_s, seed=SEED, sort_metric="AUC", project_name=f"ember{RUN_SUFFIX}",
+                    exclude_algos=list(exclude_algos) or None)
     with timed(timings, "fit_s"):
         aml.train(x=names, y=LABEL, training_frame=train)
     finish_timings(timings)
 
     with timed(timings, "artifacts_s"):
         info = _h2o_artifacts(h2o, aml, X, names, model_dir, paths)
+        info["exclude_algos"] = list(exclude_algos)
+        info["max_mem"] = max_mem or H2O_MAX_MEM
     leader = aml.leader
 
     def predict(X_new: np.ndarray) -> np.ndarray:

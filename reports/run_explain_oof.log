@@ -1,0 +1,6 @@
+=== stage oof (full) ===
+fold 1/3 fitted in 382 s
+fold 2/3 fitted in 440 s
+fold 3/3 fitted in 456 s
+wrote reports/predictions/oof_lgbm_tuned.npz
+=== stage oof done in 1310 s ===

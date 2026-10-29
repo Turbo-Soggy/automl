@@ -1,0 +1,3 @@
+model,score_val,eval_metric,pred_time_val,fit_time,fit_time_marginal,stack_level,can_infer,fit_order,num_features,num_models
+LightGBMXT,0.9993868394559501,roc_auc,0.3010396957397461,505.456743478775,505.456743478775,1,True,1,2516,1
+WeightedEnsemble_L2,0.9993868394559501,roc_auc,0.30239152908325195,505.4611482620239,0.004404783248901367,2,True,2,1,1

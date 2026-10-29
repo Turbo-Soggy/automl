@@ -1,0 +1,2 @@
+[leakage] lgbm_tuned on leak_first_submission: budget 600 s, quick=False
+[leakage] lgbm_tuned leak_first_submission best=LightGBM (optuna config, 609 trees) wall_s=254 test_random_auc=0.99915 test_future_auc=0.99822 timing_valid=True
