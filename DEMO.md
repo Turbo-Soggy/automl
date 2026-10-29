@@ -1,128 +1,85 @@
-# Demo script (about 5 minutes)
+# Presentation script (about 5 minutes)
 
-Step 5 of the project: the tuned LightGBM served by a FastAPI service (`app/api.py`) and a Streamlit page
-(`app/streamlit_app.py`). The numbers shown live come from the model and from `models/final/schema.json`
-(copied from `reports/tables/automl_vs_manual.csv` and `models/threshold.json`), as does `MODEL_CARD.md`.
-Run every command from the project root.
+The talk is one web page, `app/streamlit_app.py` (sections in `app/story.py`), that reads top to bottom in
+nine numbered sections. You scroll and talk; there are no slides to switch to, no tabs and no side panels.
+Every number on the page is read from `reports/tables/` and `models/final/`, so the page always matches the
+report. `reports/slides.pptx` is the backup deck (the brief asks for slides) and the handout.
 
-**Fitting the deck and the demo into one 5-minute slot.** This script on its own is about 5 minutes,
-and so are the speaker notes of `reports/slides.pptx`, so do not present both in full. Start the API and
-the Streamlit page (sections 1 and 3) before the talk. Then present slides 1-8 in about 3 minutes, using a
-shortened version of their notes. At slide 9, switch to the browser for about 1.5 minutes and show
-section 4 items 2 and 5 only (a caught malware file, then the notepad.exe upload; add item 4, a missed
-malware file, if time allows). Return to slide 10
-for the last 30 seconds. Keep the curl calls (section 2) and the other walk-through items as backups in
-case the examiner asks.
+Run every command from the project root. Interpreter: Windows `.venv/Scripts/python.exe`, Linux/macOS
+`.venv/bin/python`; below, `PY` stands for it (PowerShell: `$PY = ".venv\Scripts\python.exe"` and `& $PY`;
+Git Bash: `PY=.venv/Scripts/python.exe`).
 
-Interpreter: Windows `.venv/Scripts/python.exe`, Linux/macOS `.venv/bin/python`. Below, `PY` stands for it:
+## Before the talk (2 minutes)
 
 ```bash
-# Linux / macOS (bash)
-PY=.venv/bin/python
+$PY present.py
 ```
-```powershell
-# Windows (PowerShell)
-$PY = ".venv\Scripts\python.exe"
-```
-In PowerShell, write `& $PY` wherever the commands below say `$PY`. In Git Bash on Windows use
-`PY=.venv/Scripts/python.exe` and the Linux commands.
+This starts the API (port 8000) and the page (port 8501) and opens http://127.0.0.1:8501. Wait until the page
+has loaded once (about 10 s the first time). Zoom the browser so the section headings are easy to read from
+the back of the room. Ctrl+C in that terminal stops both servers at the end.
 
-## Before the demo (once, about 1 minute)
+The last line of the page says "scored by the FastAPI service at ...". If the API did not start, the page
+scores in its own process and that line says so; the demo still works (`present.py --no-api` forces this).
 
-```bash
-$PY run_all.py --steps deploy        # export models/final/ + MODEL_CARD.md, then run tests/test_api.py
-```
-Expect `[export] ... parity max diff=0.0e+00` and all tests passing (the notepad.exe tests skip off Windows).
-`models/final/` is committed, so this step only re-exports it and re-checks parity. The deploy step needs the
-feature cache (about 6 GB) (`data/cache`): it reloads test_future to check the exported model against the Step 2 scores.
-On a clone without the cache, skip it and run `$PY -m pytest tests/test_api.py` instead (the cache-only parity
-test skips). The demo itself works without the cache: the Streamlit page then uses the shipped
-`models/final/demo_samples.npz` (a few hundred test_future files).
+## The talk, section by section
 
-## 1. Start the API (terminal 1) - 0:00
+| # | Section | Time | Say / show |
+|---|---|---|---|
+| 1 | The question | 0:00, 20 s | Spot malware without running it; does AutoML beat hand-tuning; and is the usual test too optimistic? |
+| 2 | The data | 0:20, 40 s | EMBER2024 from Hugging Face; the three numbers (learning files, random test, future test); point at the timeline: the future test is from later weeks. "The model only sees 2,568 measurements per file, in these 12 groups." |
+| 3 | The contenders | 1:00, 30 s | Team 1: LightGBM tuned by hand with three search strategies, plus two reference points. Team 2: three AutoML tools with the same time budget each. |
+| 4 | How we compared them fairly | 1:30, 30 s | Same files, same seed, test files never used to choose anything, two exams. Read the blue box: the headline score is "malware caught at 1 false alarm per 100 safe programs". |
+| 5 | The results | 2:00, 40 s | The dot chart: top models within a fraction of a point. Read the bullets: AutoGluon ties tuned LightGBM, FLAML and H2O slightly behind, the search strategy barely matters, the straight-line model far behind. |
+| 6 | The winner, and why | 2:40, 40 s | "A tie at the top." AutoGluon's time vs the hand search. Why: every AutoML tool ended up with boosted trees too. Why we deploy LightGBM: chosen before seeing test scores, one small file, explainable. |
+| 7 | Try it live | 3:20, 60 s | Click **Caught malware**: verdict, flag line ("low on purpose: a missed malware costs 10 false alarms"), the red reasons. Then **Upload a file**: `C:\Windows\System32\notepad.exe` ("read in memory, never run"). If time allows, **Missed malware**: be honest about errors. |
+| 8 | What we learned | 4:20, 30 s | The four boxes; stress 2 (most real-world alarms would be false) and 3 (no AutoML tool noticed the planted cheat). |
+| 9 | Keep in mind | 4:50, 10 s | Triage aid, not a blocker. Point to the repository link. |
 
-```bash
-$PY -m uvicorn app.api:app --host 127.0.0.1 --port 8000
-```
-Leave it running. Interactive docs: http://127.0.0.1:8000/docs
+**Short on time?** Skim sections 3 and 4 in one sentence each, and in section 7 show only "Caught malware".
 
-## 2. Show the API with curl (terminal 2) - 0:30
+**Questions.** In section 7, "Technical detail (for questions)" shows the raw P(malicious), the threshold, the
+file's sha256 and test_future index, and the top-10 SHAP columns. `reports/qa_prep.md` has likely questions
+with answers, and `reports/report.pdf` has every table.
 
-Say: "The API checks its model file against the sha256 in schema.json before it serves anything."
+## Backup: the API by hand
+
+If someone asks to see the API itself (it is what the page calls), open http://127.0.0.1:8000/docs, or:
 
 ```bash
 curl -s http://127.0.0.1:8000/health
-```
-Expect `"status":"ok"`, a `model_version` of the form `lgbm-optuna-<first 12 hex digits of the sha256>`, the
-sha256 and the threshold.
-
-Score a real test_future file (written from the shipped demo samples), then show input validation:
-
-```bash
 $PY -c "import json, numpy as np; d = np.load('models/final/demo_samples.npz'); json.dump({'features': d['X'][0].tolist()}, open('row.json', 'w')); print('offline score', d['p'][0])"
 curl -s -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" --data "@row.json"
 curl -s -X POST "http://127.0.0.1:8000/predict?top_k=3" -H "Content-Type: application/json" --data "@row.json"
 curl -s -X POST http://127.0.0.1:8000/predict -H "Content-Type: application/json" -d '{"features": [1, 2, 3]}'
 ```
-Expect the same `p_malicious` as the offline score, then the 3 largest SHAP contributions, then a 422
-("List should have at least 2568 items"). In PowerShell, call `curl.exe` (not the `curl` alias), keep
-`"@row.json"` in quotes (a bare `@row` is PowerShell splatting) and write the last body as
-`-d '{\"features\": [1, 2, 3]}'`.
+Expect `"status":"ok"` with the model version, sha256 and threshold; then the same `p_malicious` as the offline
+score; then the 3 largest SHAP contributions; then a 422 ("List should have at least 2568 items"). In
+PowerShell, call `curl.exe` (not the `curl` alias), keep `"@row.json"` in quotes and write the last body as
+`-d '{\"features\": [1, 2, 3]}'`. Delete `row.json` afterwards.
 
-Upload a file: the API parses it in memory and never stores or runs it.
+Upload a file (parsed in memory, never stored or run):
 
 ```bash
-# Windows: a benign Win64 system binary
-curl.exe -s -X POST http://127.0.0.1:8000/predict_file -F "file=@C:/Windows/System32/notepad.exe"
-# Linux: an ELF binary is not a PE file, so it is rejected with 400
-curl -s -X POST http://127.0.0.1:8000/predict_file -F "file=@/bin/ls"
+curl.exe -s -X POST http://127.0.0.1:8000/predict_file -F "file=@C:/Windows/System32/notepad.exe"   # Windows
+curl -s -X POST http://127.0.0.1:8000/predict_file -F "file=@/bin/ls"                              # Linux: 400, not a PE file
 ```
-Windows: expect `"verdict":"benign"` with `p_malicious` just under the threshold (say: "the threshold is low on
-purpose, a missed malware costs 10 false alarms"). Linux: expect `400 not a valid PE file`.
-Delete `row.json` afterwards.
 
-## 3. Start the Streamlit page (terminal 2) - 1:30
+The two servers can also be started by hand, each in its own terminal:
 
 ```bash
+$PY -m uvicorn app.api:app --host 127.0.0.1 --port 8000
 $PY -m streamlit run app/streamlit_app.py --server.address 127.0.0.1 --server.port 8501
 ```
-Open http://127.0.0.1:8501. The page calls the API at `EMBER_API_URL` (default http://127.0.0.1:8000); the
-last line of the page says "scored by the FastAPI service at ...". If the API is not running, the page scores in
-its own process and that line says so (`EMBER_IN_PROCESS=1` forces this).
 
-## 4. Walk through the page - 2:00 to 4:30
+## Checks before presenting (optional)
 
-The page is one column that reads top to bottom, in five numbered steps, written for an audience that does not
-know the field. Scroll down as you talk; there are no tabs or side panels.
-
-1. **How good is it? (20 s).** Three numbers: share of malware caught and share of safe programs flagged on
-   test_future at the deployed threshold, and the 40,000 test files from 12 later weeks. Say: "trained on the
-   past, tested on the future, as it would be used".
-2. **Pick a program: "Caught malware" (40 s).** The verdict card says "Flagged as malware", with the score out
-   of 100, the flag line and "Actually: malware. The model was right." Point at the low flag line: a missed
-   malware file is treated as 10 times worse than a false alarm. Then step 4, "Why?": the four groups of
-   measurements that pushed the decision most, red for "points to malware".
-   Screenshot: `reports/screenshots/a_malicious_correct.png`.
-3. **"Safe program" (20 s).** "Looks safe"; the reasons are now green. Screenshot:
-   `reports/screenshots/b_benign_correct.png`.
-4. **"Missed malware" (30 s).** Be honest about errors: "Looks safe", but "the model got this one wrong". Its
-   score is often just under the flag line. "Show another" steps to the next file of the same kind; "False
-   alarm" shows the opposite mistake.
-5. **"Upload a file" (40 s).** Upload `C:\Windows\System32\notepad.exe` (Linux: any Win64 .exe you have the right
-   to share). The file is read in memory by the API, never run or saved. Screenshot:
-   `reports/screenshots/c_upload_notepad.png`.
-6. **Keep in mind (10 s).** Step 5 on the page: triage aid, static features only, weaker on brand-new malware.
-
-For questions, "Technical detail" at the bottom holds P(malicious), the threshold, the sha256 and test_future
-index of the file, and the top-10 SHAP columns with their values.
-
-## 5. Close - 4:30
-
-Say: "The model was fixed in Step 2 and the threshold in Step 4, both on train data only; MODEL_CARD.md lists
-the metrics on both test sets, the challenge set and the precision at 1-10% prevalence, every number generated
-from reports/tables."
-
-Stop both servers with Ctrl+C in their terminals.
+```bash
+$PY -m pytest tests/test_api.py      # API validation, upload safety, every page section, numbers vs tables
+$PY run_all.py --steps deploy        # with the full dataset only: re-export models/final/ and re-check parity
+```
+`run_all.py --steps deploy` needs the feature cache (`data/cache`); on a clone without it, run only the
+pytest line (the cache-only parity test skips). The page itself works without the cache: it then uses the
+shipped `models/final/demo_samples.npz` (a few hundred test_future files).
 
 ## Regenerate the screenshots
 
@@ -131,15 +88,18 @@ With both servers running:
 ```bash
 $PY app/take_screenshots.py      # writes reports/screenshots/{a_malicious_correct,b_benign_correct,c_upload_notepad}.png
 ```
-On Windows it drives the installed Microsoft Edge. On Linux run `$PY -m playwright install chromium` once and
-pass `--pe` a Win64 PE file you have the right to share (notepad.exe does not exist there).
+Each screenshot is the live-demo section of the page. On Windows the script drives the installed Microsoft
+Edge. On Linux run `$PY -m playwright install chromium` once and pass `--pe` a Win64 PE file you have the right
+to share (notepad.exe does not exist there). Then rebuild the report and deck (`scripts/build_report.py`,
+`scripts/build_slides.py`), which show these screenshots.
 
 ## Deploy it yourself (needs your own account)
 
 The page can run as one process: when it cannot reach the API it scores in-process with the same functions
 (`app.api.score_vector` / `score_file`), and without the feature cache it uses `models/final/demo_samples.npz`.
 `app/requirements.txt` is a slim dependency list for that (no AutoML tools, no torch). Both hosts need `git`
-during the build, because thrember and oscrypto are installed from pinned git commits.
+during the build, because thrember and oscrypto are installed from pinned git commits. The presentation
+sections also read `config.py`, `reports/tables/`, `data/splits/splits_info.json` and `.streamlit/config.toml`.
 
 ### Streamlit Community Cloud
 1. Push this repository (with `models/final/`, about 6 MB) to your GitHub account.
@@ -150,8 +110,9 @@ during the build, because thrember and oscrypto are installed from pinned git co
 
 ### Hugging Face Spaces (Streamlit SDK)
 1. Create a Space at https://huggingface.co/new-space with SDK "Streamlit".
-2. Copy into the Space repository: `app/` (with `__init__.py`), `models/final/`, and `app/requirements.txt`
-   as `requirements.txt` at the Space root.
+2. Copy into the Space repository, keeping the folder layout: `app/` (with `__init__.py`), `models/final/`,
+   `config.py`, `reports/tables/`, `data/splits/splits_info.json`, `.streamlit/config.toml`, and
+   `app/requirements.txt` as `requirements.txt` at the Space root.
 3. Put this header at the top of the Space's `README.md`:
    ```yaml
    ---

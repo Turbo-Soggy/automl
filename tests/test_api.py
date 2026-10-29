@@ -247,16 +247,24 @@ def test_upload_never_touches_disk(client, monkeypatch) -> None:
 
 @pytest.mark.parametrize("demo_only", [False, True])
 def test_streamlit_app_runs_in_process(demo_only: bool, monkeypatch) -> None:
-    """The page renders every example kind headless (streamlit's AppTest), scoring in-process, with
-    the full test_future from the cache (when present) and with only the shipped demo samples."""
+    """The page renders all nine sections and every example kind headless (streamlit's AppTest),
+    scoring in-process, with the full test_future from the cache (when present) and with only
+    the shipped demo samples."""
     import streamlit as st
     from streamlit.testing.v1 import AppTest
     st.cache_resource.clear()   # the page caches its data source per process
+    st.cache_data.clear()
     monkeypatch.setenv("EMBER_IN_PROCESS", "1")   # no API server needed
     if demo_only:
         monkeypatch.setenv("EMBER_DEMO_SAMPLES", "1")
     at = AppTest.from_file(str(Path(api.ROOT) / "app" / "streamlit_app.py"), default_timeout=180)
     at.run()
+    assert not at.exception, at.exception
+    text = " ".join(m.value for m in at.markdown)
+    for n, title in enumerate(["The question", "The data", "The contenders", "How we compared them fairly",
+                               "The results", "The winner, and why", "Try it live", "What we learned",
+                               "Keep in mind"], start=1):
+        assert f'<div class="n">{n}</div><div class="t">{title}</div>' in text, title
     right, wrong = "The model was right", "The model got this one wrong"
     expected = {"Caught malware": ("Flagged as malware", right), "Safe program": ("Looks safe", right),
                 "Missed malware": ("Looks safe", wrong), "False alarm": ("Flagged as malware", wrong)}
@@ -266,6 +274,46 @@ def test_streamlit_app_runs_in_process(demo_only: bool, monkeypatch) -> None:
         text = " ".join(m.value for m in at.markdown)
         assert head in text and outcome in text, choice
         assert "points to" in text                     # the plain-language reasons
+        assert "What we learned" in text               # the sections after the demo still render
         assert len(at.expander) == 1 and len(at.dataframe) == 1   # technical detail with the SHAP table
     source = " ".join(m.value for m in at.markdown if m.value.startswith("Source:"))
     assert ("demo_samples.npz" in source) == (demo_only or not (Path(api.ROOT) / "data" / "cache" / "X_test.npy").exists())
+
+
+def test_presentation_numbers_come_from_the_tables(monkeypatch) -> None:
+    """The results and winner sections state the numbers and verdicts in the saved tables."""
+    import pandas as pd
+    import streamlit as st
+    from streamlit.testing.v1 import AppTest
+    st.cache_data.clear()
+    monkeypatch.setenv("EMBER_IN_PROCESS", "1")
+    monkeypatch.setenv("EMBER_DEMO_SAMPLES", "1")
+    at = AppTest.from_file(str(Path(api.ROOT) / "app" / "streamlit_app.py"), default_timeout=180)
+    at.run()
+    text = " ".join(m.value for m in at.markdown)
+    tables = Path(api.ROOT) / "reports" / "tables"
+    rvf = pd.read_csv(tables / "random_vs_future.csv").set_index("model")
+    assert f"caught **{100 * rvf.loc['optuna', 'test_future_tpr_at_1pct_fpr']:.1f}%** of future malware" in text
+    pw = pd.read_csv(tables / "automl_pairwise.csv")
+    for tool, name in (("autogluon", "AutoGluon"), ("flaml", "FLAML"), ("h2o", "H2O AutoML")):
+        row = pw[(pw.test_set == "test_future") & (pw.metric == "tpr_at_1pct_fpr")
+                 & (pw.method_a == tool) & (pw.method_b == "lgbm_tuned")].iloc[0]
+        verdict = "**a tie**" if not row.significant_95 else ("**ahead**" if row.diff_a_minus_b > 0 else "**slightly behind**")
+        assert f"**{name}**: {100 * rvf.loc[tool, 'test_future_tpr_at_1pct_fpr']:.1f}%, {verdict}" in text, tool
+    avm = pd.read_csv(tables / "automl_vs_manual.csv").set_index("method")
+    assert f"AutoGluon got there in **{avm.loc['autogluon', 'wall_minutes']:.0f} minutes**" in text
+    leak = pd.read_csv(tables / "leakage.csv")
+    leak = leak[leak.variant == "leak_detection_ratio"]
+    assert f"{int(leak['relied_on_leak'].sum())} of {len(leak)} models made it" in text
+
+
+def test_present_launcher_commands() -> None:
+    """present.py starts uvicorn on the API and streamlit on the page, with this interpreter."""
+    import sys
+    sys.path.insert(0, str(api.ROOT))
+    import present
+    assert present.api_command()[:4] == [sys.executable, "-m", "uvicorn", "app.api:app"]
+    assert present.page_command()[:5] == [sys.executable, "-m", "streamlit", "run", "app/streamlit_app.py"]
+    out = subprocess.run([sys.executable, str(Path(api.ROOT) / "present.py"), "--help"],
+                         capture_output=True, text=True, timeout=60)
+    assert out.returncode == 0 and "--no-api" in out.stdout

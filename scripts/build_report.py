@@ -1200,25 +1200,27 @@ def deployment(F: dict) -> list[Flowable]:
         "<font face='%s' size='8'>POST /predict_file</font>: upload a PE file; it is vectorised in memory with "
         "thrember and never stored or executed." % MONO_FONT,
     ]))
-    s.append(P("app/streamlit_app.py is the demo page. It is one page that reads top to bottom for a non-specialist "
-               "audience: how good the model is (recall and false-alarm rate on test_future at the deployed "
-               "threshold), a choice of example (a caught malware file, a safe program, a missed malware file, a "
-               "false alarm, or an uploaded PE file), the verdict scored by the API, the four feature families that "
-               "pushed the decision most (SHAP sums, in plain words) and the limits. The raw score, the threshold and "
-               "the top-10 SHAP columns are in a technical-detail section at the end. MODEL_CARD.md (generated from the same tables) documents data, metrics, "
+    s.append(P("app/streamlit_app.py (with app/story.py) is the presentation page: one page that reads top to bottom "
+               "as the whole talk, for a non-specialist audience, in nine sections: the question, the data, the "
+               "contenders, how they were compared, the results, the winner and why, a live demo, what we learned, "
+               "and the limits. Every number on it is read from reports/tables/. In the live demo the user picks an "
+               "example (a caught malware file, a safe program, a missed malware file, a false alarm) or uploads a PE "
+               "file; the API scores it, and the page shows the verdict and the four feature families that pushed "
+               "the decision most (SHAP sums, in plain words). The raw score, the threshold and the top-10 SHAP "
+               "columns are in a technical-detail box. present.py starts the API and the page together. MODEL_CARD.md (generated from the same tables) documents data, metrics, "
                "intended and out-of-scope uses and known limits. DEMO.md is the 5-minute demo script. Deployment is "
                "local; cloud hosting is left to the student's own account."))
-    shots = [   # (file, caption, share cut off the bottom: the upload shot is taller by the file box)
+    shots = [
         ("a_malicious_correct.png", "Streamlit demo: a malicious test_future file, correctly flagged, with the "
-                                    "feature families that pushed the decision most.", 0.235),
-        ("b_benign_correct.png", "Streamlit demo: a benign test_future file, correctly passed.", 0.235),
+                                    "feature families that pushed the decision most."),
+        ("b_benign_correct.png", "Streamlit demo: a benign test_future file, correctly passed."),
         ("c_upload_notepad.png", "Streamlit demo: uploading a benign Windows binary (notepad.exe); the file is parsed "
-                                 "in memory by the API and never executed.", 0.205),
+                                 "in memory by the API and never executed."),
     ]
-    # one screenshot per figure, cut to steps 2-4 (pick, verdict, why) so the text stays readable in print
-    for fname, cap, bottom in shots:
-        s += figure_row([SHOTS / fname], f"{cap} (reports/screenshots/{fname}, steps 2-4 of the page)",
-                        max_h=17.5 * cm, crop_top=0.27, crop_bottom=bottom)
+    # one screenshot per figure: the live-demo section of the page (app/take_screenshots.py captures only it)
+    for fname, cap in shots:
+        s += figure_row([SHOTS / fname], f"{cap} (reports/screenshots/{fname}, the live-demo section of the page)",
+                        max_h=17.5 * cm)
     return s
 
 

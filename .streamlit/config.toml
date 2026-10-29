@@ -1,0 +1,11 @@
+# Streamlit settings for the presentation page (app/streamlit_app.py).
+# A fixed light theme, so the page looks the same on every laptop and projector and matches the
+# screenshots in reports/screenshots/.
+[theme]
+base = "light"
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false

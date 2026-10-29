@@ -583,9 +583,10 @@ def slide_deploy(prs: Presentation) -> None:
     shot = REPORTS / "screenshots" / "a_malicious_correct.png"
     routes = api_routes()
     notes = (
-        "Deployment. The tuned LightGBM is served by a FastAPI service and a one-page Streamlit app; "
-        "you pick an example file or upload a program, and the page shows the verdict and, in plain "
-        "words, which parts of the file pushed the decision. The threshold was chosen on train out-of-fold scores "
+        "Deployment. The tuned LightGBM is served by a FastAPI service and a one-page Streamlit app "
+        "that walks through the whole project; in its live demo you pick an example file or upload a "
+        "program, and the page shows the verdict and, in plain words, which parts of the file pushed "
+        "the decision. The threshold was chosen on train out-of-fold scores "
         f"so that a missed malware costs {thr['cost_ratio_fn_to_fp']:.0f} times a false alarm; on "
         f"test_future that gives {pct(chk['recall'])} recall at {pct(chk['fpr'])} false-positive "
         f"rate, but at a realistic 1% malware share only about {pct(dep.precision, 0)} of its alarms "
@@ -594,9 +595,9 @@ def slide_deploy(prs: Presentation) -> None:
     slide = new_slide(prs, "Step 5: deployment demo (FastAPI + Streamlit)", notes,
                       "reports/screenshots/a_malicious_correct.png, models/threshold.json, "
                       "app/api.py, MODEL_CARD.md")
-    # crop to the verdict and the reasons (steps 3-4 of the page) so the text is readable
+    # crop to the verdict and the reasons of the live-demo screenshot so the text is readable
     add_picture_fit(slide, shot, MARGIN, Inches(1.15), Inches(7.0), Inches(5.8),
-                    crop=(0.05, 0.38, 0.95, 0.765))
+                    crop=(0.0, 0.34, 1.0, 1.0))
     add_text(slide, Inches(7.8), Inches(1.3), Inches(5.0), Inches(5.6), [
         f"**API: **{', '.join(routes)}.",
         "**App: **one page: pick an example or upload a PE; shows the verdict and the top "

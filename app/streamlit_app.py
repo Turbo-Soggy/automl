@@ -1,12 +1,13 @@
-"""Step 5: Streamlit demo for the malware detector served by app/api.py.
+"""Step 5: the presentation page for the malware detector served by app/api.py.
 
-One page that reads top to bottom like a short talk, for an audience that knows nothing about
-malware detection: (1) how good the model is, in plain numbers; (2) pick a program; (3) the
-verdict; (4) why, as the feature families that pushed hardest; (5) what to keep in mind.
-The raw numbers (P(malicious), threshold, top-10 TreeSHAP columns) are in one "Technical
-detail" section at the end, for questions.
+One page that reads top to bottom as the whole talk, for an audience that knows nothing about
+malware detection or AutoML, in nine numbered sections: the question, the data, the contenders,
+how they were compared, the results, the winner and why, a live demo, what we learned, and what
+to keep in mind. Sections other than the live demo live in app/story.py and read every number
+from the saved results in reports/. The live demo sends a file to the API and shows the verdict
+and the feature families that pushed it (SHAP); the raw numbers are in a "Technical detail" box.
 
-Run from the project root, with the API already running (see DEMO.md):
+Run from the project root (or use present.py, which also starts the API):
   streamlit run app/streamlit_app.py
 The page calls the API at env EMBER_API_URL (default http://127.0.0.1:8000). With
 EMBER_IN_PROCESS=1, or when the API cannot be reached, it scores inside this process with the
@@ -35,27 +36,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))   # streamlit puts app/ on sys.path, not the project root
 
-from app import api  # noqa: E402
+from app import api, story  # noqa: E402
+from app.story import FAMILY_TEXT, step  # noqa: E402
 
 API_URL = os.environ.get("EMBER_API_URL", "http://127.0.0.1:8000").rstrip("/")
 TOP_K = 10
 TOP_FAMILIES = 4   # reasons shown in plain words; more than this is hard to follow live
-
-# Plain-language name and one-line meaning of each thrember feature family.
-FAMILY_TEXT: dict[str, tuple[str, str]] = {
-    "general": ("Basic file facts", "size, and how many functions it imports and exports"),
-    "histogram": ("Byte make-up", "how often each byte value appears in the file"),
-    "byteentropy": ("Randomness of the content", "packed or encrypted code looks random"),
-    "strings": ("Readable text inside", "web addresses, file paths, registry keys and other text"),
-    "header": ("File header", "what kind of program it says it is and how it was built"),
-    "section": ("Section layout", "how the code and data blocks are arranged and sized"),
-    "imports": ("Windows functions it uses", "for example networking, registry or process access"),
-    "exports": ("Functions it offers", "what other programs can call in it"),
-    "datadirectories": ("Internal tables", "sizes of the file's resource, import and signature tables"),
-    "richheader": ("Build-tool fingerprint", "traces of the compiler and linker that built it"),
-    "authenticode": ("Digital signature", "whether and how the file is signed by a publisher"),
-    "pefilewarnings": ("Structural oddities", "malformed or unusual parts of the file format"),
-}
 
 CHOICES: dict[str, str] = {
     "Caught malware": "a malware file the model flags",
@@ -97,6 +83,22 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu, footer {di
 .reason .bar .val {height: 100%; border-radius: 6px;}
 .reason .bar .dir {font-size: .9rem; font-weight: 600;}
 .keep li {margin-bottom: .35rem; font-size: 1.05rem;}
+.timeline {display: flex; gap: 6px; margin: 1rem 0 1.2rem; font-size: .92rem;}
+.timeline .seg {border-radius: 10px; padding: .6rem .8rem; color: #fff; line-height: 1.35;}
+.timeline .past {background: #2563eb;}
+.timeline .future {background: #7c3aed;}
+.chips {display: flex; flex-wrap: wrap; gap: .4rem;}
+.chip {border: 1px solid rgba(128,128,128,.45); border-radius: 999px; padding: .25rem .75rem; font-size: .95rem;}
+.teams {display: flex; gap: 1rem; flex-wrap: wrap;}
+.team {flex: 1 1 300px; border: 2px solid; border-radius: 14px; padding: .9rem 1.1rem;}
+.team .tt {font-size: 1.2rem; font-weight: 800; margin-bottom: .4rem;}
+.team p, .team li {margin-bottom: .3rem;}
+.team .small {font-size: .92rem; opacity: .85;}
+.metric {border-left: 5px solid #2563eb; background: rgba(37,99,235,.08); padding: .8rem 1rem; border-radius: 6px;
+         font-size: 1.1rem; margin: .4rem 0 .3rem;}
+.winner {font-size: 1.6rem; font-weight: 800; margin: .2rem 0 .6rem;}
+.finding {border: 1px solid rgba(128,128,128,.35); border-radius: 12px; padding: .9rem 1.1rem; margin-bottom: .8rem;}
+.finding .ft {font-weight: 800; font-size: 1.15rem; margin-bottom: .3rem;}
 /* The example picker as large pills: the presenter clicks them in front of an audience. */
 div[role="radiogroup"] {gap: .5rem; flex-wrap: wrap;}
 div[role="radiogroup"] label {border: 1px solid rgba(128,128,128,.45); border-radius: 999px; padding: .45rem 1rem;
@@ -187,28 +189,18 @@ def call(in_process: bool, *, features: np.ndarray | None = None, file: bytes | 
     return r.json()
 
 
-# --- Display ----------------------------------------------------------------------------------
+# --- The live demo (section 7) ---------------------------------------------------------------
 
-def step(n: int, title: str) -> None:
-    st.markdown(f'<div class="step"><div class="n">{n}</div><div class="t">{html.escape(title)}</div></div>',
-                unsafe_allow_html=True)
-
-
-def how_good(s: dict[str, Any]) -> None:
+def how_good() -> None:
+    """The deployed model's operating point, before the audience tries it."""
     rates = deployed_rates()
-    if rates is None:   # slim deployment: fall back to the ranking metric in schema.json
-        m = s["metrics"]
-        st.markdown(f"On files from later weeks it never saw, it catches **{m['test_future_tpr_at_1pct_fpr']:.1%}** "
-                    "of malware when it is allowed to flag 1 in 100 safe programs.")
+    if rates is None:   # slim deployment without reports/tables
         return
-    cards = [(f"{rates['recall']:.1%}", "of malware caught"),
-             (f"{rates['fpr']:.1%}", "of safe programs flagged for a second look"),
-             (f"{rates['n']:,.0f}", "test programs from 12 later weeks it never saw")]
-    st.markdown('<div class="stats">' + "".join(
-        f'<div class="stat"><div class="big">{b}</div><div class="lbl">{html.escape(t)}</div></div>'
-        for b, t in cards) + "</div>", unsafe_allow_html=True)
-    st.caption("The model was trained on files up to week 51 and tested on weeks 52-63, as it would be used. "
-               "It is set to miss as little malware as possible, accepting more false alarms in return.")
+    story.cards([(f"{rates['recall']:.1%}", "of future malware caught"),
+                 (f"{rates['fpr']:.1%}", "of safe programs flagged for a second look")])
+    st.caption("This is the model as deployed, at a deliberately low flag line: it misses as little malware as "
+               "possible and accepts more false alarms in return (section 5 compared models at 1 false alarm "
+               "in 100).")
 
 
 def score_text(p: float) -> str:
@@ -261,15 +253,6 @@ def reasons(res: dict) -> None:
                "the strongest group for this file.")
 
 
-def keep_in_mind() -> None:
-    st.markdown('<ul class="keep">'
-                "<li>It is a <b>triage aid</b> for analysts, not a final verdict for blocking files.</li>"
-                "<li>It reads the file without running it, so malware built to look harmless can slip through.</li>"
-                "<li>It is much weaker on brand-new malware that antivirus engines also missed at first, "
-                "and it only knows 64-bit Windows programs.</li>"
-                "</ul>", unsafe_allow_html=True)
-
-
 def technical(res: dict, s: dict[str, Any], scored_by: str, sample: str | None) -> None:
     with st.expander("Technical detail (for questions)"):
         p = res["p_malicious"]
@@ -288,23 +271,11 @@ def technical(res: dict, s: dict[str, Any], scored_by: str, sample: str | None) 
         st.bar_chart(pd.Series(res["family_shap"]), horizontal=True, height=320, sort=False)
 
 
-def main() -> None:
-    st.set_page_config(page_title="EMBER2024 malware detector", layout="centered",
-                       initial_sidebar_state="collapsed")
-    st.markdown(CSS, unsafe_allow_html=True)
-    s = schema()
-    in_process = os.environ.get("EMBER_IN_PROCESS") == "1" or not api_reachable(API_URL)
-    scored_by = "scored in this process (no API server)" if in_process else f"scored by the FastAPI service at {API_URL}"
-
-    st.title("Can a model spot malware without running it?")
-    st.markdown('<div class="lead">This model reads the structure of a Windows program (its header, the '
-                "functions it uses, the text inside, its signature) and estimates whether it is malware. "
-                "It never runs the file.</div>", unsafe_allow_html=True)
-
-    step(1, "How good is it?")
-    how_good(s)
-
-    step(2, "Pick a program")
+def live_demo(s: dict[str, Any], in_process: bool, scored_by: str) -> None:
+    """Pick a program, then show the verdict, the reasons and the technical detail."""
+    st.markdown("Now the deployed model itself. Pick a kind of file from the future test, or upload a "
+                "Windows program.")
+    how_good()
     choice = st.radio("Example", list(CHOICES), horizontal=True, label_visibility="collapsed")
     if st.session_state.get("choice") != choice:   # a new kind starts again at its first example
         st.session_state.update(choice=choice, k=0)
@@ -317,8 +288,8 @@ def main() -> None:
             sample = f"Uploaded **{html.escape(up.name)}**, {len(up.getvalue()):,} bytes, sha256 `{res['sha256']}`"
         else:
             left, right = st.columns([3, 1])
-            left.markdown(f"Showing {CHOICES[choice]}, from the test weeks.")
-            if right.button("Show another", use_container_width=True):
+            left.markdown(f"Showing {CHOICES[choice]}, from the future test.")
+            if right.button("Show another", width="stretch"):
                 st.session_state.k += 1
             i = pick_example(choice, st.session_state.k)
             if i is None:
@@ -331,14 +302,43 @@ def main() -> None:
     except (RuntimeError, ValueError, requests.RequestException) as err:
         st.error(str(err))
         return
-
-    step(3, "The verdict")
-    verdict_card(res, truth)
-    step(4, "Why?")
-    reasons(res)
-    step(5, "Keep in mind")
-    keep_in_mind()
+    with st.container(key="demo_result"):   # one block, so the screenshot script can capture just this part
+        st.markdown("#### The verdict")
+        verdict_card(res, truth)
+        st.markdown("#### Why?")
+        reasons(res)
     technical(res, s, scored_by, sample)
+
+
+def main() -> None:
+    st.set_page_config(page_title="Malware detection: manual tuning vs AutoML", layout="centered",
+                       initial_sidebar_state="collapsed")
+    st.markdown(CSS, unsafe_allow_html=True)
+    s = schema()
+    in_process = os.environ.get("EMBER_IN_PROCESS") == "1" or not api_reachable(API_URL)
+    scored_by = "scored in this process (no API server)" if in_process else f"scored by the FastAPI service at {API_URL}"
+
+    st.title("Can a model spot malware without running it?")
+    st.caption("Malware detection on EMBER2024: manual tuning vs AutoML. Isaac Benjamin David (URK23AI1035), "
+               "IA-3 Part B.")
+    step(1, "The question")
+    story.question()
+    step(2, "The data")
+    story.data_section(s)
+    step(3, "The contenders")
+    story.contenders()
+    step(4, "How we compared them fairly")
+    story.fairness()
+    step(5, "The results")
+    story.results()
+    step(6, "The winner, and why")
+    story.winner(s, api.model_dir() / s["model_file"])
+    step(7, "Try it live")
+    live_demo(s, in_process, scored_by)
+    step(8, "What we learned")
+    story.learned()
+    step(9, "Keep in mind")
+    story.keep_in_mind()
     st.caption(f"Model {s['model_version']}, {scored_by}. Details: MODEL_CARD.md.")
 
 

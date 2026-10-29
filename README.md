@@ -5,6 +5,66 @@ Course project (IA-3, Part B). We train binary classifiers that label Windows
 Then we compare hand-tuned LightGBM (grid, random and Optuna search) with three
 AutoML tools (FLAML, AutoGluon, H2O).
 
+## Start here (new to the project?)
+
+**What this is.** We built malware detectors for Windows programs that judge a file
+from its structure, without running it. We built them two ways: by tuning one model
+by hand, and by letting three AutoML tools pick and tune models on their own. Then we
+checked how fair the usual testing is, by also testing on malware from *later* weeks
+than the training data, and by planting a "cheat" column to see who notices it.
+
+**See it in about 10 minutes** (no dataset download needed). You need Python 3.12 and
+`git`. The slim `app/requirements.txt` installs only what the presentation needs; the
+40 GB dataset and the AutoML tools are only needed to re-run the experiments.
+
+```bash
+git clone https://github.com/Turbo-Soggy/automl.git
+cd automl
+py -3.12 -m venv .venv                                    # Linux / macOS: python3.12 -m venv .venv
+.venv/Scripts/python.exe -m pip install -r app/requirements.txt   # Linux / macOS: .venv/bin/python -m pip ...
+.venv/Scripts/python.exe present.py                       # Linux / macOS: .venv/bin/python present.py
+```
+
+`present.py` starts the prediction API and the presentation page and opens
+http://127.0.0.1:8501 in your browser (Ctrl+C stops both). The page is the whole
+talk, top to bottom: the question, the data, the contenders, how we compared them,
+the results, the winner and why, a live demo, and what we learned. `DEMO.md` is the
+script for presenting it.
+
+**Then read, in this order:**
+
+1. The presentation page (above). Every number on it comes from `reports/tables/`.
+2. [`reports/report.pdf`](reports/report.pdf): the full write-up of every step.
+3. [`reports/critical_eval.md`](reports/critical_eval.md): the answer to the research question.
+4. [`reports/qa_prep.md`](reports/qa_prep.md): likely questions, with answers.
+5. The code, by step (details in [Repository layout](#repository-layout)):
+
+| Step | What | Code | Results |
+|---|---|---|---|
+| 1 | Data, splits | `src/data.py`, `scripts/build_cache.py` | `reports/data_check.json`, `data/splits/` |
+| 2 | Hand-tuned LightGBM | `src/tune.py`, `scripts/run_tuning.py` | `reports/tuning_writeup.md` |
+| 3 | AutoML | `src/automl_runs.py`, `scripts/run_automl.py` | `reports/automl_comparison.md` |
+| 4 | Critical evaluation | `src/leakage.py`, `src/temporal.py`, `src/explain.py`, ... | `reports/critical_eval.md` |
+| 5 | Deployment | `app/api.py`, `app/streamlit_app.py`, `app/story.py` | `MODEL_CARD.md`, `DEMO.md` |
+| 6 | Report, slides | `scripts/build_report.py`, `scripts/build_slides.py` | `reports/report.pdf`, `reports/slides.pptx` |
+
+**Words you will meet**
+
+| Term | Meaning |
+|---|---|
+| test_random / test_future | The two exams: files from the same weeks as training, and files from 12 later weeks |
+| TPR at 1% FPR | Share of malware caught when only 1 in 100 safe files may be flagged (our headline score) |
+| AUC | How well the scores rank malware above safe files: 0.5 is a coin flip, 1.0 is perfect |
+| Threshold | The score above which a file is flagged; ours is set low because a missed malware costs more |
+| SHAP | A way to split one prediction among the inputs, to see what pushed the decision |
+| AutoML | Tools that choose the model type and its settings by themselves |
+| Leakage | A column that gives away the answer during training but would not exist in real use |
+| Drift | Malware changing over time, so older training data fits newer files less well |
+| 95% CI | The range the true difference probably lies in; if it includes 0, two models are tied |
+
+**Re-running the experiments** needs the full dataset (about 40 GB on disk), the full
+`requirements.txt` and several hours: see [Reproducing](#reproducing).
+
 > **Status (2026-10-29):** all six steps are done (see [Status](#status) and
 > [Deliverables](#deliverables)). Steps 2-3 and 5-6 ran on the student's laptop,
 > Step 4 on a 4-core cloud VM. The reproducibility check (fresh venv, `pytest`,
@@ -22,7 +82,7 @@ AutoML tools (FLAML, AutoGluon, H2O).
 | Slides (5-minute talk, with speaker notes) and Q&A preparation | [`reports/slides.pptx`](reports/slides.pptx) (`scripts/build_slides.py`), [`reports/qa_prep.md`](reports/qa_prep.md) |
 | Model card | [`MODEL_CARD.md`](MODEL_CARD.md) |
 | Demo script and screenshots | [`DEMO.md`](DEMO.md), [`reports/screenshots/`](reports/screenshots/) |
-| Deployed model and app | [`models/final/`](models/final/) (model, `schema.json`, threshold), [`app/api.py`](app/api.py) (FastAPI), [`app/streamlit_app.py`](app/streamlit_app.py) |
+| Deployed model and app | [`models/final/`](models/final/) (model, `schema.json`, threshold), [`app/api.py`](app/api.py) (FastAPI), [`app/streamlit_app.py`](app/streamlit_app.py) (the presentation page; start it with `present.py`) |
 | Answer to the research question | [`reports/critical_eval.md`](reports/critical_eval.md), [`reports/limitations.md`](reports/limitations.md) |
 | Step write-ups | [`reports/tuning_writeup.md`](reports/tuning_writeup.md) (Step 2), [`reports/automl_comparison.md`](reports/automl_comparison.md) (Step 3), [`reports/leakage.md`](reports/leakage.md), [`reports/temporal_bias.md`](reports/temporal_bias.md), [`reports/explainability.md`](reports/explainability.md) (Step 4) |
 | Executed notebooks | [`notebooks/01_eda.ipynb`](notebooks/01_eda.ipynb), [`02_baseline_tuning.ipynb`](notebooks/02_baseline_tuning.ipynb), [`03_automl.ipynb`](notebooks/03_automl.ipynb), [`04_critical_eval.ipynb`](notebooks/04_critical_eval.ipynb) |
@@ -247,6 +307,7 @@ From the project root (on Linux or macOS, `.venv/bin/python` instead of
 ```
 config.py              seed, paths and experiment sizes (single source of truth)
 run_all.py             runs the pipeline steps in order
+present.py             starts the API and the presentation page and opens the browser
 requirements.txt       pinned dependencies
 src/
   data.py              cache loading, splits, CV folds, feature groups
@@ -274,7 +335,8 @@ src/
   critical_eval_writeup.py  renders reports/critical_eval.md and reports/limitations.md from the tables
 app/
   api.py               Step 5 FastAPI service: /health, /predict (validated vector), /predict_file (in memory)
-  streamlit_app.py     Step 5 demo page (calls the API)
+  streamlit_app.py     Step 5 presentation page: the whole talk in nine sections, with the live demo (calls the API)
+  story.py             the page's presentation sections, every number read from reports/tables/
   model_card.py        renders MODEL_CARD.md from models/final/schema.json and the tables
   take_screenshots.py  saves the demo screenshots to reports/screenshots/
 scripts/
