@@ -247,19 +247,25 @@ def test_upload_never_touches_disk(client, monkeypatch) -> None:
 
 @pytest.mark.parametrize("demo_only", [False, True])
 def test_streamlit_app_runs_in_process(demo_only: bool, monkeypatch) -> None:
-    """The page renders a prediction headless (streamlit's AppTest), scoring in-process, with the
-    full test_future from the cache (when present) and with only the shipped demo samples."""
+    """The page renders every example kind headless (streamlit's AppTest), scoring in-process, with
+    the full test_future from the cache (when present) and with only the shipped demo samples."""
     import streamlit as st
     from streamlit.testing.v1 import AppTest
     st.cache_resource.clear()   # the page caches its data source per process
+    monkeypatch.setenv("EMBER_IN_PROCESS", "1")   # no API server needed
     if demo_only:
         monkeypatch.setenv("EMBER_DEMO_SAMPLES", "1")
     at = AppTest.from_file(str(Path(api.ROOT) / "app" / "streamlit_app.py"), default_timeout=180)
     at.run()
-    at.sidebar.checkbox[0].check().run()   # in-process: no API server needed
-    assert not at.exception, at.exception
-    labels = [m.label for m in at.metric]
-    assert {"P(malicious)", "Threshold", "Predicted", "True label"} <= set(labels)
-    assert any("SHAP" in h.value for h in at.subheader)
-    source = " ".join(c.value for c in at.caption)
+    right, wrong = "The model was right", "The model got this one wrong"
+    expected = {"Caught malware": ("Flagged as malware", right), "Safe program": ("Looks safe", right),
+                "Missed malware": ("Looks safe", wrong), "False alarm": ("Flagged as malware", wrong)}
+    for choice, (head, outcome) in expected.items():
+        at.radio[0].set_value(choice).run()
+        assert not at.exception, at.exception
+        text = " ".join(m.value for m in at.markdown)
+        assert head in text and outcome in text, choice
+        assert "points to" in text                     # the plain-language reasons
+        assert len(at.expander) == 1 and len(at.dataframe) == 1   # technical detail with the SHAP table
+    source = " ".join(m.value for m in at.markdown if m.value.startswith("Source:"))
     assert ("demo_samples.npz" in source) == (demo_only or not (Path(api.ROOT) / "data" / "cache" / "X_test.npy").exists())

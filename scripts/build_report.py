@@ -397,10 +397,11 @@ def figure(path: Path, caption: str, width: float = 1.0, max_h: float = 11.5 * c
 
 
 def figure_row(paths: Sequence[Path], caption: str, max_h: float = 10 * cm,
-               crop_bottom: float = 0.0, crop_left: float = 0.0) -> list[Flowable]:
+               crop_bottom: float = 0.0, crop_left: float = 0.0, crop_top: float = 0.0) -> list[Flowable]:
     """Several images side by side under one numbered caption (screenshots, SHAP waterfalls).
 
-    `crop_bottom` / `crop_left` trim that share of each image (empty space, the app's sidebar)."""
+    `crop_bottom` / `crop_left` / `crop_top` trim that share of each image (empty space, the parts of
+    a screenshot that are not the point of the figure)."""
     NUM.fig += 1
     cap = Paragraph(f"<b>Figure {NUM.fig}.</b> {caption}", ST["caption"])
     cell_w = TEXT_W / len(paths) - 6
@@ -412,8 +413,9 @@ def figure_row(paths: Sequence[Path], caption: str, max_h: float = 10 * cm,
             continue
         src: str | io.BytesIO = str(path)
         im = PILImage.open(path)
-        if crop_bottom > 0 or crop_left > 0:  # crop in memory: no extra files in the repo
-            im = im.crop((int(im.width * crop_left), 0, im.width, int(im.height * (1 - crop_bottom))))
+        if crop_bottom > 0 or crop_left > 0 or crop_top > 0:  # crop in memory: no extra files in the repo
+            im = im.crop((int(im.width * crop_left), int(im.height * crop_top), im.width,
+                          int(im.height * (1 - crop_bottom))))
             src = io.BytesIO()
             im.save(src, format="PNG")
             src.seek(0)
@@ -1198,22 +1200,25 @@ def deployment(F: dict) -> list[Flowable]:
         "<font face='%s' size='8'>POST /predict_file</font>: upload a PE file; it is vectorised in memory with "
         "thrember and never stored or executed." % MONO_FONT,
     ]))
-    s.append(P("app/streamlit_app.py is the demo page: it calls the API, lets the user pick a test_future file by "
-               "label and outcome or upload a PE file, and shows the score, the decision and the SHAP contributions "
-               "grouped by feature family. MODEL_CARD.md (generated from the same tables) documents data, metrics, "
+    s.append(P("app/streamlit_app.py is the demo page. It is one page that reads top to bottom for a non-specialist "
+               "audience: how good the model is (recall and false-alarm rate on test_future at the deployed "
+               "threshold), a choice of example (a caught malware file, a safe program, a missed malware file, a "
+               "false alarm, or an uploaded PE file), the verdict scored by the API, the four feature families that "
+               "pushed the decision most (SHAP sums, in plain words) and the limits. The raw score, the threshold and "
+               "the top-10 SHAP columns are in a technical-detail section at the end. MODEL_CARD.md (generated from the same tables) documents data, metrics, "
                "intended and out-of-scope uses and known limits. DEMO.md is the 5-minute demo script. Deployment is "
                "local; cloud hosting is left to the student's own account."))
-    shots = [
-        ("a_malicious_correct.png", "Streamlit demo: a malicious test_future file, correctly flagged, with its top SHAP "
-                                    "contributions grouped by family."),
-        ("b_benign_correct.png", "Streamlit demo: a benign test_future file, correctly passed."),
+    shots = [   # (file, caption, share cut off the bottom: the upload shot is taller by the file box)
+        ("a_malicious_correct.png", "Streamlit demo: a malicious test_future file, correctly flagged, with the "
+                                    "feature families that pushed the decision most.", 0.235),
+        ("b_benign_correct.png", "Streamlit demo: a benign test_future file, correctly passed.", 0.235),
         ("c_upload_notepad.png", "Streamlit demo: uploading a benign Windows binary (notepad.exe); the file is parsed "
-                                 "in memory by the API and never executed."),
+                                 "in memory by the API and never executed.", 0.205),
     ]
-    # one screenshot per figure, the API sidebar cropped off (21% of the width), so the text stays readable in print
-    for fname, cap in shots:
-        s += figure_row([SHOTS / fname], f"{cap} (reports/screenshots/{fname}, sidebar cropped)", max_h=17.5 * cm,
-                        crop_bottom=0.12, crop_left=0.21)
+    # one screenshot per figure, cut to steps 2-4 (pick, verdict, why) so the text stays readable in print
+    for fname, cap, bottom in shots:
+        s += figure_row([SHOTS / fname], f"{cap} (reports/screenshots/{fname}, steps 2-4 of the page)",
+                        max_h=17.5 * cm, crop_top=0.27, crop_bottom=bottom)
     return s
 
 

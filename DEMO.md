@@ -9,7 +9,8 @@ Run every command from the project root.
 and so are the speaker notes of `reports/slides.pptx`, so do not present both in full. Start the API and
 the Streamlit page (sections 1 and 3) before the talk. Then present slides 1-8 in about 3 minutes, using a
 shortened version of their notes. At slide 9, switch to the browser for about 1.5 minutes and show
-section 4 items 2 and 5 only (a correct malicious file, then the notepad.exe upload). Return to slide 10
+section 4 items 2 and 5 only (a caught malware file, then the notepad.exe upload; add item 4, a missed
+malware file, if time allows). Return to slide 10
 for the last 30 seconds. Keep the curl calls (section 2) and the other walk-through items as backups in
 case the examiner asks.
 
@@ -85,24 +86,35 @@ Delete `row.json` afterwards.
 ```bash
 $PY -m streamlit run app/streamlit_app.py --server.address 127.0.0.1 --server.port 8501
 ```
-Open http://127.0.0.1:8501. The sidebar shows "Connected: lgbm-optuna-..." (the page calls the API at the URL
-in the sidebar; set `EMBER_API_URL` to change the default).
+Open http://127.0.0.1:8501. The page calls the API at `EMBER_API_URL` (default http://127.0.0.1:8000); the
+last line of the page says "scored by the FastAPI service at ...". If the API is not running, the page scores in
+its own process and that line says so (`EMBER_IN_PROCESS=1` forces this).
 
 ## 4. Walk through the page - 2:00 to 4:30
 
-1. **Banner (20 s).** Model, test_future ROC-AUC and TPR at 1% FPR with CI, the threshold and what it means,
-   then the limits box: triage aid only, Win64 only, static features, 50/50 training prevalence, challenge set.
-2. **Correct malicious file (40 s).** Tab "test_future sample", True label = malicious, Outcome = correct.
-   Show P(malicious), the threshold, Predicted vs True label, then the top-10 SHAP table grouped by family and the
-   per-family SHAP sums ("positive pushes towards malicious; base value + all SHAP = logit").
+The page is one column that reads top to bottom, in five numbered steps, written for an audience that does not
+know the field. Scroll down as you talk; there are no tabs or side panels.
+
+1. **How good is it? (20 s).** Three numbers: share of malware caught and share of safe programs flagged on
+   test_future at the deployed threshold, and the 40,000 test files from 12 later weeks. Say: "trained on the
+   past, tested on the future, as it would be used".
+2. **Pick a program: "Caught malware" (40 s).** The verdict card says "Flagged as malware", with the score out
+   of 100, the flag line and "Actually: malware. The model was right." Point at the low flag line: a missed
+   malware file is treated as 10 times worse than a false alarm. Then step 4, "Why?": the four groups of
+   measurements that pushed the decision most, red for "points to malware".
    Screenshot: `reports/screenshots/a_malicious_correct.png`.
-3. **Benign file (30 s).** True label = benign, Outcome = correct. Point at the negative SHAP values.
-   Screenshot: `reports/screenshots/b_benign_correct.png`.
-4. **A mistake (30 s).** Outcome = misclassified, True label = malicious: a missed malware file. Which families
-   pulled it down? (Often the authenticode signature: signed malware is missed more often, see MODEL_CARD.md.)
-5. **Upload (40 s).** Tab "Upload a PE file", upload `C:\Windows\System32\notepad.exe` (Linux: any Win64 .exe you
-   have the right to share). Show the sha256, the verdict and the SHAP view.
-   Screenshot: `reports/screenshots/c_upload_notepad.png`.
+3. **"Safe program" (20 s).** "Looks safe"; the reasons are now green. Screenshot:
+   `reports/screenshots/b_benign_correct.png`.
+4. **"Missed malware" (30 s).** Be honest about errors: "Looks safe", but "the model got this one wrong". Its
+   score is often just under the flag line. "Show another" steps to the next file of the same kind; "False
+   alarm" shows the opposite mistake.
+5. **"Upload a file" (40 s).** Upload `C:\Windows\System32\notepad.exe` (Linux: any Win64 .exe you have the right
+   to share). The file is read in memory by the API, never run or saved. Screenshot:
+   `reports/screenshots/c_upload_notepad.png`.
+6. **Keep in mind (10 s).** Step 5 on the page: triage aid, static features only, weaker on brand-new malware.
+
+For questions, "Technical detail" at the bottom holds P(malicious), the threshold, the sha256 and test_future
+index of the file, and the top-10 SHAP columns with their values.
 
 ## 5. Close - 4:30
 

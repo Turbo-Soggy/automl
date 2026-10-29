@@ -583,9 +583,9 @@ def slide_deploy(prs: Presentation) -> None:
     shot = REPORTS / "screenshots" / "a_malicious_correct.png"
     routes = api_routes()
     notes = (
-        "Deployment. The tuned LightGBM is served by a FastAPI service and a Streamlit app; you "
-        "can pick a test_future file or upload a PE file, and the app shows the score, the "
-        "verdict and the top SHAP reasons. The threshold was chosen on train out-of-fold scores "
+        "Deployment. The tuned LightGBM is served by a FastAPI service and a one-page Streamlit app; "
+        "you pick an example file or upload a program, and the page shows the verdict and, in plain "
+        "words, which parts of the file pushed the decision. The threshold was chosen on train out-of-fold scores "
         f"so that a missed malware costs {thr['cost_ratio_fn_to_fp']:.0f} times a false alarm; on "
         f"test_future that gives {pct(chk['recall'])} recall at {pct(chk['fpr'])} false-positive "
         f"rate, but at a realistic 1% malware share only about {pct(dep.precision, 0)} of its alarms "
@@ -594,13 +594,13 @@ def slide_deploy(prs: Presentation) -> None:
     slide = new_slide(prs, "Step 5: deployment demo (FastAPI + Streamlit)", notes,
                       "reports/screenshots/a_malicious_correct.png, models/threshold.json, "
                       "app/api.py, MODEL_CARD.md")
-    # crop to the result area (sidebar, filters above it and the white side margins cut off) so the text is readable
+    # crop to the verdict and the reasons (steps 3-4 of the page) so the text is readable
     add_picture_fit(slide, shot, MARGIN, Inches(1.15), Inches(7.0), Inches(5.8),
-                    crop=(0.26, 0.47, 0.95, 0.88))
+                    crop=(0.05, 0.38, 0.95, 0.765))
     add_text(slide, Inches(7.8), Inches(1.3), Inches(5.0), Inches(5.6), [
         f"**API: **{', '.join(routes)}.",
-        "**App: **pick a test_future file or upload a PE; shows P(malicious), verdict and top "
-        "SHAP reasons.",
+        "**App: **one page: pick an example or upload a PE; shows the verdict and the top "
+        "reasons (SHAP) in plain words.",
         f"**Threshold {thr['threshold']:.4f}: **missed malware costs "
         f"{thr['cost_ratio_fn_to_fp']:.0f}x a false alarm, set on train out-of-fold scores.",
         f"**On test_future: **recall {pct(chk['recall'])}, FPR {pct(chk['fpr'])}; at 1% "

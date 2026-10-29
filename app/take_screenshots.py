@@ -27,15 +27,14 @@ def settle(page: Page, text: str) -> None:
     page.wait_for_timeout(1500)   # let charts finish drawing
 
 
-def choose(page: Page, label: str, option: str) -> None:
-    page.get_by_role("combobox", name=label).click()
-    page.get_by_role("option", name=option, exact=True).click()
+def choose(page: Page, option: str) -> None:
+    """Click one of the example pills (a radio option) by its visible text."""
+    page.get_by_text(option, exact=True).click()
 
 
-def sample_shot(page: Page, label: str, path: Path) -> None:
-    choose(page, "True label", label)
-    choose(page, "Outcome at the threshold", "correct")
-    settle(page, "Top-10 SHAP contributions")
+def sample_shot(page: Page, option: str, path: Path) -> None:
+    choose(page, option)
+    settle(page, "Keep in mind")
     page.screenshot(path=str(path), full_page=True)
 
 
@@ -49,15 +48,14 @@ def main() -> None:
         browser = p.chromium.launch(channel="msedge") if sys.platform == "win32" else p.chromium.launch()
         # Streamlit scrolls inside its own container, so full_page cannot extend the shot:
         # the viewport is made tall enough for the whole result instead.
-        page = browser.new_page(viewport={"width": 1400, "height": 1750})
+        page = browser.new_page(viewport={"width": 960, "height": 2000})
         page.goto(args.url)
-        settle(page, "Top-10 SHAP contributions")
-        sample_shot(page, "malicious", OUT / "a_malicious_correct.png")
-        sample_shot(page, "benign", OUT / "b_benign_correct.png")
-        page.get_by_role("tab", name="Upload a PE file").click()
+        settle(page, "Keep in mind")
+        sample_shot(page, "Caught malware", OUT / "a_malicious_correct.png")
+        sample_shot(page, "Safe program", OUT / "b_benign_correct.png")
+        choose(page, "Upload a file")
         page.locator("input[type=file]").set_input_files(str(args.pe))
-        settle(page, args.pe.name)
-        settle(page, "Top-10 SHAP contributions")
+        settle(page, "The true answer is not known")
         page.screenshot(path=str(OUT / "c_upload_notepad.png"), full_page=True)
         browser.close()
     print(f"[screenshots] wrote 3 PNGs to {OUT.relative_to(ROOT)}")
