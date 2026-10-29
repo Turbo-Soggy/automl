@@ -7,7 +7,9 @@ Hugging Face repo, but:
   * never changes directory and never executes anything from the data,
   * checks each zip's sha256 against the hash published on Hugging Face,
   * extracts only flat *.jsonl members (no paths, so no zip-slip),
-  * is resumable: finished zips and already-extracted files are skipped on re-run.
+  * is resumable: finished zips and already-extracted files are skipped on re-run,
+  * with --keep-zipped, leaves the Win64 zips packed (32 GB less disk); src.data then
+    streams the weekly files straight out of the zips, byte for byte the same.
 
 Layout written under data/raw/:
   _zips/                       the downloaded zip files (kept for re-extraction)
@@ -18,7 +20,7 @@ Layout written under data/raw/:
   DOWNLOAD_DONE                JSON summary, written only after full success
   DOWNLOAD_FAILED              error + traceback, written on failure
 
-Usage (from the project root): .venv/Scripts/python.exe scripts/download_data.py [--no-challenge]
+Usage (from the project root): .venv/Scripts/python.exe scripts/download_data.py [--no-challenge] [--keep-zipped]
 """
 from __future__ import annotations
 
@@ -32,11 +34,13 @@ import time
 import traceback
 import zipfile
 from pathlib import Path
+from typing import BinaryIO
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))  # so `config` imports when run as a plain script
 
 from config import DATA_RAW  # noqa: E402
+from src.data import flat_jsonl_name  # noqa: E402
 
 REPO_ID = "joyce8/EMBER2024"
 # zip file name on Hugging Face -> sub-folder of data/raw it is extracted into
@@ -92,26 +96,13 @@ def download_zip(filename: str, sha256: str, size: int) -> Path:
     return path
 
 
-def safe_member_name(info: zipfile.ZipInfo) -> str | None:
-    """Return a flat output file name for a .jsonl member, or None to skip it.
-
-    Rejects absolute paths and '..' so a malicious zip cannot write outside data/raw.
-    """
-    name = info.filename.replace("\\", "/")
-    if info.is_dir() or not name.endswith(".jsonl"):
-        return None
-    if name.startswith("/") or ".." in name.split("/") or ":" in name:
-        raise RuntimeError(f"Refusing suspicious zip member path: {info.filename!r}")
-    return name.split("/")[-1]
-
-
 def extract_jsonl(zip_path: Path, dest: Path) -> list[str]:
     """Extract the .jsonl members of a zip into dest (flat); skip files already complete."""
     dest.mkdir(parents=True, exist_ok=True)
     written: list[str] = []
     with zipfile.ZipFile(zip_path) as zf:
         for info in zf.infolist():
-            out_name = safe_member_name(info)
+            out_name = flat_jsonl_name(info)
             if out_name is None:
                 log.warning("Skipping non-jsonl member %s", info.filename)
                 continue
@@ -128,32 +119,53 @@ def extract_jsonl(zip_path: Path, dest: Path) -> list[str]:
     return written
 
 
-def count_lines(path: Path, chunk: int = 64 * 1024 * 1024) -> int:
-    """Number of rows (newlines) in a jsonl file, read in chunks."""
+def count_lines(f: BinaryIO, chunk: int = 64 * 1024 * 1024) -> int:
+    """Number of rows (newlines) in an open jsonl stream, read in chunks."""
     n = 0
-    with path.open("rb") as f:
-        while block := f.read(chunk):
-            n += block.count(b"\n")
+    while block := f.read(chunk):
+        n += block.count(b"\n")
     return n
 
 
-def run(zips: dict[str, str]) -> dict:
-    """Download, verify and extract every zip; return a summary for the DONE marker."""
+def count_zip_lines(zip_path: Path) -> dict[str, int]:
+    """Rows per .jsonl member, read straight from the zip (used with --keep-zipped)."""
+    rows: dict[str, int] = {}
+    with zipfile.ZipFile(zip_path) as zf:
+        for info in zf.infolist():
+            if (name := flat_jsonl_name(info)) is not None:
+                with zf.open(info) as f:
+                    rows[name] = count_lines(f)
+    return rows
+
+
+def run(zips: dict[str, str], keep_zipped: set[str]) -> dict:
+    """Download, verify and extract every zip; return a summary for the DONE marker.
+
+    Zips named in keep_zipped are not extracted: src.data reads their members directly.
+    """
     hashes = expected_hashes(list(zips))
     summary: dict = {"repo_id": REPO_ID, "zips": {}}
     for filename, subdir in zips.items():
         sha256, size = hashes[filename]
         zip_path = download_zip(filename, sha256, size)
-        members = extract_jsonl(zip_path, DATA_RAW / subdir)
-        rows = {m: count_lines(DATA_RAW / subdir / m) for m in members}
-        log.info("%s: %d jsonl files, %d rows", filename, len(members), sum(rows.values()))
-        summary["zips"][filename] = {"sha256": sha256, "bytes": size, "dir": subdir, "rows_per_file": rows}
+        if filename in keep_zipped:
+            rows = count_zip_lines(zip_path)
+        else:
+            rows = {}
+            for m in extract_jsonl(zip_path, DATA_RAW / subdir):
+                with (DATA_RAW / subdir / m).open("rb") as f:
+                    rows[m] = count_lines(f)
+        log.info("%s: %d jsonl files, %d rows", filename, len(rows), sum(rows.values()))
+        summary["zips"][filename] = {"sha256": sha256, "bytes": size, "dir": subdir,
+                                     "extracted": filename not in keep_zipped, "rows_per_file": rows}
     return summary
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--no-challenge", action="store_true", help="skip the 32 MB challenge set")
+    parser.add_argument("--keep-zipped", action="store_true",
+                        help="do not extract the Win64 zips (saves 32 GB; the cache build reads the zips)")
     args = parser.parse_args()
 
     setup_logging()
@@ -163,7 +175,7 @@ def main() -> None:
     # Small files first so the challenge and test sets are usable while train is still downloading.
     zips = {**({} if args.no_challenge else CHALLENGE_ZIPS), **WIN64_ZIPS}
     try:
-        summary = run(zips)
+        summary = run(zips, set(WIN64_ZIPS) if args.keep_zipped else set())
     except BaseException as exc:  # noqa: BLE001 - we want a marker even on Ctrl+C
         FAILED_MARKER.write_text(f"{type(exc).__name__}: {exc}\n\n{traceback.format_exc()}", encoding="utf-8")
         log.exception("Download failed")

@@ -142,7 +142,7 @@ def check_alignment(metas: dict[str, pd.DataFrame], n_rows: int = N_ALIGNMENT_RO
     failures = []
     for official, i in picks:
         meta_row = metas[official].iloc[i]
-        with (data.raw_win64_dir() / meta_row["source_file"]).open("rb") as f:
+        with data.raw_file(meta_row["source_file"]).open() as f:
             f.seek(int(meta_row["source_offset"]))
             raw = orjson.loads(f.readline())
         cached = np.asarray(data.open_cache_X(official)[i])

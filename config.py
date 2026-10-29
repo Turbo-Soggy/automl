@@ -65,7 +65,9 @@ AUTOML_BUDGET_S: int = 1200     # seconds per AutoML tool
 # (9 reruns at 1200 s would take about 4 hours). Clean reruns get the same 600 s, so every
 # with/without-leak comparison is at an equal budget.
 LEAKAGE_BUDGET_S: int = 600
-N_JOBS: int = 16                # all tools on the same 16 CPU cores so timings are comparable
+# All tools use the same cores so timings are comparable. Steps 2-3 ran on a 16-core laptop;
+# a smaller machine (Step 4 onwards ran on a 4-core cloud VM) uses all of its cores instead.
+N_JOBS: int = min(16, os.cpu_count() or 1)
 N_BOOTSTRAP: int = 1000         # resamples for the paired bootstrap confidence intervals
 
 if QUICK:

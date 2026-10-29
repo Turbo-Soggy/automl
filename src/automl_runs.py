@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import shutil
 import threading
@@ -84,7 +85,14 @@ AG_FI_FAMILY_SHUFFLES: int = 5      # 12 families: cheap, so average 5 shuffles 
 AG_FI_FEATURE_CHUNK: int = 256      # per-feature importance is computed in chunks ...
 AG_FI_TIME_LIMIT_S: float = 60.0 if AUTOML_BUDGET_S < 600 else 600.0  # ... until this cap is hit
 
-H2O_MAX_MEM: str = "24G"
+
+def _h2o_max_mem() -> str:
+    """24G as on the 63 GB laptop of Steps 2-3, but at most ~60% of RAM so a smaller machine does not swap."""
+    ram_gb = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 2**30 if hasattr(os, "sysconf") else 63
+    return f"{min(24, int(0.6 * ram_gb))}G"
+
+
+H2O_MAX_MEM: str = _h2o_max_mem()
 
 HEARTBEAT_S: float = 30.0   # how often the sleep guard notes the time
 MAX_GAP_S: float = 60.0     # a longer gap between two beats = the process was suspended (sleep)

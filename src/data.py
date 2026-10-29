@@ -23,18 +23,22 @@ nothing from it is imported or executed, and it is never put on sys.path.
 """
 from __future__ import annotations
 
+import io
 import json
 import os
 import re
 import shutil
 import subprocess
 import time
+import zipfile
+from collections.abc import Iterator
 from concurrent.futures import ProcessPoolExecutor
+from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import lru_cache
 from importlib import metadata
 from pathlib import Path
-from typing import Any
+from typing import IO, Any
 
 import numpy as np
 import orjson
@@ -129,7 +133,7 @@ class PartResult:
     seconds: float
 
 
-def vectorize_file(raw_path: Path, part_dir: Path) -> PartResult:
+def vectorize_file(raw: RawFile, part_dir: Path) -> PartResult:
     """Vectorise one weekly jsonl into part_dir/<stem>.npy + <stem>.parquet.
 
     Why dedupe here: every EMBER2024 weekly file holds each sample twice (lines
@@ -145,7 +149,7 @@ def vectorize_file(raw_path: Path, part_dir: Path) -> PartResult:
     metas: list[dict[str, Any]] = []
     lines = duplicates = bad_label = 0
     offset = 0
-    with raw_path.open("rb") as f:
+    with raw.open() as f:
         for line in f:
             line_offset, offset = offset, offset + len(line)
             if not line.strip():
@@ -162,14 +166,14 @@ def vectorize_file(raw_path: Path, part_dir: Path) -> PartResult:
             vectors.append(extractor.process_raw_features(row))
             meta = row_metadata(row)
             # Byte offset lets verify_data.py re-read this exact line for the alignment check.
-            meta.update(source_file=raw_path.name, source_offset=line_offset)
+            meta.update(source_file=raw.name, source_offset=line_offset)
             metas.append(meta)
 
     X = np.vstack(vectors).astype(np.float32) if vectors else np.zeros((0, extractor.dim), np.float32)
-    np.save(part_dir / f"{raw_path.stem}.npy", X)
-    pd.DataFrame(metas).to_parquet(part_dir / f"{raw_path.stem}.parquet", index=False)
+    np.save(part_dir / f"{raw.stem}.npy", X)
+    pd.DataFrame(metas).to_parquet(part_dir / f"{raw.stem}.parquet", index=False)
     return PartResult(
-        source_file=raw_path.name,
+        source_file=raw.name,
         lines=lines,
         kept=len(metas),
         duplicates_in_file=duplicates,
@@ -179,16 +183,83 @@ def vectorize_file(raw_path: Path, part_dir: Path) -> PartResult:
     )
 
 
-def raw_files(raw_dir: Path, official: str) -> list[Path]:
-    """Sorted weekly files of one official split. Sorted names = chronological order."""
-    return sorted(raw_dir.glob(f"*_Win64_{official}*.jsonl"))
+@dataclass(frozen=True)
+class RawFile:
+    """One weekly raw jsonl: an extracted file, or a member read straight out of its zip.
+
+    Why zip members: the extracted jsonl take 32 GB, which some machines (e.g. a cloud
+    session) do not have. Reading the member stream gives the same bytes in the same
+    order, so the cache, the byte offsets and the splits are identical either way.
+    """
+
+    name: str                    # flat file name, e.g. 2023-09-24_Win64_train.jsonl
+    size: int                    # uncompressed bytes
+    path: Path | None = None     # set for an extracted file
+    zip_path: Path | None = None  # set for a zip member ...
+    member: str | None = None     # ... together with its name inside the zip
+
+    @property
+    def stem(self) -> str:
+        return Path(self.name).stem
+
+    @contextmanager
+    def open(self) -> Iterator[IO[bytes]]:
+        """Binary stream of the raw lines (seekable; seeking in a zip member re-decompresses)."""
+        if self.path is not None:
+            with self.path.open("rb") as f:
+                yield f
+            return
+        with zipfile.ZipFile(self.zip_path) as zf, zf.open(self.member) as member:
+            yield io.BufferedReader(member, 16 * 1024 * 1024)
+
+
+def flat_jsonl_name(info: zipfile.ZipInfo) -> str | None:
+    """Flat file name of a .jsonl zip member, or None for anything else.
+
+    Rejects absolute paths and '..' so a malicious zip cannot point outside data/raw.
+    """
+    name = info.filename.replace("\\", "/")
+    if info.is_dir() or not name.endswith(".jsonl"):
+        return None
+    if name.startswith("/") or ".." in name.split("/") or ":" in name:
+        raise RuntimeError(f"Refusing suspicious zip member path: {info.filename!r}")
+    return name.split("/")[-1]
+
+
+def raw_files(raw_dir: Path, official: str) -> list[RawFile]:
+    """Sorted weekly files of one official split. Sorted names = chronological order.
+
+    Uses the extracted files in raw_dir when present, otherwise the members of
+    data/raw/_zips/Win64_{official}.zip (see scripts/download_data.py --keep-zipped).
+    """
+    pattern = f"*_Win64_{official}*.jsonl"
+    extracted = sorted(raw_dir.glob(pattern))
+    if extracted:
+        return [RawFile(p.name, p.stat().st_size, path=p) for p in extracted]
+    zip_path = config.DATA_RAW / "_zips" / f"Win64_{official}.zip"
+    if not zip_path.exists():
+        return []
+    with zipfile.ZipFile(zip_path) as zf:
+        members = [(flat_jsonl_name(i), i) for i in zf.infolist()]
+    found = [RawFile(name, i.file_size, zip_path=zip_path, member=i.filename)
+             for name, i in members if name is not None and Path(name).match(pattern)]
+    return sorted(found, key=lambda r: r.name)
+
+
+def raw_file(name: str) -> RawFile:
+    """The weekly raw file a cache row came from (meta column `source_file`)."""
+    official = "train" if "_Win64_train" in name else "test"
+    for raw in raw_files(raw_win64_dir(), official):
+        if raw.name == name:
+            return raw
+    raise FileNotFoundError(f"Raw file {name} not found (extracted or in its zip)")
 
 
 # =============================================================================
 # 3. Parts -> final cache (main process)
 # =============================================================================
 def _merge_parts(
-    files: list[Path], part_dir: Path, official: str, out_dir: Path, already_seen: set[str]
+    files: list[RawFile], part_dir: Path, official: str, out_dir: Path, already_seen: set[str]
 ) -> dict[str, Any]:
     """Concatenate the parts of one official split in file order, dropping sha256s already seen.
 
@@ -277,7 +348,7 @@ def build_cache(
 
     start = time.time()
     # Biggest files first so the slowest task is not the one scheduled last.
-    order = sorted(all_files, key=lambda p: p.stat().st_size, reverse=True)
+    order = sorted(all_files, key=lambda r: r.size, reverse=True)
     with ProcessPoolExecutor(max_workers=workers) as pool:
         results = list(pool.map(vectorize_file, order, [part_dir] * len(order)))
         by_file = {r.source_file: r for r in results}
