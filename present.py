@@ -60,16 +60,16 @@ def main() -> None:
     procs: list[subprocess.Popen] = []
     try:
         if not args.no_api:
-            print(f"[present] starting the API on port {API_PORT} ...")
+            print(f"[present] starting the API on port {API_PORT} ...", flush=True)
             procs.append(subprocess.Popen(api_command(), cwd=ROOT, env=env))
             if not wait_for(f"http://127.0.0.1:{API_PORT}/health"):
                 sys.exit("[present] the API did not start; see its messages above")
-        print(f"[present] starting the page on port {PAGE_PORT} ...")
+        print(f"[present] starting the page on port {PAGE_PORT} ...", flush=True)
         procs.append(subprocess.Popen(page_command(), cwd=ROOT, env=env))
         url = f"http://127.0.0.1:{PAGE_PORT}"
         if not wait_for(url):
             sys.exit("[present] the page did not start; see its messages above")
-        print(f"[present] ready: {url}  (Ctrl+C to stop)")
+        print(f"[present] ready: {url}  (Ctrl+C to stop)", flush=True)
         if not args.no_browser:
             webbrowser.open(url)
         while all(p.poll() is None for p in procs):   # stop if either server dies
@@ -81,7 +81,7 @@ def main() -> None:
             p.terminate()
         for p in procs:
             p.wait(timeout=10)
-        print("[present] stopped")
+        print("[present] stopped", flush=True)
 
 
 if __name__ == "__main__":
