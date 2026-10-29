@@ -1,0 +1,4 @@
+# Store every file byte-for-byte. LightGBM model files contain raw CR bytes, and
+# line-ending conversion (core.autocrlf on Windows) corrupts them, so no file is
+# treated as text for end-of-line conversion.
+* -text
