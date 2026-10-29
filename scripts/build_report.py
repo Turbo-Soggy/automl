@@ -1283,7 +1283,7 @@ def reproducibility(F: dict) -> list[Flowable]:
     s = [H1("10. Reproducibility")]
     s.append(P(f"All code is in {REPO_URL}. One seed (42) is used for numpy, random, every model library and every "
                "split. Splits and CV folds are persisted under data/splits/. Every run appends a record (method, "
-               "parameters, scores, time, machine) to reports/experiments.jsonl, and every table, figure and "
+               "parameters, scores, time; Step 4 records also log the machine) to reports/experiments.jsonl, and every table, figure and "
                "write-up is regenerated from that log and the saved models."))
     s.append(H2("10.1 Hardware"))
     s.append(bullets([

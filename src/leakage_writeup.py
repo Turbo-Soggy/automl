@@ -364,8 +364,8 @@ def _leak_date(table: pd.DataFrame, context: dict[str, Any]) -> str:
         lines += ["", f"For {', '.join(weak)} the date changed the score measurably although it is not among the "
                   "model's 10 most important columns by either measure. A time-budgeted AutoML search is not "
                   "repeatable: with one more column it tries other configurations and can end at a different "
-                  "winner, so these deltas are more likely the search taking another path than an effect of the "
-                  "date itself."]
+                  "winner, so these deltas may be the search taking another path rather than an effect of the "
+                  "date; run-to-run variation was not measured (one seed per run)."]
     helped = [MODEL_LABEL[r["model"]] for _, r in part.iterrows() if _effect(r, "test_random") == "raised"]
     lines += ["", ("On the random split the date measurably raised AUC for: " + ", ".join(helped) + "."
                    if helped else "No model got a measurable AUC gain from the date, even on the random split "
