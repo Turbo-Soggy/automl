@@ -303,7 +303,7 @@ Same tuned configuration, three training windows, scored on each future week 52-
 - sliding_12w vs size_matched (same number of rows): sliding has the higher AUC in 10 of
   12 future weeks; overall test_future AUC 0.9973 vs
   0.9969, TPR@1%FPR 96.2% vs
-  95.6%. So at equal size recent data is worth a little more than older data, but not enough to beat 4.3x more data.
+  95.6%. So at equal size recent data may be worth a little more than older data (suggestive only: no paired CI on this difference, one seed), but not enough to beat 4.3x more data.
 - No model here is retrained on future weeks: retraining on labelled future data would be the
   real deployment remedy, but those labels are what test_future holds back.
 

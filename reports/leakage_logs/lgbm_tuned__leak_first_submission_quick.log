@@ -1,2 +1,2 @@
 [leakage] lgbm_tuned on leak_first_submission: budget 30 s, quick=True
-[leakage] lgbm_tuned leak_first_submission best=LightGBM (random config, 479 trees) wall_s=31 test_random_auc=0.99236 test_future_auc=0.99207 timing_valid=True
+[leakage] lgbm_tuned leak_first_submission best=LightGBM (random config, 479 trees) wall_s=25 test_random_auc=0.99236 test_future_auc=0.99207 timing_valid=True

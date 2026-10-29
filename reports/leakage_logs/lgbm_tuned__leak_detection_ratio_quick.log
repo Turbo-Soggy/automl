@@ -1,2 +1,2 @@
 [leakage] lgbm_tuned on leak_detection_ratio: budget 30 s, quick=True
-[leakage] lgbm_tuned leak_detection_ratio best=LightGBM (random config, 479 trees) wall_s=19 test_random_auc=1.00000 test_future_auc=1.00000 timing_valid=True
+[leakage] lgbm_tuned leak_detection_ratio best=LightGBM (random config, 479 trees) wall_s=16 test_random_auc=1.00000 test_future_auc=1.00000 timing_valid=True

@@ -70,7 +70,8 @@ NAMES = {
     "logreg": "LogReg",
     "grid": "LightGBM grid",
     "random": "LightGBM random",
-    "optuna": "LightGBM Optuna (tuned)",
+    # `optuna` (Step 2 tables) and `lgbm_tuned` (Step 3-4 tables) are the same deployed model.
+    "optuna": "LightGBM tuned (Optuna)",
     "lgbm_tuned": "LightGBM tuned (Optuna)",
     "flaml": "FLAML",
     "autogluon": "AutoGluon",
@@ -111,12 +112,37 @@ def name(m: str) -> str:
     return NAMES.get(m, m)
 
 
+def short_model(m: str) -> str:
+    """A winning-model name short enough for a table cell, cut at a word boundary, not mid-word.
+
+    H2O ids end in '_AutoML_<run>_<timestamp>' (no information for the reader); the manual
+    entry 'LightGBM via optuna search (609 trees)' becomes 'LightGBM, 609 trees'."""
+    m = m.split("_AutoML")[0]
+    hit = re.match(r"LightGBM via \w+ search \((\d+) trees\)", m)
+    return f"LightGBM, {hit.group(1)} trees" if hit else m
+
+
 def table_csv(stem: str) -> pd.DataFrame:
     return pd.read_csv(TABLES / f"{stem}.csv")
 
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def vm_ram_gib() -> float:
+    """RAM of the Step 4 cloud VM, read from the leakage records in reports/experiments.jsonl.
+
+    src/leakage.py logs machine.ram_gb as bytes / 2**30, i.e. GiB (15.7 GiB = 16.9 decimal GB;
+    the Step 4 eval records log the decimal figure, 16.9)."""
+    rams = []
+    for line in (REPORTS / "experiments.jsonl").read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            rec = json.loads(line)
+            ram = (rec.get("machine") or {}).get("ram_gb")
+            if rec.get("step") == "leakage" and ram:
+                rams.append(float(ram))
+    return max(rams)
 
 
 # --------------------------------------------------------------------------------------
@@ -371,10 +397,10 @@ def figure(path: Path, caption: str, width: float = 1.0, max_h: float = 11.5 * c
 
 
 def figure_row(paths: Sequence[Path], caption: str, max_h: float = 10 * cm,
-               crop_bottom: float = 0.0) -> list[Flowable]:
+               crop_bottom: float = 0.0, crop_left: float = 0.0) -> list[Flowable]:
     """Several images side by side under one numbered caption (screenshots, SHAP waterfalls).
 
-    `crop_bottom` trims that share of empty space off the bottom of each image."""
+    `crop_bottom` / `crop_left` trim that share of each image (empty space, the app's sidebar)."""
     NUM.fig += 1
     cap = Paragraph(f"<b>Figure {NUM.fig}.</b> {caption}", ST["caption"])
     cell_w = TEXT_W / len(paths) - 6
@@ -386,8 +412,8 @@ def figure_row(paths: Sequence[Path], caption: str, max_h: float = 10 * cm,
             continue
         src: str | io.BytesIO = str(path)
         im = PILImage.open(path)
-        if crop_bottom > 0:  # crop in memory: no extra files in the repo
-            im = im.crop((0, 0, im.width, int(im.height * (1 - crop_bottom))))
+        if crop_bottom > 0 or crop_left > 0:  # crop in memory: no extra files in the repo
+            im = im.crop((int(im.width * crop_left), 0, im.width, int(im.height * (1 - crop_bottom))))
             src = io.BytesIO()
             im.save(src, format="PNG")
             src.seek(0)
@@ -474,26 +500,26 @@ def draw_architecture(facts: dict) -> None:
     arrow(31.8, 55, 39.2, 55)
     arrow(70.8, 55, 78.2, 55)
     # Row 2: modelling
-    box(1, 24, 34, 17, "Step 2: manual tuning", f"LightGBM default, LogReg baselines\nGrid / Random / Optuna, "
+    box(1, 24, 33, 17, "Step 2: manual tuning", f"LightGBM default, LogReg baselines\nGrid / Random / Optuna, "
         f"{facts['n_trials']} configs each\n{facts['cv_folds']}-fold CV on a {facts['tune_n']:,}-row subset\nrefit best on all of train", green)
-    box(38, 24, 34, 17, "Step 3: AutoML", f"FLAML, AutoGluon, H2O AutoML\n{facts['budget']:.0f} s each, one at a time\n"
+    box(38.5, 24, 33, 17, "Step 3: AutoML", f"FLAML, AutoGluon, H2O AutoML\n{facts['budget']:.0f} s each, one at a time\n"
         "same train split, ROC-AUC\nleaderboards saved", green)
-    box(75, 24, 34, 17, "Step 4: critical evaluation", "random vs temporal split, leakage,\nbias / prevalence, SHAP, calibration,\n"
+    box(76, 24, 33, 17, "Step 4: critical evaluation", "random vs temporal split, leakage,\nbias / prevalence, SHAP, calibration,\n"
         "cost threshold, drift, challenge set", amber)
     arrow(94, 45.2, 94, 41.8)  # splits -> eval
-    arrow(70, 45.2, 55, 41.8)  # splits -> automl
-    arrow(85, 45.2, 18, 41.8)  # splits -> tuning
-    arrow(35.8, 32.5, 37.2, 32.5)
-    arrow(72.8, 32.5, 74.2, 32.5)
+    arrow(88, 45.2, 58, 41.8)  # splits -> automl
+    arrow(82, 45.2, 20, 41.8)  # splits -> tuning
+    arrow(34.6, 32.5, 37.9, 32.5)
+    arrow(72.1, 32.5, 75.4, 32.5)
     # Row 3: deployment and reporting
-    box(75, 2, 34, 17, "Step 5: export", "tuned LightGBM -> models/final/\nmodel.txt + schema.json (sha256)\n"
+    box(76, 2, 33, 17, "Step 5: export", "tuned LightGBM -> models/final/\nmodel.txt + schema.json (sha256)\n"
         "cost threshold, model card", rose)
-    box(38, 2, 34, 17, "Serving", "FastAPI: /health, /predict,\n/predict_batch, /predict_file\nStreamlit demo page (via the API)", rose)
-    box(1, 2, 34, 17, "Logs -> report", "every run -> experiments.jsonl\nscripts -> tables/*.csv, figures/*.png\n"
+    box(38.5, 2, 33, 17, "Serving", "FastAPI: /health, /predict,\n/predict_batch, /predict_file\nStreamlit demo page (via the API)", rose)
+    box(1, 2, 33, 17, "Logs -> report", "every run -> experiments.jsonl\nscripts -> tables/*.csv, figures/*.png\n"
         "-> write-ups, model card, this PDF", grey)
     arrow(92, 23.2, 92, 19.8)
-    arrow(74.2, 10.5, 72.8, 10.5)
-    arrow(37.2, 10.5, 35.8, 10.5)
+    arrow(75.4, 10.5, 72.1, 10.5)
+    arrow(37.9, 10.5, 34.6, 10.5)
     ax.text(55, 69.5, "Workflow and architecture of the project", ha="center", va="top", fontsize=12, weight="bold",
             color="#1f3b5c")
     fig.tight_layout()
@@ -538,6 +564,60 @@ def row_of(df: pd.DataFrame, **eq) -> pd.Series:
     if len(sub) != 1:
         raise ValueError(f"expected one row for {eq}, got {len(sub)}")
     return sub.iloc[0]
+
+
+def _join_names(methods: Iterable[str]) -> str:
+    """'A', 'A and B', 'A, B and C' from internal method ids."""
+    names = [name(m) for m in methods]
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+
+
+def automl_vs_tuned_verdict() -> str:
+    """Say which AutoML tools tied, lost to or beat the tuned LightGBM on test_future AUC.
+
+    Built from the paired bootstrap rows in automl_pairwise.csv, so the abstract and section 8
+    can never claim more than the significance tests show.
+    """
+    avm = table_csv("automl_vs_manual")
+    pw = table_csv("automl_pairwise")
+    vs = pw[(pw.test_set == "test_future") & (pw.metric == "roc_auc") & (pw.method_b == "lgbm_tuned")
+            & pw.method_a.isin(avm.loc[avm.kind == "automl", "method"])]
+    sig = vs.significant_95.astype(bool)
+    tied, worse, better = vs[~sig], vs[sig & (vs.diff_a_minus_b < 0)], vs[sig & (vs.diff_a_minus_b > 0)]
+    parts = []
+    if not tied.empty:
+        parts.append(f"{_join_names(tied.method_a)} statistically tied the tuned LightGBM")
+    if not worse.empty:
+        parts.append(f"{_join_names(worse.method_a)} {'was' if len(worse) == 1 else 'were'} slightly but "
+                     f"significantly worse (by at most {abs(worse.diff_a_minus_b.min()):.4f} AUC)")
+    if not better.empty:
+        parts.append(f"{_join_names(better.method_a)} significantly beat it")
+    tail = "none beat it" if better.empty else ""
+    return "; ".join(parts + ([tail] if tail else []))
+
+
+def max_auc_shortfall() -> float:
+    """Largest test_future AUC shortfall of an AutoML tool against the tuned LightGBM (0 if none is behind)."""
+    avm = table_csv("automl_vs_manual")
+    tuned = row_of(avm, method="lgbm_tuned").test_future_roc_auc
+    return max(0.0, float(tuned - avm.loc[avm.kind == "automl", "test_future_roc_auc"].min()))
+
+
+def drift_vs_tuned_verdict() -> tuple[str, str]:
+    """Section 8.1 headline on drift: which AutoML gaps match the tuned model's (gap_vs_tuned.csv)."""
+    g = table_csv("gap_vs_tuned")
+    g = g[(g.metric == "roc_auc") & (g.kind == "automl")]
+    diff = g[g.differs_from_tuned.astype(bool)]
+    same = g[~g.differs_from_tuned.astype(bool)]
+    if diff.empty:
+        return "Same robustness to drift as the manual model.", "Their random-vs-future gaps matched the tuned model's"
+    head = "Mostly the same robustness to drift as the manual model."
+    extra = "; ".join(f"{name(r.model)}'s is slightly larger ({r.gap_minus_tuned:+.4f} "
+                      f"{ci4(r.gap_minus_tuned_ci_low, r.gap_minus_tuned_ci_high)}, CI excludes 0)"
+                      for _, r in diff.iterrows())
+    body = (f"{_join_names(same.model)} had random-vs-future gaps that match the tuned model's" if not same.empty
+            else "No tool matched the tuned model's gap") + f"; {extra}"
+    return head, body
 
 
 # --------------------------------------------------------------------------------------
@@ -595,14 +675,15 @@ def abstract(F: dict) -> list[Flowable]:
         f"<i>test_future</i> (12 strictly later weeks). The tuned LightGBM reaches ROC-AUC "
         f"{f4(opt.test_random_roc_auc)} on test_random and {f4(opt.test_future_roc_auc)} on test_future "
         f"(gap {f4(opt.roc_auc_gap)} {ci4(opt.roc_auc_gap_ci_low, opt.roc_auc_gap_ci_high)}); the AutoML winners "
-        f"reach {f4(am.test_future_roc_auc.min())} to {f4(am.test_future_roc_auc.max())} on test_future, so they "
-        f"match but do not beat manual tuning. The random split overstates ranking quality only slightly; the larger "
+        f"reach {f4(am.test_future_roc_auc.min())} to {f4(am.test_future_roc_auc.max())} on test_future: "
+        f"{automl_vs_tuned_verdict()} (paired bootstrap). The random split overstates ranking quality only slightly; the larger "
         f"overstatement comes from the 50/50 class mix: at a realistic 1% malware prevalence only "
         f"{pct(p1.precision)} of the tuned model's alarms on test_future are real. On the EMBER2024 challenge set "
         f"(malware that antivirus engines first missed) it detects only {pct(c.detection_rate)}. When a post-hoc "
         f"label proxy (<i>detection_ratio</i>) is added as a feature, every tool uses it "
         f"({int(dr.relied_on_leak.sum())} of {len(dr)} models rank it first), reports a near-perfect validation "
-        f"score and gives no warning. AutoML matched expert tuning in a fraction of the effort, but it did not "
+        f"score and gives no warning. AutoML came within {max_auc_shortfall():.4f} test_future AUC of expert "
+        f"tuning in a fraction of the effort, but it did not "
         f"protect against leakage or drift: those protections were human ones (column provenance, a temporal "
         f"hold-out, a realistic base rate). The best model is served with FastAPI and Streamlit."))
     return s
@@ -628,13 +709,15 @@ def problem(F: dict) -> list[Flowable]:
         "prevalence, SHAP explanations, calibration, a cost-sensitive threshold, drift and a hard challenge set.",
         "<b>Step 5 (deployment):</b> export of the best model, a FastAPI service, a Streamlit demo and a model card.",
     ]))
-    s.append(P("Ground rules: one seed (42) everywhere; no model, configuration, early-stopping point or threshold is "
-               "ever chosen on test_random or test_future; every table and figure is generated by a script from the "
-               "experiment log or saved artefacts."))
+    s.append(P("Ground rules: one seed (42) everywhere; no model is trained, tuned, early-stopped or thresholded on "
+               "test_random or test_future, and no configuration is selected on them (the one decision that reads "
+               "test scores, which finished model to deploy, is stated openly in section 7); every table and figure "
+               "is generated by a script from the experiment log or saved artefacts."))
     return s
 
 
 def dataset(F: dict) -> list[Flowable]:
+    """Section 2: dataset, dedup, labels and the three splits, from data_check.json and splits_info.json."""
     dc, si = F["dc"], F["si"]
     ci = dc["cache_info"]
     tr, te = ci["splits"]["train"], ci["splits"]["test"]
@@ -731,7 +814,7 @@ def methodology(F: dict) -> list[Flowable]:
         "the same train split, ROC-AUC as the metric, run one after another on an otherwise idle machine. "
         "Wall-clock time is logged, including overruns.",
         "<b>Metrics:</b> ROC-AUC, F1 and accuracy at 0.5 (the rubric), plus TPR at 1% FPR (the operating point a "
-        "malware analyst cares about). 95% confidence intervals come from a bootstrap with 1000 resamples (seed 42) "
+        "malware analyst cares about). 95% confidence intervals come from a bootstrap with 1000 resamples (seeds 42 and 43, one per test set) "
         "or Wilson intervals for rates; model differences use paired bootstraps on the same rows.",
         "<b>Test discipline:</b> test_random and test_future are scored once per final model. Thresholds are chosen "
         "on train out-of-fold scores, never on a test set.",
@@ -758,7 +841,7 @@ def tuning(F: dict) -> list[Flowable]:
             ("-" if pd.isna(r.search_seconds) else f"{r.search_seconds / 60:.1f} min") + f" + {r.fit_seconds:.0f} s",
         ])
     s += data_table(["method", "trials", "CV AUC", "AUC random", "AUC future [95% CI]", "F1 future",
-                     "acc. future", "TPR@1%FPR future", "search + refit time"], rows,
+                     "acc. future", "TPR@1% FPR future", "search + refit time"], rows,
                     widths=[1.6, 0.65, 0.75, 0.75, 1.75, 0.7, 0.75, 0.85, 1.0],
                     caption="Step 2 results (reports/tables/tuning_summary.csv). CV AUC is the mean over the 3 folds "
                             "of the 60k tuning subset; test columns are for the refit on all of train.")
@@ -799,14 +882,14 @@ def automl(F: dict) -> list[Flowable]:
         budget = "-" if pd.isna(r.budget_seconds) else f"{r.budget_seconds:.0f} s"
         wall = f"{r.wall_minutes:.1f} min"
         rows.append([
-            name(r.method), str(r.best_model)[:34], budget, wall,
+            name(r.method), short_model(str(r.best_model)), budget, wall,
             f4(r.test_random_roc_auc),
             f"{f4(r.test_future_roc_auc)} {ci4(r.test_future_roc_auc_ci_low, r.test_future_roc_auc_ci_high)}",
             f4(r.test_future_f1), f4(r.test_future_accuracy), pct(r.test_future_tpr_at_1pct_fpr),
         ])
     s += data_table(["method", "winning model", "budget", "wall time", "AUC random", "AUC future [95% CI]",
-                     "F1 future", "acc. future", "TPR@1%FPR future"], rows,
-                    widths=[1.4, 1.85, 0.8, 0.75, 0.75, 1.7, 0.7, 0.75, 0.8],
+                     "F1 future", "acc. future", "TPR@1% FPR future"], rows,
+                    widths=[1.4, 1.75, 0.8, 0.75, 0.75, 1.7, 0.7, 0.75, 0.9],
                     caption="AutoML vs manual (reports/tables/automl_vs_manual.csv). For the tuned LightGBM the wall "
                             "time covers the whole Step 2 search of its tuner plus the refit.")
     s += figure(FIGURES / "automl_vs_manual.png", "AutoML tools against the manual models on both test sets, with 95% "
@@ -825,7 +908,7 @@ def automl(F: dict) -> list[Flowable]:
         "ensemble came on top: wall time minus budget was " +
         ", ".join(f"{name(r.method)} {r.over_budget_seconds:+.0f} s" for _, r in over.iterrows()) +
         f". The manual route needed {avm.loc[avm.method == 'lgbm_tuned', 'all_manual_seconds'].iloc[0] / 3600:.1f} h "
-        "of search for all three tuners together, against well under half an hour per AutoML tool."))
+        "of search and refit for all three tuners together, against well under half an hour per AutoML tool."))
     s.append(H2("5.1 Leaderboards"))
     s.append(P("Summaries of the saved leaderboards (reports/leaderboards/); the full lists are in Appendix A."))
     lb = pd.read_csv(REPORTS / "leaderboards" / "flaml_leaderboard.csv")
@@ -856,11 +939,13 @@ def automl(F: dict) -> list[Flowable]:
 
 
 def critical(F: dict) -> list[Flowable]:
+    """Section 6: the Step 4 critical evaluation, from the Step 4 tables, figures and critical_eval.md."""
     ce = REPORTS / "critical_eval.md"
     s = [H1("6. Step 4: critical evaluation")]
     s.append(P(
         "<b>Hardware note.</b> Steps 2-3 ran on the laptop (16-core Intel Core Ultra 9 285H, 63 GB RAM, Windows, "
-        "16 threads). Step 4 ran on a 4-core, 15.7 GB Linux cloud VM; its leakage runs used a 600 s AutoML budget, "
+        f"16 threads). Step 4 ran on a 4-core, {vm_ram_gib():.1f} GiB RAM Linux cloud VM; its leakage runs used a "
+        "600 s AutoML budget, "
         "and every with/without comparison inside Step 4 used the same machine and settings. Step 4 timings and "
         "AutoML scores are therefore not comparable with Step 3 timings. The challenge set was scored on the laptop "
         "(scoring fits nothing, so hardware does not change those numbers)."))
@@ -876,8 +961,8 @@ def critical(F: dict) -> list[Flowable]:
                      f"{f4(r.roc_auc_gap)} {ci4(r.roc_auc_gap_ci_low, r.roc_auc_gap_ci_high)}",
                      pct(r.test_random_tpr_at_1pct_fpr), pct(r.test_future_tpr_at_1pct_fpr),
                      pp(r.tpr_at_1pct_fpr_gap), pct(r.test_random_fpr, 2), pct(r.test_future_fpr, 2)])
-    s += data_table(["model", "AUC random", "AUC future", "AUC gap [95% CI]", "TPR@1%FPR random",
-                     "TPR@1%FPR future", "TPR gap", "FPR random (t=0.5)", "FPR future (t=0.5)"], rows,
+    s += data_table(["model", "AUC random", "AUC future", "AUC gap [95% CI]", "TPR@1% FPR random",
+                     "TPR@1% FPR future", "TPR gap", "FPR random (t=0.5)", "FPR future (t=0.5)"], rows,
                     widths=[1.6, 0.7, 0.7, 1.6, 0.85, 0.85, 0.75, 0.75, 0.75],
                     caption="Random vs future, saved Step 2-3 models at threshold 0.5 (reports/tables/random_vs_future.csv). "
                             "Gap = test_random minus test_future.")
@@ -910,7 +995,8 @@ def critical(F: dict) -> list[Flowable]:
                      "relied on leak", "wall time (VM)"], rows,
                     widths=[1.4, 1.6, 0.7, 0.7, 0.9, 0.9, 0.7, 0.7],
                     caption="Leakage experiments (reports/tables/leakage.csv). * = paired bootstrap CI excludes 0. "
-                            "'Relied on leak' = the model ranked the column first by its own importance or by SHAP.")
+                            "'Relied on leak' = the model ranked the column first by its own importance or by SHAP "
+                            "(for FLAML only the SHAP rank counts, because its own importance is a split count).")
     s += figure(FIGURES / "leakage_jump.png", "Score with and without each leak column, per model, both test sets "
                 "(reports/figures/leakage_jump.png).", width=0.9)
     s += render_blocks(md_section(ce, "4. Does AutoML protect against leakage"))
@@ -926,7 +1012,7 @@ def critical(F: dict) -> list[Flowable]:
                     caption="Random-vs-future AUC gap compared with the tuned LightGBM's gap, paired bootstrap "
                             "(reports/tables/gap_vs_tuned.csv).")
     se = table_csv("automl_self_estimate")
-    rows = [[name(r.tool), str(r.run), str(r.variant), f"{r.budget_s:.0f} s", str(r.machine), f4(r.own_auc),
+    rows = [[name(r.tool), str(r.run).replace("_leakage", "").replace("_automl", ""), str(r.variant), f"{r.budget_s:.0f} s", str(r.machine), f4(r.own_auc),
              f4(r.test_random_roc_auc), f4(r.test_future_roc_auc), f"{r.own_minus_future:+.4f}"] for _, r in se.iterrows()]
     s += data_table(["tool", "run", "variant", "budget", "machine", "own valid. AUC", "AUC random", "AUC future",
                      "own minus future"], rows, widths=[0.9, 0.9, 1.35, 0.65, 1.45, 0.7, 0.65, 0.65, 0.7], font_size=6.9,
@@ -943,7 +1029,7 @@ def critical(F: dict) -> list[Flowable]:
              f"{r.missed_per_10k:.0f}", pct(r.precision_at_test_mix)] for _, r in sub.iterrows()]
     s += data_table(["test set", "prevalence", "threshold", "TPR", "FPR", "precision [95% CI]",
                      "false alarms / 10k", "missed / 10k", "precision at 50/50"], rows,
-                    widths=[0.85, 0.85, 0.7, 0.6, 0.6, 1.45, 0.8, 0.7, 0.8],
+                    widths=[0.85, 0.85, 0.8, 0.6, 0.6, 1.45, 0.8, 0.7, 0.8],
                     caption="Tuned LightGBM at its train 1%-FPR threshold, re-weighted to realistic malware prevalence "
                             "(reports/tables/precision_both_sets.csv).")
     s += figure(FIGURES / "bias_slices.png", "Per-slice detection rate and benign false-positive rate of the tuned "
@@ -977,11 +1063,11 @@ def critical(F: dict) -> list[Flowable]:
     s += figure(FIGURES / "shap_waterfall_tp.png", f"Local explanation of a true positive (week {int(c.week)}, "
                 f"P(malicious) = {c.p:.4f}): SHAP waterfall in log-odds (reports/figures/shap_waterfall_tp.png).",
                 width=0.72)
-    desc = "; ".join(f"{lab} (week {int(cases.loc[k, 'week'])}, P(malicious) = {cases.loc[k, 'p']:.4f})"
-                     for k, lab in (("fp", "left: a false positive, a benign file flagged"),
-                                    ("fn", "right: a false negative, malware the model missed")))
-    s += figure_row([FIGURES / "shap_waterfall_fp.png", FIGURES / "shap_waterfall_fn.png"],
-                    f"Local explanations of the two error types; {desc} (reports/figures/shap_waterfall_*.png).")
+    # the two error types, one full-width waterfall each (side by side the labels were too small to read)
+    for k, lab in (("fp", "a false positive, a benign file flagged"), ("fn", "a false negative, malware the model missed")):
+        s += figure(FIGURES / f"shap_waterfall_{k}.png", f"Local explanation of {lab} (week "
+                    f"{int(cases.loc[k, 'week'])}, P(malicious) = {cases.loc[k, 'p']:.4f}): SHAP waterfall in log-odds "
+                    f"(reports/figures/shap_waterfall_{k}.png).", width=0.72)
     ag = table_csv("cross_tool_agreement")
     rows = [[name(r.tool_a), name(r.tool_b), f"{int(r.top5_overlap)} of 5", f"{int(r.top20_overlap)} of 20",
              f"{r.family_spearman:.2f}"] for _, r in ag.iterrows()]
@@ -1001,7 +1087,7 @@ def critical(F: dict) -> list[Flowable]:
                     caption="Calibration (reports/tables/calibration.csv). Isotonic and Platt calibrators were fitted on "
                             "train out-of-fold scores.")
     s += figure(FIGURES / "calibration.png", "Reliability curves on test_future (reports/figures/calibration.png).",
-                width=0.55)
+                width=0.9)
     th = table_csv("threshold")
     rows = [[f"{r.cost_ratio:.0f}:1", f"{r.threshold:.4f}", pct(r.oof_recall), pct(r.oof_fpr, 2),
              pct(r.test_future_recall), pct(r.test_future_fpr, 2), f"{r.test_future_cost_per_1000:.1f}",
@@ -1038,7 +1124,8 @@ def critical(F: dict) -> list[Flowable]:
         f"{f4(exp.roc_auc.min())} to {f4(exp.roc_auc.max())} (weeks {weeks.min()}-{weeks.max()}). On the whole of "
         f"test_future the AUC is {f4(whole.loc['expanding', 'roc_auc'])} (expanding), "
         f"{f4(whole.loc['sliding_12w', 'roc_auc'])} (sliding) and {f4(whole.loc['size_matched', 'roc_auc'])} "
-        f"(size-matched): at this short horizon more data beats recency, and at equal size recent weeks help a little."))
+        f"(size-matched): at this short horizon more data beats recency. At equal size recent weeks may help a little, "
+        f"but that is only suggestive: there is no paired CI on the sliding minus size-matched difference, and one seed."))
     s += figure(FIGURES / "drift.png", "Weekly ROC-AUC, F1 and TPR@1%FPR on test_future for the expanding, sliding "
                 "12-week and size-matched models (reports/figures/drift.png).", width=1.0)
 
@@ -1064,20 +1151,30 @@ def critical(F: dict) -> list[Flowable]:
 
 
 def deployment(F: dict) -> list[Flowable]:
+    """Section 7: the deployed model, why it was picked, the API and the demo screenshots."""
     sc = F["schema"]
     m = sc["metrics"]
     avm = table_csv("automl_vs_manual")
-    tuned = row_of(avm, method="lgbm_tuned")
-    others = avm[avm.method != "lgbm_tuned"]
-    overlap = others[others.test_future_roc_auc_ci_high >= tuned.test_future_roc_auc_ci_low]
-    best_txt = (("it has the highest test_future AUC" if tuned.test_future_roc_auc >= avm.test_future_roc_auc.max()
-                 else "its test_future AUC is close to the best") + f" ({f4(tuned.test_future_roc_auc)})" +
-                ("" if overlap.empty else ", although its CI overlaps that of " + ", ".join(name(x) for x in overlap.method)))
+    # Paired test_future AUC differences against the tuned model: which AutoML tools are tied with it?
+    pw = table_csv("automl_pairwise")
+    vs = pw[(pw.test_set == "test_future") & (pw.metric == "roc_auc") & (pw.method_b == "lgbm_tuned")
+            & pw.method_a.isin(avm.loc[avm.kind == "automl", "method"])]
+    tied = vs[~vs.significant_95.astype(bool)]
+    better = vs[vs.significant_95.astype(bool) & (vs.diff_a_minus_b > 0)]
+    tie_txt = ("; ".join(f"{name(r.method_a)} {r.diff_a_minus_b:+.5f} [{r.ci_low:+.5f}, {r.ci_high:+.5f}]"
+                         for _, r in tied.iterrows()) or "none")
     s = [H1("7. Step 5: deployment")]
     s.append(P(
-        f"<b>Which model and why.</b> The tuned LightGBM is deployed: {best_txt}; it is one plain model file with no "
-        f"framework runtime (no Java for H2O, no AutoGluon install), and it can be explained exactly with TreeSHAP. "
-        f"The choice was made from the model card's comparison table, not by tuning anything on the test sets."))
+        "<b>Which model and why.</b> The tuned LightGBM is deployed. Its configuration was fixed in Step 2 by CV AUC "
+        "on train, before any test score existed. The final pick among the finished, frozen models is the one "
+        "decision in this project that read test scores, so it is stated here: on test_future " +
+        ("no AutoML tool was significantly better than the tuned model" if better.empty else
+           "significantly better than the tuned model: " + ", ".join(name(x) for x in better.method_a)) +
+        f", and the tools statistically tied with it (paired AUC difference, tool minus tuned, CI includes 0; "
+        f"reports/tables/automl_pairwise.csv) were: {tie_txt}. The test scores therefore do not decide between the candidates. Practical reasons do: "
+        f"the tuned LightGBM is one plain model file with no framework runtime (no Java for H2O, no AutoGluon "
+        f"install), it can be explained exactly with TreeSHAP, and its threshold was fitted on its own train "
+        f"out-of-fold scores. Nothing was trained, tuned or thresholded on a test set."))
     rows = [
         ["model version", sc["model_version"]],
         ["file / sha256", f"models/final/{sc['model_file']} / {sc['model_sha256'][:16]}..."],
@@ -1113,9 +1210,10 @@ def deployment(F: dict) -> list[Flowable]:
         ("c_upload_notepad.png", "Streamlit demo: uploading a benign Windows binary (notepad.exe); the file is parsed "
                                  "in memory by the API and never executed."),
     ]
-    s += figure_row([SHOTS / shots[0][0], SHOTS / shots[1][0]],
-                    f"Left: {shots[0][1]} Right: {shots[1][1]} (reports/screenshots/)", max_h=11.5 * cm, crop_bottom=0.12)
-    s += figure_row([SHOTS / shots[2][0]], shots[2][1] + " (reports/screenshots/)", max_h=10.5 * cm, crop_bottom=0.12)
+    # one screenshot per figure, the API sidebar cropped off (21% of the width), so the text stays readable in print
+    for fname, cap in shots:
+        s += figure_row([SHOTS / fname], f"{cap} (reports/screenshots/{fname}, sidebar cropped)", max_h=17.5 * cm,
+                        crop_bottom=0.12, crop_left=0.21)
     return s
 
 
@@ -1127,19 +1225,20 @@ def reflections(F: dict) -> list[Flowable]:
     dr = lk[lk.variant == "leak_detection_ratio"]
     se = table_csv("automl_self_estimate")
     clean = se[se.variant == "clean"]
+    drift_head, drift_body = drift_vs_tuned_verdict()
     s = [H1("8. Reflections: what AutoML did well, and where it failed")]
     s.append(H2("8.1 What AutoML did well"))
     s.append(bullets([
         f"<b>Expert-level scores for little effort.</b> With one call and {F['budget']:.0f} s each, the three tools "
         f"reached test_future AUC {f4(am.test_future_roc_auc.min())} to {f4(am.test_future_roc_auc.max())}, against "
-        f"{f4(tuned.test_future_roc_auc)} for the tuned LightGBM, whose three searches took "
+        f"{f4(tuned.test_future_roc_auc)} for the tuned LightGBM, whose three searches and refits took "
         f"{tuned.all_manual_seconds / 3600:.1f} h together.",
         "<b>Sensible model choices.</b> All three converged on gradient-boosted trees (LightGBM, XGBoost or H2O GBM), "
         "the family a human would pick for this data, and FLAML grew its sample sizes so that cheap trials came first.",
         "<b>Transparent artefacts.</b> Every tool left a leaderboard, a log and importances that could be audited, "
         "which made the leakage and agreement analyses possible.",
-        "<b>Same robustness to drift as the manual model.</b> Their random-vs-future gaps were close to the tuned "
-        "model's, because the winners are the same kind of model.",
+        f"<b>{drift_head}</b> {drift_body}; the winners are the same kind of model as the tuned one "
+        "(reports/tables/gap_vs_tuned.csv).",
     ]))
     s.append(H2("8.2 Where AutoML failed or misled"))
     s.append(bullets([
@@ -1190,7 +1289,8 @@ def reproducibility(F: dict) -> list[Flowable]:
     s.append(bullets([
         "<b>Steps 2-3 and Step 5</b> (tuning, AutoML, export and app): the student's laptop, 16-core Intel Core "
         "Ultra 9 285H, 63 GB RAM, Windows 11, CPU only, 16 threads.",
-        "<b>Step 4</b> (critical evaluation): a 4-core, 15.7 GB RAM Linux cloud VM. The leakage runs used a 600 s "
+        f"<b>Step 4</b> (critical evaluation): a 4-core, {vm_ram_gib():.1f} GiB RAM Linux cloud VM. The leakage "
+        "runs used a 600 s "
         "AutoML budget and memory-saving runner settings, identical for every with/without pair. The challenge-set "
         "scoring was re-run on the laptop (no fitting).",
         "Timings are only compared within one step (one machine).",
@@ -1242,9 +1342,10 @@ def references() -> list[Flowable]:
         "FastAPI (https://fastapi.tiangolo.com) and Streamlit (https://streamlit.io), software used for serving.",
     ]
     s = [H1("11. References")]
-    s.append(ListFlowable([ListItem(Paragraph(r, ST["bullet"]), leftIndent=18) for r in refs],
-                          bulletType="1", bulletFormat="[%s]", leftIndent=18, bulletFontName=BODY_FONT,
-                          bulletFontSize=8.5))
+    # one KeepTogether block (the list fits on a page), so glue_headings keeps the heading with it
+    s.append(KeepTogether([ListFlowable([ListItem(Paragraph(r, ST["bullet"]), leftIndent=24) for r in refs],
+                                        bulletType="1", bulletFormat="[%s]", leftIndent=24,
+                                        bulletFontName=BODY_FONT, bulletFontSize=8.5)]))
     return s
 
 
@@ -1260,7 +1361,7 @@ def appendix(F: dict) -> list[Flowable]:
     rows = [[str(r.model), f4(r.score_val), f"{r.fit_time:.0f} s", f"{r.pred_time_val:.2f} s", str(int(r.stack_level)),
              str(int(r.num_features))] for _, r in lb.iterrows()]
     s += data_table(["model", "val. AUC", "fit time", "predict time (val.)", "stack level", "features"], rows,
-                    caption="AutoGluon leaderboard (reports/leaderboards/autogluon_leaderboard.csv).")
+                    widths=[1.6, 0.7, 0.7, 0.9, 0.7, 0.7], caption="AutoGluon leaderboard (reports/leaderboards/autogluon_leaderboard.csv).")
     lb = pd.read_csv(REPORTS / "leaderboards" / "h2o_leaderboard.csv")
     rows = [[str(r.model_id).split("_AutoML")[0], str(r.algo), f4(r.auc), f4(r.logloss), f4(r.aucpr),
              f"{r.training_time_ms / 1000:.0f} s"] for _, r in lb.iterrows()]
@@ -1274,9 +1375,11 @@ def appendix(F: dict) -> list[Flowable]:
         keep = ["num_leaves", "learning_rate", "min_child_samples", "feature_fraction", "bagging_fraction", "lambda_l2"]
         vals = [f"{p['params'][k]:.4g}" if k in p["params"] else "-" for k in keep]
         rows.append([name(m)] + vals + [str(p.get("num_trees", "-"))])
-    s += data_table(["tuner", "num_leaves", "learning_rate", "min_child_samples", "feature_fraction", "bagging_fraction",
-                     "lambda_l2", "trees"], rows, widths=[1.5, 0.8, 0.9, 1, 0.9, 0.9, 0.9, 0.6],
-                    caption="Best configuration of each tuner, refit on all of train (models/lgbm_*_params.json).")
+    s += data_table(["tuner", "leaves", "learning rate", "min child samples", "feature fraction", "bagging fraction",
+                     "lambda l2", "trees"], rows, widths=[1.5, 0.8, 0.9, 1, 0.9, 0.9, 0.9, 0.6],
+                    caption="Best configuration of each tuner, refit on all of train (models/lgbm_*_params.json; "
+                            "LightGBM names num_leaves, learning_rate, min_child_samples, feature_fraction, "
+                            "bagging_fraction, lambda_l2).")
     s.append(H2("C. Experiment log"))
     counts: dict[str, int] = {}
     for line in (REPORTS / "experiments.jsonl").read_text(encoding="utf-8").splitlines():

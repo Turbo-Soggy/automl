@@ -94,7 +94,7 @@ def _setup(table: pd.DataFrame, context: dict[str, Any]) -> str:
         "",
         "| Variant | Change to the 2,568 standard features |",
         "|---|---|",
-        f"| `clean` | none (the inputs of Steps 2 and 3) |",
+        "| `clean` | none (the inputs of Steps 2 and 3) |",
         f"| `{leakage.LEAK_DR}` | + column `{leakage.LEAK_COLUMN[leakage.LEAK_DR]}`: share of AV engines that flagged "
         "the file (`detection_ratio`, parsed to a float) |",
         f"| `{leakage.LEAK_DATE}` | + column `{leakage.LEAK_COLUMN[leakage.LEAK_DATE]}`: VirusTotal first-submission "
@@ -245,7 +245,8 @@ def _compute_spread(table: pd.DataFrame, context: dict[str, Any]) -> str:
             f"differ by up to {', '.join(spreads)}; the clean run had the most time for "
             f"{', '.join(clean_most) or 'no tool'}. This cannot explain the `{leakage.LEAK_DR}` jump (where the "
             "clean run had more time, a leak gain is, if anything, understated), but it is one more reason to "
-            f"read the deltas of about 1e-4 AUC for `{leakage.LEAK_DATE}` as run-to-run noise.")
+            f"read the deltas of about 1e-4 AUC for `{leakage.LEAK_DATE}` with caution: they may be run-to-run "
+            "noise, whose size was not measured (one seed per run).")
 
 
 def _results(table: pd.DataFrame) -> str:
@@ -535,8 +536,8 @@ def _caveats(table: pd.DataFrame) -> str:
         "## Caveats",
         "",
         "* One seed and one training sample per run; the CIs cover test-set sampling noise only, not "
-        "training randomness. Small deltas (around 1e-4 AUC) are within run-to-run variation of the AutoML "
-        "searches, which are not deterministic in time-budgeted mode.",
+        "training randomness. Small deltas (around 1e-4 AUC) may be within run-to-run variation of the AutoML "
+        "searches, which are not deterministic in time-budgeted mode; that variation was not measured.",
         f"* The AutoML runs had {LEAKAGE_BUDGET_S} s each, so their clean scores are not the Step 3 scores; "
         "compare each leak run only with the clean run at the same budget.",
         "* Importances are not comparable across tools (gain, permutation, H2O varimp measure different "

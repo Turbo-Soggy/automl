@@ -35,7 +35,7 @@ Candidates on test_future (weeks 52-63), from `reports/tables/automl_vs_manual.c
 
 The deployed model is the Step 2 tuned LightGBM (`optuna`, the tuner Step 2 selected by CV AUC on train).
 Its TPR at 1% FPR on test_future is 97.6% [97.3%, 97.9%]; the strongest other
-candidate, autogluon, reaches 97.6% [97.3%, 97.9%]. The paired bootstrap (autogluon minus lgbm_tuned, `automl_pairwise.csv`) gives 0.05% [-0.15%, 0.24%], i.e. no significant difference at 95%.
+candidate, autogluon, reaches 97.6% [97.3%, 97.9%]. The paired bootstrap (autogluon minus lgbm_tuned, `automl_pairwise.csv`) gives +0.05 pp [-0.15 pp, +0.24 pp], i.e. no significant difference at 95%.
 With detection this close, the tie is broken by what matters in deployment:
 
 * **Interpretability:** one LightGBM booster, so TreeSHAP gives exact per-file explanations (the API returns
@@ -80,7 +80,7 @@ F1 and FPR are at the plain 0.5 cut; TPR at 1% FPR is threshold-free (the cut th
 | test_future | 0.9981 [0.9978, 0.9984] | 97.6% [97.3%, 97.9%] | 0.9838 | 1.32% |
 
 Random-minus-future gap: ROC-AUC 0.0010 [0.0007, 0.0014],
-TPR at 1% FPR 1.07% [0.67%, 1.46%].
+TPR at 1% FPR +1.07 pp [+0.67 pp, +1.46 pp].
 Performance on files from after the training period is slightly but measurably lower.
 
 ### Challenge set (malware the AV engines first missed)

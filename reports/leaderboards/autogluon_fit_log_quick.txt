@@ -8,8 +8,8 @@ Platform Version:   10.0.26300
 CPU Count:          16
 Pytorch Version:    2.14.1+cpu
 CUDA Version:       CUDA is not available
-Memory Avail:       51.89 GB / 63.43 GB (81.8%)
-Disk Space Avail:   552.08 GB / 924.26 GB (59.7%)
+Memory Avail:       33.40 GB / 63.43 GB (52.7%)
+Disk Space Avail:   525.03 GB / 924.26 GB (56.8%)
 ===================================================
 Presets specified: ['medium_quality']
 Using hyperparameters preset: hyperparameters='default'
@@ -26,8 +26,8 @@ Preprocessing data...
 Selected class <--> label mapping:  class 1 = 1, class 0 = 0
 Using Feature Generators to preprocess the data ...
 Fitting AutoMLPipelineFeatureGenerator...
-	Available Memory:                    53137.26 MB
-	Train Data (Original)  Memory Usage: 78.37 MB (0.1% of available memory)
+	Available Memory:                    34180.29 MB
+	Train Data (Original)  Memory Usage: 78.37 MB (0.2% of available memory)
 	Inferring data type of each feature based on column values. Set feature_metadata_in to manually specify special dtypes of the features.
 	Stage 1 Generators:
 		Fitting AsTypeFeatureGenerator...
@@ -54,10 +54,10 @@ Fitting AutoMLPipelineFeatureGenerator...
 	Types of features in processed data (raw dtype, special dtypes):
 		('float', [])     : 2316 | ['general__0', 'general__1', 'general__5', 'general__6', 'histogram__0', ...]
 		('int', ['bool']) :  190 | ['general__2', 'general__3', 'strings__110', 'strings__114', 'header__30', ...]
-	3.4s = Fit runtime
+	3.2s = Fit runtime
 	2506 features in original data used to generate 2506 features in processed data.
-	Train Data (Processed) Memory Usage: 72.13 MB (0.1% of available memory)
-Data preprocessing and feature engineering runtime = 3.85s ...
+	Train Data (Processed) Memory Usage: 72.13 MB (0.2% of available memory)
+Data preprocessing and feature engineering runtime = 3.57s ...
 AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'
 	This metric expects predicted probabilities rather than predicted class labels, so you'll need to use predict_proba() instead of predict()
 	To change this, specify the eval_metric parameter of Predictor()
@@ -73,37 +73,26 @@ User-specified model hyperparameters to be fit:
 	'XT': [{'criterion': 'gini', 'ag_args': {'name_suffix': 'Gini', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'entropy', 'ag_args': {'name_suffix': 'Entr', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'squared_error', 'ag_args': {'name_suffix': 'MSE', 'problem_types': ['regression', 'quantile']}}],
 }
 Fitting 11 L1 models, fit_strategy="sequential" ...
-Fitting model: LightGBMXT ... Training model for up to 56.15s of the 56.15s of remaining time.
-	Fitting with cpus=16, gpus=0, mem=0.9/51.7 GB
+Fitting model: LightGBMXT ... Training model for up to 56.43s of the 56.43s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=0.9/33.2 GB
 	0.9909	 = Validation score   (roc_auc)
-	10.98s	 = Training   runtime
+	24.9s	 = Training   runtime
 	0.02s	 = Validation runtime
-Fitting model: LightGBM ... Training model for up to 45.13s of the 45.13s of remaining time.
-	Fitting with cpus=16, gpus=0, mem=0.9/51.7 GB
+Fitting model: LightGBM ... Training model for up to 31.48s of the 31.48s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=0.9/33.2 GB
 	0.99	 = Validation score   (roc_auc)
-	12.76s	 = Training   runtime
+	29.57s	 = Training   runtime
 	0.02s	 = Validation runtime
-Fitting model: RandomForestGini ... Training model for up to 32.33s of the 32.33s of remaining time.
-	Fitting with cpus=16, gpus=0, mem=0.3/51.7 GB
+Fitting model: RandomForestGini ... Training model for up to 1.86s of the 1.86s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=0.3/33.1 GB
 	0.9865	 = Validation score   (roc_auc)
-	3.27s	 = Training   runtime
-	0.09s	 = Validation runtime
-Fitting model: RandomForestEntr ... Training model for up to 28.94s of the 28.94s of remaining time.
-	Fitting with cpus=16, gpus=0, mem=0.3/51.7 GB
-	0.9864	 = Validation score   (roc_auc)
-	3.14s	 = Training   runtime
-	0.08s	 = Validation runtime
-Fitting model: CatBoost ... Training model for up to 25.69s of the 25.69s of remaining time.
-	Fitting with cpus=16, gpus=0, mem=3.1/51.7 GB
-	Ran out of time, early stopping on iteration 438.
-	0.9889	 = Validation score   (roc_auc)
-	25.63s	 = Training   runtime
-	0.05s	 = Validation runtime
-Fitting model: WeightedEnsemble_L2 ... Training model for up to 56.15s of the -0.11s of remaining time.
-	Fitting 1 model on all data | Fitting with cpus=16, gpus=0, mem=0.0/51.6 GB
-	Ensemble Weights: {'LightGBMXT': 0.864, 'CatBoost': 0.136}
+	5.18s	 = Training   runtime
+	0.1s	 = Validation runtime
+Fitting model: WeightedEnsemble_L2 ... Training model for up to 56.43s of the -3.54s of remaining time.
+	Fitting 1 model on all data | Fitting with cpus=16, gpus=0, mem=0.0/33.1 GB
+	Ensemble Weights: {'LightGBMXT': 1.0}
 	0.9909	 = Validation score   (roc_auc)
-	0.03s	 = Training   runtime
+	0.02s	 = Training   runtime
 	0.0s	 = Validation runtime
-AutoGluon training complete, total runtime = 60.95s ... Best model: WeightedEnsemble_L2 | Estimated inference throughput: 11046.3 rows/s (800 batch size)
+AutoGluon training complete, total runtime = 64.57s ... Best model: WeightedEnsemble_L2 | Estimated inference throughput: 35240.7 rows/s (800 batch size)
 TabularPredictor saved. To load, use: predictor = TabularPredictor.load("C:\projects\automl\models\autogluon_quick")

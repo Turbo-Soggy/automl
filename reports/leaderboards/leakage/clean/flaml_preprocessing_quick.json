@@ -19,15 +19,15 @@
   "n_splits": 5,
   "holdout_rows_expected": 800,
   "fit_log_highlights": [
-    "2026-10-29 08:49:51,279 INFO Evaluation method: holdout",
-    "2026-10-29 08:49:52,446 INFO Minimizing error metric: 1-roc_auc",
-    "2026-10-29 08:49:52,564 INFO List of ML learners in AutoML Run: ['lgbm', 'rf', 'xgboost', 'extra_tree', 'xgb_limitdepth', 'sgd', 'catboost', 'lrl1']",
-    "2026-10-29 08:50:36,405 INFO retrain lgbm for 2.3s",
-    "2026-10-29 08:50:36,407 INFO retrained model: LGBMClassifier(colsample_bytree=np.float64(0.996498378007316),",
-    "2026-10-29 08:50:36,407 INFO Time taken to find the best model: 20.860285758972168"
+    "2026-10-29 23:17:42,359 INFO Evaluation method: holdout",
+    "2026-10-29 23:17:42,458 INFO Minimizing error metric: 1-roc_auc",
+    "2026-10-29 23:17:42,629 INFO List of ML learners in AutoML Run: ['lgbm', 'rf', 'xgboost', 'extra_tree', 'xgb_limitdepth', 'sgd', 'catboost', 'lrl1']",
+    "2026-10-29 23:18:22,937 INFO retrain lgbm for 1.3s",
+    "2026-10-29 23:18:22,938 INFO retrained model: LGBMClassifier(colsample_bytree=np.float64(0.996498378007316),",
+    "2026-10-29 23:18:22,938 INFO Time taken to find the best model: 15.268175601959229"
   ],
   "retrain_full": true,
-  "time_to_find_best_model_s": 20.860285758972168,
+  "time_to_find_best_model_s": 15.268175601959229,
   "estimator_list": [
     "lgbm",
     "rf",
@@ -40,13 +40,12 @@
   ],
   "estimators_tried": [
     "lgbm",
-    "catboost",
     "xgboost",
-    "extra_tree",
     "rf",
+    "extra_tree",
     "sgd"
   ],
-  "n_trials_total": 18,
+  "n_trials_total": 21,
   "n_features_in": 2568,
   "n_features_used": 2518,
   "dropped_features": [

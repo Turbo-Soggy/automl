@@ -1,13 +1,13 @@
 tool,run,variant,budget_s,machine,own_validation,own_auc,test_random_roc_auc,test_future_roc_auc,same_scores_as_step3,own_minus_random,own_minus_future
-flaml,step3,clean,60.0,"16 threads, Steps 2-3 laptop",random stratified holdout of train (800 rows),0.99209375,0.9915789663158652,0.9894699894699897,,0.000514783684134823,0.002623760530010344
-autogluon,step3,clean,60.0,"16 threads, Steps 2-3 laptop",random holdout of train (800 rows),0.9909187500000001,0.9927649710598844,0.9922669922669922,,-0.001846221059884301,-0.00134824226699215
-h2o,step3,clean,60.0,"16 threads, Steps 2-3 laptop",random validation frame of train (813 rows),0.9889880988634842,0.9903879615518464,0.9891849891849892,,-0.00139986268836223,-0.00019689032150504993
-flaml,step4_leakage,clean,30.0,"4 threads, 4-CPU Linux VM",random stratified holdout of train (800 rows),0.99155,0.9908889635558542,0.9904629904629904,False,0.000661036444145835,0.0010870095370096866
-autogluon,step4_leakage,clean,30.0,"4 threads, 4-CPU Linux VM",random holdout of train (800 rows),0.99090625,0.9928899715598865,0.9922869922869924,False,-0.0019837215598864644,-0.0013807422869923647
-h2o,step4_leakage,clean,30.0,"4 threads, 4-CPU Linux VM",random validation frame of train (842 rows),0.9799308270846382,0.9784209136836546,0.98021598021598,False,0.001509913400983609,-0.00028515313134180875
-flaml,step4_leakage,leak_detection_ratio,30.0,"4 threads, 4-CPU Linux VM",random stratified holdout of train (800 rows),1.0,0.999498997995992,1.0,,0.0005010020040080443,0.0
-autogluon,step4_leakage,leak_detection_ratio,30.0,"4 threads, 4-CPU Linux VM",random holdout of train (800 rows),0.9999999999999999,1.0,1.0,,-1.1102230246251565e-16,-1.1102230246251565e-16
-h2o,step4_leakage,leak_detection_ratio,30.0,"4 threads, 4-CPU Linux VM",random validation frame of train (842 rows),1.0,1.0,1.0,,0.0,0.0
-flaml,step4_leakage,leak_first_submission,30.0,"4 threads, 4-CPU Linux VM",random stratified holdout of train (800 rows),0.9912624999999999,0.991489465957864,0.9903199903199904,,-0.00022696595786408924,0.000942509680009529
-autogluon,step4_leakage,leak_first_submission,30.0,"4 threads, 4-CPU Linux VM",random holdout of train (800 rows),0.9911375000000001,0.9929829719318878,0.992048992048992,,-0.0018454719318876656,-0.0009114920489918799
-h2o,step4_leakage,leak_first_submission,30.0,"4 threads, 4-CPU Linux VM",random validation frame of train (842 rows),0.9798744054570998,0.979507918031672,0.9797209797209796,,0.000366487425427775,0.00015342573612020516
+flaml,step3,clean,60.0,"16 threads, Steps 2-3 laptop",random stratified holdout of train (800 rows),0.99155,0.9908889635558542,0.9904629904629904,,0.000661036444145835,0.0010870095370096866
+autogluon,step3,clean,60.0,"16 threads, Steps 2-3 laptop",random holdout of train (800 rows),0.99090625,0.9928899715598865,0.9922869922869924,,-0.0019837215598864644,-0.0013807422869923647
+h2o,step3,clean,60.0,"16 threads, Steps 2-3 laptop",random validation frame of train (813 rows),0.98887542177774,0.9903259613038452,0.989060989060989,,-0.0014505395261051879,-0.00018556728324903293
+flaml,step4_leakage,clean,30.0,"16 threads, 16-CPU Windows VM",random stratified holdout of train (800 rows),0.99155,0.9908889635558542,0.9904629904629904,True,0.000661036444145835,0.0010870095370096866
+autogluon,step4_leakage,clean,30.0,"16 threads, 16-CPU Windows VM",random holdout of train (800 rows),0.99090625,0.9928899715598865,0.9922869922869924,True,-0.0019837215598864644,-0.0013807422869923647
+h2o,step4_leakage,clean,30.0,"16 threads, 16-CPU Windows VM",random validation frame of train (813 rows),0.9837501370396988,0.9841739366957468,0.9833059833059834,False,-0.0004237996560479962,0.00044415373371542444
+flaml,step4_leakage,leak_detection_ratio,30.0,"16 threads, 16-CPU Windows VM",random stratified holdout of train (800 rows),1.0,0.999498997995992,1.0,,0.0005010020040080443,0.0
+autogluon,step4_leakage,leak_detection_ratio,30.0,"16 threads, 16-CPU Windows VM",random holdout of train (800 rows),0.9994500000000001,0.9988689954759818,0.9991659991659992,,0.0005810045240182138,0.0002840008340008193
+h2o,step4_leakage,leak_detection_ratio,30.0,"16 threads, 16-CPU Windows VM",random validation frame of train (813 rows),1.0,1.0,1.0,,0.0,0.0
+flaml,step4_leakage,leak_first_submission,30.0,"16 threads, 16-CPU Windows VM",random stratified holdout of train (800 rows),0.9912624999999999,0.991489465957864,0.9903199903199904,,-0.00022696595786408924,0.000942509680009529
+autogluon,step4_leakage,leak_first_submission,30.0,"16 threads, 16-CPU Windows VM",random holdout of train (800 rows),0.9911375000000001,0.9929829719318878,0.992048992048992,,-0.0018454719318876656,-0.0009114920489918799
+h2o,step4_leakage,leak_first_submission,30.0,"16 threads, 16-CPU Windows VM",random validation frame of train (813 rows),0.983737955733132,0.9850809403237611,0.9843749843749844,,-0.0013429845906290927,-0.000637028641852333

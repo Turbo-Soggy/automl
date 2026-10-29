@@ -12,6 +12,7 @@ Usage (from the project root):
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import re
 from pathlib import Path
@@ -22,7 +23,8 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
-from pptx.util import Inches, Pt
+from pptx.oxml.ns import qn
+from pptx.util import Emu, Inches, Pt
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "reports"
@@ -49,6 +51,21 @@ MARGIN = Inches(0.5)
 
 def table(name: str) -> pd.DataFrame:
     return pd.read_csv(TABLES / f"{name}.csv")
+
+
+def vm_ram_gib() -> float:
+    """RAM of the Step 4 cloud VM, read from the leakage records in reports/experiments.jsonl.
+
+    src/leakage.py logs machine.ram_gb as bytes / 2**30, i.e. GiB (15.7 GiB = 16.9 decimal GB;
+    the Step 4 eval records log the decimal figure, 16.9)."""
+    rams = []
+    for line in (REPORTS / "experiments.jsonl").read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            rec = json.loads(line)
+            ram = (rec.get("machine") or {}).get("ram_gb")
+            if rec.get("step") == "leakage" and ram:
+                rams.append(float(ram))
+    return max(rams)
 
 
 def row(df: pd.DataFrame, **match: object) -> pd.Series:
@@ -94,7 +111,9 @@ def add_text(slide, left, top, width, height, paragraphs: list[str] | str, size:
         m = re.match(r"\*\*(.+?)\*\*(.*)", text, flags=re.S)
         if m:
             head, rest = m.group(1), m.group(2)
-        parts = [("• " if bullets else "", bold), (head, True), (rest, bold)]
+        if bullets:
+            set_bullet(p, size)
+        parts = [(head, True), (rest, bold)]
         for part, is_bold in parts:
             if part:
                 r = p.add_run()
@@ -102,6 +121,19 @@ def add_text(slide, left, top, width, height, paragraphs: list[str] | str, size:
                 r.font.name, r.font.size, r.font.color.rgb = FONT, Pt(size), color
                 r.font.bold = is_bold
     return box
+
+
+def set_bullet(paragraph, size: int) -> None:
+    """Give a paragraph a real bullet with a hanging indent (python-pptx has no API for this,
+    so the DrawingML attributes are set directly: marL = text indent, indent = bullet offset)."""
+    hang = Emu(int(Pt(size) * 0.9))
+    pPr = paragraph._p.get_or_add_pPr()
+    pPr.set("marL", str(hang))
+    pPr.set("indent", str(-hang))
+    for tag in ("a:buNone", "a:buChar"):  # replace any bullet setting already there
+        for el in pPr.findall(qn(tag)):
+            pPr.remove(el)
+    pPr.append(pPr.makeelement(qn("a:buChar"), {"char": "\u2022"}))
 
 
 def new_slide(prs: Presentation, title: str, notes: str, source: str = ""):
@@ -152,18 +184,23 @@ def add_table(slide, left, top, width, header: list[str], rows: list[list[str]],
     return shape
 
 
-def add_picture_fit(slide, path: Path, left, top, max_w, max_h, crop_bottom: float = 0.0):
-    """Insert an image scaled to fit the box (aspect kept), centred in it."""
-    w_px, h_px = Image.open(path).size
-    h_px = h_px * (1 - crop_bottom)
+def add_picture_fit(slide, path: Path, left, top, max_w, max_h,
+                    crop: tuple[float, float, float, float] = (0.0, 0.0, 1.0, 1.0)):
+    """Insert an image scaled to fit the box (aspect kept), centred in it.
+
+    `crop` = (left, top, right, bottom) as shares of the image; the crop is done in memory,
+    so no extra image files are written."""
+    im = Image.open(path)
+    x0, y0, x1, y1 = crop
+    im = im.crop((int(im.width * x0), int(im.height * y0), int(im.width * x1), int(im.height * y1)))
+    buf = io.BytesIO()
+    im.save(buf, format="PNG")
+    buf.seek(0)
+    w_px, h_px = im.size
     scale = min(max_w / w_px, max_h / h_px)
     w, h = int(w_px * scale), int(h_px * scale)
-    pic = slide.shapes.add_picture(str(path), left + (max_w - w) // 2, top + (max_h - h) // 2,
-                                   width=w, height=int(h / (1 - crop_bottom)))
-    if crop_bottom:
-        pic.crop_bottom = crop_bottom
-        pic.height = h
-    return pic
+    return slide.shapes.add_picture(buf, left + (max_w - w) // 2, top + (max_h - h) // 2,
+                                    width=w, height=h)
 
 
 def add_box(slide, left, top, width, height, text: str, fill: RGBColor, size: int = 18,
@@ -185,8 +222,8 @@ def add_box(slide, left, top, width, height, text: str, fill: RGBColor, size: in
     return shape
 
 
-def add_arrow(slide, left, top, width, height):
-    arrow = slide.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, left, top, width, height)
+def add_arrow(slide, left, top, width, height, shape=MSO_SHAPE.RIGHT_ARROW):
+    arrow = slide.shapes.add_shape(shape, left, top, width, height)
     arrow.fill.solid()
     arrow.fill.fore_color.rgb = GREY
     arrow.line.fill.background()
@@ -288,13 +325,20 @@ def slide_pipeline(prs: Presentation) -> None:
             ("Step 3: AutoML", "FLAML, AutoGluon,\nH2O; equal\ntime budget", BLUE),
             ("Step 4: evaluate", "leakage, drift,\nprevalence,\nchallenge, SHAP", ACCENT),
             ("Step 5: deploy", "FastAPI + Streamlit,\ncost threshold,\nmodel card", ACCENT)]
-    for top, boxes in ((top1, row1), (top2, row2)):
-        for i, (head, body, fill) in enumerate(boxes):
-            left = MARGIN + i * (w + gap)
-            add_box(slide, left, top, w, h, f"{head}\n{body}", fill)
-            if i < len(boxes) - 1:
-                add_arrow(slide, left + w + Inches(0.05), top + h // 2 - Inches(0.15),
-                          gap - Inches(0.1), Inches(0.3))
+    # Row 1 runs left to right; row 2 runs right to left (a snake), so the down-arrow from the
+    # feature cache leads straight into Step 2 and every arrow follows the order of the steps.
+    for i, (head, body, fill) in enumerate(row1):
+        left = MARGIN + i * (w + gap)
+        add_box(slide, left, top1, w, h, f"{head}\n{body}", fill)
+        if i < len(row1) - 1:
+            add_arrow(slide, left + w + Inches(0.05), top1 + h // 2 - Inches(0.15),
+                      gap - Inches(0.1), Inches(0.3))
+    for i, (head, body, fill) in enumerate(row2):
+        left = MARGIN + (len(row2) - 1 - i) * (w + gap)
+        add_box(slide, left, top2, w, h, f"{head}\n{body}", fill)
+        if i < len(row2) - 1:
+            add_arrow(slide, left - gap + Inches(0.05), top2 + h // 2 - Inches(0.15),
+                      gap - Inches(0.1), Inches(0.3), shape=MSO_SHAPE.LEFT_ARROW)
     down = slide.shapes.add_shape(MSO_SHAPE.DOWN_ARROW, MARGIN + 3 * (w + gap) + w // 2
                                   - Inches(0.2), top1 + h + Inches(0.1), Inches(0.4),
                                   top2 - top1 - h - Inches(0.2))
@@ -378,7 +422,7 @@ def slide_automl(prs: Presentation) -> None:
         f"{' and '.join(worse) or 'no tool'} {'are' if len(worse) > 1 else 'is'} slightly worse; "
         f"no tool is more than {max_diff:.4f} AUC away. The big difference is cost: AutoGluon took "
         f"{minutes(ag.wall_seconds)} minutes against {minutes(tuned.wall_seconds)} for the manual "
-        "search we selected, with no search space to design. Every winner is in effect one "
+        "search we selected and its refit, with no search space to design. Every winner is in effect one "
         "gradient-boosted tree model.")
     slide = new_slide(prs, f"Step 3: AutoML vs manual ({budget / 60:.0f}-minute budget per tool)",
                       notes, "reports/tables/automl_vs_manual.csv, automl_pairwise.csv; scores "
@@ -390,7 +434,7 @@ def slide_automl(prs: Presentation) -> None:
         f"**Accuracy: **{', '.join(tied)} tied with tuned LightGBM; {', '.join(worse)} "
         "slightly worse (paired bootstrap CI excludes 0).",
         f"**Cost: **AutoGluon {minutes(ag.wall_seconds)} min vs {minutes(tuned.wall_seconds)} min "
-        "for the selected manual search; all three beat untuned LightGBM.",
+        "for the selected manual search and refit; all three beat untuned LightGBM.",
     ])
 
 
@@ -405,6 +449,7 @@ def slide_research_question(prs: Presentation) -> None:
     p_r = row(prec, model="optuna", test_set="test_random", threshold_name=th, prevalence=0.01)
     p_f = row(prec, model="optuna", test_set="test_future", threshold_name=th, prevalence=0.01)
     c = row(ch, model="optuna", threshold_name=th, subset="all Win64 challenge")
+    c_dep = row(ch, model="optuna", threshold_name="deployment", subset="all Win64 challenge")
     rows = [["test_random (weeks 0-51)", auc(tuned.test_random_roc_auc), pct(p_r.fpr, 2),
              pct(p_r.tpr), pct(p_r.precision_at_test_mix), pct(p_r.precision)],
             ["test_future (weeks 52-63)", auc(tuned.test_future_roc_auc), pct(p_f.fpr, 2),
@@ -437,7 +482,8 @@ def slide_research_question(prs: Presentation) -> None:
         f"vs {pct(p_r.precision)} at 1% malware; future weeks cut it to {pct(p_f.precision)} "
         f"({p_f.false_alarms_per_10k:.0f} false alarms per 10,000 files).",
         f"**The hard tail is invisible to both test sets: **only {pct(c.detection_rate)} of "
-        "challenge-set malware is caught.",
+        f"challenge-set malware is caught at this threshold ({pct(c_dep.detection_rate)} at the "
+        "deployed, recall-oriented one).",
     ])
 
 
@@ -472,7 +518,7 @@ def slide_leakage(prs: Presentation) -> None:
         f"by at most {date_moves:.4f}. These runs used a 600 s budget on a 4-core cloud VM.")
     slide = new_slide(prs, "Leakage: did AutoML fall for it? Yes, every tool", notes,
                       "reports/tables/leakage.csv, automl_self_estimate.csv; Step 4 ran on a "
-                      "4-core / 15 GB Linux VM, 600 s per AutoML run")
+                      f"4-core / {vm_ram_gib():.1f} GiB RAM Linux VM, 600 s per AutoML run")
     add_table(slide, MARGIN, Inches(1.3), Inches(12.3),
               ["+ detection_ratio", "AUC future clean -> leak", "leak rank own / SHAP",
                "dropped?", "own validation AUC"],
@@ -532,6 +578,8 @@ def api_routes() -> list[str]:
 def slide_deploy(prs: Presentation) -> None:
     thr = json.loads((ROOT / "models" / "threshold.json").read_text(encoding="utf-8"))
     chk = thr["test_future_check"]
+    dep = row(table("prevalence"), model="optuna", test_set="test_future", threshold_name="deployment",
+              prevalence=0.01)
     shot = REPORTS / "screenshots" / "a_malicious_correct.png"
     routes = api_routes()
     notes = (
@@ -540,18 +588,23 @@ def slide_deploy(prs: Presentation) -> None:
         "verdict and the top SHAP reasons. The threshold was chosen on train out-of-fold scores "
         f"so that a missed malware costs {thr['cost_ratio_fn_to_fp']:.0f} times a false alarm; on "
         f"test_future that gives {pct(chk['recall'])} recall at {pct(chk['fpr'])} false-positive "
-        "rate. It is a triage aid, and the app says so; the model card lists the limits.")
+        f"rate, but at a realistic 1% malware share only about {pct(dep.precision, 0)} of its alarms "
+        "would be real malware. So it is a triage aid, not a blocker, and the app says so; the model "
+        "card lists the limits.")
     slide = new_slide(prs, "Step 5: deployment demo (FastAPI + Streamlit)", notes,
                       "reports/screenshots/a_malicious_correct.png, models/threshold.json, "
                       "app/api.py, MODEL_CARD.md")
-    add_picture_fit(slide, shot, MARGIN, Inches(1.15), Inches(6.6), Inches(5.8), crop_bottom=0.45)
-    add_text(slide, Inches(7.4), Inches(1.3), Inches(5.4), Inches(5.6), [
+    # crop to the result area (sidebar, filters above it and the white side margins cut off) so the text is readable
+    add_picture_fit(slide, shot, MARGIN, Inches(1.15), Inches(7.0), Inches(5.8),
+                    crop=(0.26, 0.47, 0.95, 0.88))
+    add_text(slide, Inches(7.8), Inches(1.3), Inches(5.0), Inches(5.6), [
         f"**API: **{', '.join(routes)}.",
         "**App: **pick a test_future file or upload a PE; shows P(malicious), verdict and top "
         "SHAP reasons.",
         f"**Threshold {thr['threshold']:.4f}: **missed malware costs "
         f"{thr['cost_ratio_fn_to_fp']:.0f}x a false alarm, set on train out-of-fold scores.",
-        f"**On test_future: **recall {pct(chk['recall'])}, FPR {pct(chk['fpr'])}.",
+        f"**On test_future: **recall {pct(chk['recall'])}, FPR {pct(chk['fpr'])}; at 1% "
+        f"malware ~{pct(dep.precision, 0)} precision, so triage, not blocking.",
     ], size=19)
 
 
@@ -564,6 +617,7 @@ def slide_takeaways(prs: Presentation) -> None:
     p_f = row(prec, model="optuna", test_set="test_future", threshold_name="train_oof_1pct_fpr",
               prevalence=0.01)
     c = row(ch, model="optuna", threshold_name="train_oof_1pct_fpr", subset="all Win64 challenge")
+    c_dep = row(ch, model="optuna", threshold_name="deployment", subset="all Win64 challenge")
     ag, lt = row(avm, method="autogluon"), row(avm, method="lgbm_tuned")
     notes = (
         "To sum up. AutoML matched or came close to manual tuning in a fraction of the time. "
@@ -580,10 +634,12 @@ def slide_takeaways(prs: Presentation) -> None:
         f"AutoGluon matched tuned LightGBM (AUC {auc(ag.test_future_roc_auc)} vs "
         f"{auc(lt.test_future_roc_auc)}) in {minutes(ag.wall_seconds)} vs "
         f"{minutes(lt.wall_seconds)} min.",
-        f"Random split overstates little by AUC ({tuned.roc_auc_gap:.4f}), a lot by precision "
-        f"at 1% prevalence ({pct(p_f.precision)} on future files).",
+        f"The random split overstates little by AUC ({tuned.roc_auc_gap:.4f}); the 50/50 test "
+        f"mix overstates a lot: precision {pct(p_f.precision_at_test_mix)} vs {pct(p_f.precision)} "
+        "at 1% malware on future files.",
         "No AutoML tool caught the label leak.",
-        f"The hard tail: {pct(c.detection_rate)} of challenge-set malware caught.",
+        f"The hard tail: {pct(c.detection_rate)} of challenge-set malware caught at 1% FPR "
+        f"({pct(c_dep.detection_rate)} at the deployed threshold).",
     ], size=19, bullets=True)
     add_text(slide, Inches(7.4), Inches(1.2), Inches(5.4), Inches(0.5), "Limitations", size=24,
              color=ACCENT, bold=True)
@@ -591,7 +647,7 @@ def slide_takeaways(prs: Presentation) -> None:
         "Static features only; packed or modified files can evade.",
         "50/50 classes; real prevalence is unknown.",
         "12 future weeks; one seed; no adversarial test.",
-        "Step 4 ran on a 4-core / 15 GB cloud VM (600 s AutoML budget), Steps 2-3 on the "
+        f"Step 4 ran on a 4-core / {vm_ram_gib():.1f} GiB cloud VM (600 s AutoML budget), Steps 2-3 on the "
         "16-core laptop.",
     ], size=19, bullets=True)
 

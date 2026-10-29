@@ -5,14 +5,30 @@ Course project (IA-3, Part B). We train binary classifiers that label Windows
 Then we compare hand-tuned LightGBM (grid, random and Optuna search) with three
 AutoML tools (FLAML, AutoGluon, H2O).
 
-> **Status (2026-10-29):** Steps 0-3 (environment, data and splits, baselines and
-> tuning, AutoML) are done and passed adversarial review. Step 4 (critical
-> evaluation) has been redone on a 4-core cloud VM; its outputs and write-ups exist and
-> await their review gate. Steps 5-6 are not started. See
-> [`docs/handoff/HANDOFF.md`](docs/handoff/HANDOFF.md) for the current state and
-> how to continue on a fresh machine. No results are typed into this README. All
-> numbers live in `reports/` and are generated from the experiment log and the
-> saved test-set predictions.
+> **Status (2026-10-29):** all six steps are done (see [Status](#status) and
+> [Deliverables](#deliverables)). Steps 2-3 and 5-6 ran on the student's laptop,
+> Step 4 on a 4-core cloud VM. The reproducibility check (fresh venv, `pytest`,
+> `run_all.py --quick` from deleted quick outputs) is in
+> [`reports/repro_check.md`](reports/repro_check.md), and every rubric item is mapped
+> to its evidence in [`reports/SUBMISSION_CHECKLIST.md`](reports/SUBMISSION_CHECKLIST.md).
+> No results are typed into this README. All numbers live in `reports/` and are
+> generated from the experiment log and the saved test-set predictions.
+
+## Deliverables
+
+| Deliverable | File |
+|---|---|
+| Report (PDF) | [`reports/report.pdf`](reports/report.pdf), built by `scripts/build_report.py` |
+| Slides (5-minute talk, with speaker notes) and Q&A preparation | [`reports/slides.pptx`](reports/slides.pptx) (`scripts/build_slides.py`), [`reports/qa_prep.md`](reports/qa_prep.md) |
+| Model card | [`MODEL_CARD.md`](MODEL_CARD.md) |
+| Demo script and screenshots | [`DEMO.md`](DEMO.md), [`reports/screenshots/`](reports/screenshots/) |
+| Deployed model and app | [`models/final/`](models/final/) (model, `schema.json`, threshold), [`app/api.py`](app/api.py) (FastAPI), [`app/streamlit_app.py`](app/streamlit_app.py) |
+| Answer to the research question | [`reports/critical_eval.md`](reports/critical_eval.md), [`reports/limitations.md`](reports/limitations.md) |
+| Step write-ups | [`reports/tuning_writeup.md`](reports/tuning_writeup.md) (Step 2), [`reports/automl_comparison.md`](reports/automl_comparison.md) (Step 3), [`reports/leakage.md`](reports/leakage.md), [`reports/temporal_bias.md`](reports/temporal_bias.md), [`reports/explainability.md`](reports/explainability.md) (Step 4) |
+| Executed notebooks | [`notebooks/01_eda.ipynb`](notebooks/01_eda.ipynb), [`02_baseline_tuning.ipynb`](notebooks/02_baseline_tuning.ipynb), [`03_automl.ipynb`](notebooks/03_automl.ipynb), [`04_critical_eval.ipynb`](notebooks/04_critical_eval.ipynb) |
+| Experiment log, tables, figures | [`reports/experiments.jsonl`](reports/experiments.jsonl), [`reports/tables/`](reports/tables/), [`reports/figures/`](reports/figures/), [`reports/leaderboards/`](reports/leaderboards/) |
+| Reproducibility check and rubric checklist | [`reports/repro_check.md`](reports/repro_check.md), [`reports/SUBMISSION_CHECKLIST.md`](reports/SUBMISSION_CHECKLIST.md) |
+| Handoff notes (state, how to continue on another machine) | [`docs/handoff/HANDOFF.md`](docs/handoff/HANDOFF.md) |
 
 ## Research question
 
@@ -122,17 +138,22 @@ script downloads the same files from the same Hugging Face repo, but it:
 Two machines were used. Wall-clock times are only compared between runs on the
 same machine.
 
-| | Steps 0–3 (data, tuning, AutoML) | Step 4 onwards (and the cloud data rebuild) |
+| | Steps 0–3 and 5–6 (data, tuning, AutoML, deployment, report) | Step 4 (cloud VM; also the cloud data rebuild) |
 |---|---|---|
-| CPU | Intel Core Ultra 9 285H, 16 cores | Intel Xeon @ 2.1 GHz, 4 vCPU (cloud VM) |
-| RAM / disk | 63 GB, about 640 GB free | 15 GB (no swap), about 13 GB free |
+| CPU | Intel Core Ultra 9 285H, 16 cores | Intel Xeon @ 2.1 GHz, 4 vCPU |
+| RAM / disk | 63 GB, about 640 GB free | 15.7 GiB (no swap), about 13 GB free |
 | OS | Windows 11 | Linux |
-| `N_JOBS` / H2O memory | 16 / 24G | 4 / 9G |
+| `N_JOBS` / H2O memory | 16 / 24G | 4 / 7G for the leakage runs (`H2O_STEP4_MAX_MEM` in `src/leakage.py`, XGBoost excluded) |
+
+The Step 4 challenge-set scoring alone was re-run on the laptop: it fits nothing, it only
+scores the saved models, and the laptop holds every saved Step 2-3 model.
 
 No GPU was used on either (see "all-CPU" below). `config.N_JOBS` is
 `min(16, cpu_count)` and the H2O memory is capped at about 60% of RAM, both
-computed automatically; every record in `reports/experiments.jsonl` logs its own
-`n_jobs`. The data rebuilt on the cloud VM matches the laptop exactly (split
+computed automatically. The Step 3 AutoML, Step 4 leakage, eval-fit and explain records
+in `reports/experiments.jsonl` log their own `n_jobs`; the Step 2 tuning and threshold
+records do not (Step 2 ran on the laptop with `num_threads = config.N_JOBS = 16`, set in
+`src/tune.py` `BASE_PARAMS`). The data rebuilt on the cloud VM matches the laptop exactly (split
 sha256 order and feature hashes in `data/splits/split_fingerprints.json`).
 
 Software: Python 3.12 (AutoGluon and H2O do not support 3.14) and Java 21
@@ -143,6 +164,13 @@ py -3.12 -m venv .venv
 .venv/Scripts/python.exe -m pip install --upgrade pip
 .venv/Scripts/python.exe -m pip install -r requirements.txt
 ```
+
+**Windows path length.** Keep the venv on a short path (for example the repository
+at `C:\projects\automl`, as here). Windows limits paths to 260 characters unless
+long paths are enabled, and some installed files (inside the torch and streamlit
+packages) are about 140 characters deep under `site-packages`. A venv created
+under a deep folder fails with `OSError: [WinError 206] The filename or extension
+is too long` (see `reports/repro_check.md`).
 
 `requirements.txt` pins exact versions frozen from the working venv, including
 `thrember` at the commit above and a CPU-only PyTorch wheel (pulled in by
@@ -176,8 +204,19 @@ From the project root (on Linux or macOS, `.venv/bin/python` instead of
 ```
 
 * `--steps` takes a comma-separated subset of `data,tune,automl,eval,deploy`.
-  Steps always run in that order. `deploy` is not
-  implemented yet and say so.
+  Steps always run in that order. `deploy` exports the model to `models/final/`
+  (with `schema.json`, the threshold and `MODEL_CARD.md`) and then runs
+  `tests/test_api.py` against it.
+* The report and the deck are rebuilt from the saved tables in a few seconds:
+  `.venv/Scripts/python.exe scripts/build_report.py` and
+  `.venv/Scripts/python.exe scripts/build_slides.py`. Starting the API and the
+  Streamlit page is described in [`DEMO.md`](DEMO.md).
+* **Linux or a cloud VM.** Use `.venv/bin/python`. With `--keep-zipped` the Win64
+  zips stay packed and `src.data` streams the weekly jsonl out of them (see
+  Download); `config.N_JOBS` and the H2O memory scale down to the machine
+  automatically. The Linux install was verified on the 4-core cloud VM (see
+  `reports/repro_check.md`); `requirements.txt` pins `oscrypto` to a git commit
+  because the PyPI release cannot parse OpenSSL 3.0.x version strings there.
 * `--quick` sets `EMBER_QUICK=1`. That shrinks every size in `config.py` (10k
   pool, 2k future test, 5k tuning subset, 4 trials, 60 s AutoML budget) and
   writes to `*_quick` split and log files, so a smoke run never overwrites real
@@ -201,7 +240,7 @@ From the project root (on Linux or macOS, `.venv/bin/python` instead of
 | `tune` | `scripts/run_tuning.py` | `reports/experiments.jsonl`, `reports/predictions/*.npz` (test-set scores), `reports/tables/tuning_summary.csv` (with 95% CIs), `tuning_pairwise.csv`, `tuning_trials.csv`, `tuning_refit_versions.csv`, `reports/figures/tuning_compare.png`, `reports/figures/tuning_convergence.png`, `reports/tuning_writeup.md` |
 | `automl` | `scripts/run_automl.py` (one child process per tool, with a sleep guard) | `reports/leaderboards/` (per tool: leaderboard, fit/search/event log, preprocessing notes JSON with saved-model checks, importances), `reports/predictions/automl_*.npz`, `reports/tables/automl_vs_manual.csv`, `reports/tables/automl_pairwise.csv`, `reports/figures/automl_vs_manual.png`, `reports/automl_comparison.md`, `models/flaml/`, `models/autogluon/`, `models/h2o/` |
 | `eval` | `scripts/run_explain.py`, `scripts/run_eval_bias.py`, `scripts/run_leakage.py --skip-done`, `scripts/run_critical_eval.py` (in that order: explain writes the train out-of-fold scores and `models/threshold.json` that the others reuse) | `reports/critical_eval.md`, `reports/limitations.md`, `reports/leakage.md`, `reports/temporal_bias.md`, `reports/explainability.md`; tables in `reports/tables/` (`random_vs_future`, `precision_both_sets`, `gap_vs_tuned`, `automl_self_estimate`, `leakage`, `cv_comparison`, `bias_slices`, `prevalence`, `challenge`, `drift`, `shap_*`, `calibration`, `threshold`, ...), figures in `reports/figures/`, `reports/leakage_logs/`, `reports/leaderboards/leakage/`, `reports/predictions/{eval,leakage}/`, `models/threshold.json`, `models/eval/`, `models/leakage/` |
-| `deploy` | not implemented yet in `run_all.py` | |
+| `deploy` | `scripts/export_model.py`, then `pytest tests/test_api.py` | `models/final/` (`model.txt`, `schema.json`, `demo_samples.npz`), `MODEL_CARD.md` |
 
 ## Repository layout
 
@@ -233,6 +272,11 @@ src/
   calibration.py       Step 4C: out-of-fold scores, reliability, Brier/ECE, cost-sensitive threshold
   critical_eval.py     Step 4 synthesis tables (precision on both sets, gap vs tuned, AutoML self-estimates)
   critical_eval_writeup.py  renders reports/critical_eval.md and reports/limitations.md from the tables
+app/
+  api.py               Step 5 FastAPI service: /health, /predict (validated vector), /predict_file (in memory)
+  streamlit_app.py     Step 5 demo page (calls the API)
+  model_card.py        renders MODEL_CARD.md from models/final/schema.json and the tables
+  take_screenshots.py  saves the demo screenshots to reports/screenshots/
 scripts/
   download_data.py     verified download of the raw jsonl
   probe_raw.py         looks at the first rows of one remote file (setup only)
@@ -244,6 +288,9 @@ scripts/
   run_eval_bias.py     Step 4B entry point (--stages fits,challenge,tables,writeup, --quick)
   run_explain.py       Step 4C entry point (--stages oof,shap,agreement,calibration,threshold,report, --quick)
   run_critical_eval.py Step 4 synthesis entry point (--stages tables,writeup, --quick)
+  export_model.py      Step 5: copies the tuned LightGBM to models/final/ with schema.json and the model card
+  build_report.py      Step 6: reports/report.pdf (and figures/architecture.png) from the saved outputs
+  build_slides.py      Step 6: reports/slides.pptx with speaker notes
 tests/
   conftest.py          puts the project root on sys.path; skip helpers
   test_splits.py       disjointness, temporal order, sizes, balance, CV folds, feature groups
@@ -253,13 +300,19 @@ tests/
   test_eval_bias.py    Step 4B folds, metrics, thresholds, base-rate maths, challenge filtering (synthetic)
   test_explain.py      Step 4C SHAP checks, family grouping, calibration and threshold maths (synthetic)
   test_critical_eval.py  Step 4 synthesis tables and the sentences chosen from them
+  test_raw_files.py    reading the weekly jsonl from extracted files or straight from the zips
+  test_api.py          Step 5 API validation, upload safety, API vs offline scores, Streamlit page
 notebooks/
   01_eda.ipynb                 narrative EDA (imports from src, no own logic)
   02_baseline_tuning.ipynb     narrative view of the Step 2 tables and figures
+  03_automl.ipynb              narrative view of the Step 3 leaderboards and comparison
+  04_critical_eval.ipynb       narrative view of the Step 4 tables and figures
 reports/               generated tables, figures, leaderboards, experiment log, predictions/, write-ups
-data/                  raw, cache, splits (gitignored, regenerated)
-models/                saved models (binaries gitignored)
-app/                   API and UI (Step 5)
+                       (method id `optuna` in the Step 2 tables and `lgbm_tuned` in the Step 3-4
+                       tables are the same model: the Optuna-tuned LightGBM that is deployed)
+data/                  raw/ and cache/ gitignored (regenerated); splits/ committed
+models/                committed boosters and H2O leaders (AutoGluon and quick H2O folders gitignored)
+models/final/          the deployed model, schema.json and threshold (Step 5)
 third_party/EMBER2024  thrember source at the pinned commit (gitignored)
 ```
 
@@ -356,9 +409,10 @@ CV AUC only among the tuners; the test scores compare tuners with baselines.
 
 **All tools on CPU (16 cores on the Steps 2–3 laptop, 4 on the cloud VM).** Not
 every tool can use the GPU in the same way, so a mix of GPU and CPU runs would
-make timings meaningless. Every library gets `n_jobs=config.N_JOBS` (16 for
-Steps 2–3, 4 for Step 4 onwards), and every pair of runs that is compared ran on
-the same machine.
+make timings meaningless. Every library gets `n_jobs=config.N_JOBS` (16 on
+the laptop for Steps 2–3 and 5–6; 4 on the cloud VM for the Step 4 leakage runs,
+and 2 for the Step 4 bias and explain fits, which ran as two parallel jobs), and
+every pair of runs that is compared ran on the same machine.
 
 **20 minutes per AutoML tool.** `AUTOML_BUDGET_S=1200` gives each tool
 (FLAML, AutoGluon `medium_quality`, H2O) time to try several model families on
@@ -400,8 +454,13 @@ row-aligned.
 |---|---|---|
 | 0 | Environment, download, data verification | done: download sha256-verified; checks in [`reports/data_check.json`](reports/data_check.json) |
 | 1 | Cache, splits, CV folds | done: [`data/splits/splits_info.json`](data/splits/splits_info.json) (committed, with `split_sha256.parquet` for checking a rebuild), [`reports/tables/class_balance_by_week.csv`](reports/tables/class_balance_by_week.csv); `pytest` passes with no skips |
-| 2 | Baselines (LightGBM default, logistic regression) and Grid / Random / Optuna tuning | done, passed adversarial review (refit version 2 for all five methods; run log [`reports/run_tuning_refit_v2.log`](reports/run_tuning_refit_v2.log); its final table step failed because the running process mixed the old `tables.py` with the edited `tuning_writeup.py`, so the outputs were rebuilt with `--tables-only`, see [`reports/run_tuning_tables_v2.log`](reports/run_tuning_tables_v2.log)): [`reports/tuning_writeup.md`](reports/tuning_writeup.md), [`reports/tables/tuning_summary.csv`](reports/tables/tuning_summary.csv), [`reports/tables/tuning_pairwise.csv`](reports/tables/tuning_pairwise.csv), [`reports/tables/tuning_trials.csv`](reports/tables/tuning_trials.csv), [`reports/tables/tuning_refit_versions.csv`](reports/tables/tuning_refit_versions.csv), [`reports/figures/tuning_compare.png`](reports/figures/tuning_compare.png), [`reports/figures/tuning_convergence.png`](reports/figures/tuning_convergence.png), raw log [`reports/experiments.jsonl`](reports/experiments.jsonl) |
+| 2 | Baselines (LightGBM default, logistic regression) and Grid / Random / Optuna tuning | done, passed adversarial review (refit version 2 for all five methods; run log [`reports/run_tuning_refit_v2.log`](reports/run_tuning_refit_v2.log), after an aborted first attempt that only got through the baselines, [`reports/run_tuning_refit_v2_attempt1.log`](reports/run_tuning_refit_v2_attempt1.log); its final table step failed because the running process mixed the old `tables.py` with the edited `tuning_writeup.py`, so the outputs were rebuilt with `--tables-only`, see [`reports/run_tuning_tables_v2.log`](reports/run_tuning_tables_v2.log)): [`reports/tuning_writeup.md`](reports/tuning_writeup.md), [`reports/tables/tuning_summary.csv`](reports/tables/tuning_summary.csv), [`reports/tables/tuning_pairwise.csv`](reports/tables/tuning_pairwise.csv), [`reports/tables/tuning_trials.csv`](reports/tables/tuning_trials.csv), [`reports/tables/tuning_refit_versions.csv`](reports/tables/tuning_refit_versions.csv), [`reports/figures/tuning_compare.png`](reports/figures/tuning_compare.png), [`reports/figures/tuning_convergence.png`](reports/figures/tuning_convergence.png), raw log [`reports/experiments.jsonl`](reports/experiments.jsonl) |
 | 3 | AutoML: FLAML, AutoGluon, H2O (1200 s each) | done, passed adversarial review (run log [`reports/run_automl.log`](reports/run_automl.log); a first attempt where the laptop slept is in [`reports/run_automl_attempt1_slept.log`](reports/run_automl_attempt1_slept.log); notes re-derived from the saved models with `--refresh-notes`, no refit): [`reports/automl_comparison.md`](reports/automl_comparison.md), [`reports/tables/automl_vs_manual.csv`](reports/tables/automl_vs_manual.csv), [`reports/tables/automl_pairwise.csv`](reports/tables/automl_pairwise.csv), [`reports/figures/automl_vs_manual.png`](reports/figures/automl_vs_manual.png), [`reports/leaderboards/`](reports/leaderboards/) |
-| 4 | Critical evaluation: random vs future, leakage, bias slices, SHAP, calibration, drift | outputs produced on the 4-core cloud VM, review gate pending: [`reports/critical_eval.md`](reports/critical_eval.md) (the answer to the research question), [`reports/limitations.md`](reports/limitations.md), [`reports/leakage.md`](reports/leakage.md), [`reports/temporal_bias.md`](reports/temporal_bias.md), [`reports/explainability.md`](reports/explainability.md) |
-| 5 | Deployment: FastAPI, Streamlit, model card | pending |
-| 6 | Report and slides | pending |
+| 4 | Critical evaluation: random vs future, leakage, bias slices, SHAP, calibration, drift | done on the 4-core cloud VM (600 s leakage budget, a stated deviation), reviewed: [`reports/critical_eval.md`](reports/critical_eval.md) (the answer to the research question), [`reports/limitations.md`](reports/limitations.md), [`reports/leakage.md`](reports/leakage.md), [`reports/temporal_bias.md`](reports/temporal_bias.md), [`reports/explainability.md`](reports/explainability.md), tables in [`reports/tables/`](reports/tables/), figures in [`reports/figures/`](reports/figures/), [`models/threshold.json`](models/threshold.json) |
+| 5 | Deployment: FastAPI, Streamlit, model card | done on the laptop, reviewed: [`models/final/`](models/final/), [`app/api.py`](app/api.py), [`app/streamlit_app.py`](app/streamlit_app.py), [`tests/test_api.py`](tests/test_api.py), [`reports/screenshots/`](reports/screenshots/), [`MODEL_CARD.md`](MODEL_CARD.md), [`DEMO.md`](DEMO.md). Cloud deployment is left to the student (needs their own account) |
+| 6 | Report, slides, notebooks | done on the laptop: [`reports/report.pdf`](reports/report.pdf), [`reports/slides.pptx`](reports/slides.pptx), [`reports/qa_prep.md`](reports/qa_prep.md), [`notebooks/`](notebooks/) (all four executed, with outputs) |
+| Final | Reproducibility check and submission checklist | [`reports/repro_check.md`](reports/repro_check.md), [`reports/SUBMISSION_CHECKLIST.md`](reports/SUBMISSION_CHECKLIST.md); the final adversarial gate runs on these |
+
+Left for the student: the Part A certificate, the team / deadline / topic-approval
+`TODO`s above, recording the demo video, the cloud deployment, and pushing the
+branch to GitHub.

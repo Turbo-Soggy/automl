@@ -2,20 +2,20 @@
 Verbosity: 2 (Standard Logging)
 =================== System Info ===================
 AutoGluon Version:  1.6.3
-Python Version:     3.12.3
-Operating System:   Linux
-Platform Machine:   x86_64
-Platform Version:   #1 SMP PREEMPT_DYNAMIC @0
-CPU Count:          4
+Python Version:     3.12.10
+Operating System:   Windows
+Platform Machine:   AMD64
+Platform Version:   10.0.26300
+CPU Count:          16
 Pytorch Version:    2.14.1+cpu
 CUDA Version:       CUDA is not available
-Memory Avail:       14.05 GB / 15.71 GB (89.4%)
-Disk Space Avail:   12.41 GB / 251.97 GB (4.9%)
+Memory Avail:       37.76 GB / 63.43 GB (59.5%)
+Disk Space Avail:   518.22 GB / 924.26 GB (56.1%)
 ===================================================
 Presets specified: ['medium_quality']
 Using hyperparameters preset: hyperparameters='default'
 Beginning AutoGluon training ... Time limit = 30s
-AutoGluon will save models to "/home/user/automl/models/leakage/clean/autogluon_quick"
+AutoGluon will save models to "C:\projects\automl\models\leakage\clean\autogluon_quick"
 Train Data Rows:    8000
 Train Data Columns: 2568
 Label Column:       label
@@ -27,8 +27,8 @@ Preprocessing data...
 Selected class <--> label mapping:  class 1 = 1, class 0 = 0
 Using Feature Generators to preprocess the data ...
 Fitting AutoMLPipelineFeatureGenerator...
-	Available Memory:                    14313.62 MB
-	Train Data (Original)  Memory Usage: 78.37 MB (0.5% of available memory)
+	Available Memory:                    38668.00 MB
+	Train Data (Original)  Memory Usage: 78.37 MB (0.2% of available memory)
 	Inferring data type of each feature based on column values. Set feature_metadata_in to manually specify special dtypes of the features.
 	Stage 1 Generators:
 		Fitting AsTypeFeatureGenerator...
@@ -55,10 +55,10 @@ Fitting AutoMLPipelineFeatureGenerator...
 	Types of features in processed data (raw dtype, special dtypes):
 		('float', [])     : 2316 | ['general__0', 'general__1', 'general__5', 'general__6', 'histogram__0', ...]
 		('int', ['bool']) :  190 | ['general__2', 'general__3', 'strings__110', 'strings__114', 'header__30', ...]
-	5.9s = Fit runtime
+	3.0s = Fit runtime
 	2506 features in original data used to generate 2506 features in processed data.
-	Train Data (Processed) Memory Usage: 72.13 MB (0.5% of available memory)
-Data preprocessing and feature engineering runtime = 7.89s ...
+	Train Data (Processed) Memory Usage: 72.13 MB (0.2% of available memory)
+Data preprocessing and feature engineering runtime = 3.29s ...
 AutoGluon will gauge predictive performance using evaluation metric: 'roc_auc'
 	This metric expects predicted probabilities rather than predicted class labels, so you'll need to use predict_proba() instead of predict()
 	To change this, specify the eval_metric parameter of Predictor()
@@ -74,19 +74,20 @@ User-specified model hyperparameters to be fit:
 	'XT': [{'criterion': 'gini', 'ag_args': {'name_suffix': 'Gini', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'entropy', 'ag_args': {'name_suffix': 'Entr', 'problem_types': ['binary', 'multiclass']}}, {'criterion': 'squared_error', 'ag_args': {'name_suffix': 'MSE', 'problem_types': ['regression', 'quantile']}}],
 }
 Fitting 11 L1 models, fit_strategy="sequential" ...
-Fitting model: LightGBMXT ... Training model for up to 22.11s of the 22.11s of remaining time.
-	Fitting with cpus=4, gpus=0, mem=0.9/13.8 GB
-	Ran out of time, early stopping on iteration 459. Best iteration is:
-	[181]	valid_set's binary_logloss: 0.120128
+Fitting model: LightGBMXT ... Training model for up to 26.71s of the 26.71s of remaining time.
+	Fitting with cpus=16, gpus=0, mem=0.9/37.6 GB
 	0.9909	 = Validation score   (roc_auc)
-	22.13s	 = Training   runtime
+	26.35s	 = Training   runtime
 	0.02s	 = Validation runtime
-Fitting model: WeightedEnsemble_L2 ... Training model for up to 22.11s of the -0.07s of remaining time.
-	Fitting 1 model on all data | Fitting with cpus=4, gpus=0, mem=0.0/13.8 GB
+Fitting model: LightGBM ... Training model for up to 0.32s of the 0.32s of remaining time.
+	Warning: Model has no time left to train, skipping model... (Time Left = -0.2s)
+	Time limit exceeded... Skipping LightGBM.
+Fitting model: WeightedEnsemble_L2 ... Training model for up to 26.71s of the -0.41s of remaining time.
+	Fitting 1 model on all data | Fitting with cpus=16, gpus=0, mem=0.0/37.7 GB
 	Ensemble Weights: {'LightGBMXT': 1.0}
 	0.9909	 = Validation score   (roc_auc)
 	0.0s	 = Training   runtime
 	0.0s	 = Validation runtime
-AutoGluon training complete, total runtime = 30.32s ... Best model: WeightedEnsemble_L2 | Estimated inference throughput: 46266.0 rows/s (800 batch size)
-TabularPredictor saved. To load, use: predictor = TabularPredictor.load("/home/user/automl/models/leakage/clean/autogluon_quick")
-[leakage] autogluon clean best=WeightedEnsemble_L2 wall_s=32 test_random_auc=0.99289 test_future_auc=0.99229 timing_valid=True
+AutoGluon training complete, total runtime = 31.32s ... Best model: WeightedEnsemble_L2 | Estimated inference throughput: 41915.8 rows/s (800 batch size)
+TabularPredictor saved. To load, use: predictor = TabularPredictor.load("C:\projects\automl\models\leakage\clean\autogluon_quick")
+[leakage] autogluon clean best=WeightedEnsemble_L2 wall_s=35 test_random_auc=0.99289 test_future_auc=0.99229 timing_valid=True

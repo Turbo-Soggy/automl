@@ -24,11 +24,18 @@ catboost==1.2.10
 graphviz==0.21
 plotly==7.1.0
 shap==0.54.1
+# Imported directly by src/ (xgboost: leakage and explain checks; scipy: spearmanr), so pinned
+# here rather than left to FLAML's wide range "xgboost<3.0.0,>=0.90".
+xgboost==2.1.4
+scipy==1.18.1
 
 # Plots, serving, UI
 matplotlib==3.11.2
 seaborn==0.13.2
 fastapi==0.162.0
+# starlette is imported directly by app/api.py; pillow by scripts/build_report.py
+starlette==1.10.0
+pillow==13.0.0
 uvicorn==0.54.0
 pydantic==2.14.1
 streamlit==1.66.1

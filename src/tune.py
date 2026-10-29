@@ -88,7 +88,6 @@ Params = dict[str, Any]
 Predictor = Callable[[np.ndarray], np.ndarray]  # X -> P(malicious)
 
 TUNING_METHODS: tuple[str, ...] = ("grid", "random", "optuna")
-BASELINE_METHODS: tuple[str, ...] = ("lgbm_default", "logreg")
 
 # --- Fixed training settings (shared by every method) ------------------------------------
 MAX_ROUNDS: int = 2000             # n_estimators cap; early stopping normally ends far earlier

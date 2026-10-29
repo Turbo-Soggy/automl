@@ -3,7 +3,46 @@
 Written 2026-10-29, when the work moved from the student's Windows laptop to a Claude cloud
 session. Read `CLAUDE.md` first for the working rules.
 
-## 0. Latest handoff: cloud VM → laptop (2026-10-29, 14:45 UTC)
+## 0. Current state: final preparation on the laptop (2026-10-29, evening IST)
+All six steps are done on branch `step4-6-cloud`. Steps 5-6 and the final preparation ran on
+the laptop; Step 4 numbers and settings are still the cloud-VM ones (section 0b) and were not
+re-run. **Next: the final gate (D8): two consecutive clean adversarial rounds, then a
+spot-check, then commit.** Then the items only the student can do (below).
+
+### Stage status
+| Stage | Status | Evidence |
+|---|---|---|
+| Steps 0-3 | Done, reviewed | section 1 table, `docs/handoff/review_log.md` |
+| Step 4 (cloud VM) | Done, reviewed. The gate's carried major issue (`temporal_bias.md` said AutoGluon "could not be scored ... not on disk") is fixed at the source (`src/temporal_writeup._limitations(facts)`) | `reports/critical_eval.md`, `reports/limitations.md`, `reports/{leakage,temporal_bias,explainability}.md` |
+| Step 5 deployment (laptop) | Done, reviewed (commits `9ab3a32`, `7d821d6`) | `models/final/`, `app/`, `tests/test_api.py`, `reports/screenshots/`, `MODEL_CARD.md`, `DEMO.md` |
+| Step 6 report, slides, notebooks (laptop) | Done (commit `7d821d6` plus the uncommitted Step 6 fix-round edits); report and deck rebuilt at the end of final prep | `reports/report.pdf`, `reports/slides.pptx`, `reports/qa_prep.md`, `notebooks/*.ipynb` (all executed) |
+| Final prep (D1 evidence, checklist, README) | Done | `reports/repro_check.md`, `reports/SUBMISSION_CHECKLIST.md`, `README.md` (status, deliverables, reproduce, Windows path note) |
+| Final gate (D8) | **Next** | |
+
+### What final prep found and did
+- Fresh venv (Python 3.12.10, Windows): `pip install -r requirements.txt` resolves and
+  installs; no pin had to change. Under the session scratchpad the first attempt failed
+  with `WinError 206` (path too long: this laptop has `LongPathsEnabled = 0`, and torch and
+  streamlit install files about 140 characters deep). It succeeded on a short path. The
+  README now says to keep the venv on a short path. Times and details: `reports/repro_check.md`.
+- All 218 `*_quick` outputs were moved out of the repo and `run_all.py --quick` was run end to
+  end (all five steps, exit 0, about 44 min). It found one bug: the quick deploy step
+  overwrote the real `MODEL_CARD.md`, because `scripts/export_model.py` read its own
+  `--quick` flag instead of `EMBER_QUICK`. Fixed (it now follows `config.QUICK`), the card
+  restored from git and the quick deploy step re-run. The regenerated quick split files are
+  byte-identical to the ones before.
+- Full `pytest` with the data present: 160 passed, 0 skipped, in both the project venv and
+  the fresh venv.
+- `reports/report.pdf` and `reports/slides.pptx` were rebuilt last, from the final tables.
+- The Linux install was verified earlier on the 4-core cloud VM (section 0b: `oscrypto` git
+  pin; 118 tests passed there at that time).
+
+### Left for the student
+Part A certificate; the team size, deadline and topic-approval `TODO`s in `README.md`;
+recording the demo video (`DEMO.md`); the cloud deployment (own Hugging Face or Streamlit
+account); pushing `step4-6-cloud` to GitHub and opening the PR.
+
+## 0b. Previous handoff: cloud VM → laptop (2026-10-29, 14:45 UTC; kept for history)
 The work moved to a Claude cloud session (4-core Xeon, 15 GB RAM, Linux) on branch
 `step4-6-cloud`, ran Step 0 checks and all Step 4 experiments, and was then stopped at the
 user's request so it can continue on the laptop. **Pick up from the Step 4 review gate.**
@@ -282,8 +321,10 @@ hardware:
   `N_JOBS = 16` and H2O at 24G.
 - Step 4 onwards runs on a cloud VM: 4 vCPU Intel Xeon @ 2.1 GHz, 15 GB RAM, no swap,
   Linux, about 13 GB free disk. There `config.N_JOBS = min(16, cpu_count) = 4` and
-  `H2O_MAX_MEM = 9G`, both computed automatically. Each record in `experiments.jsonl` logs
-  its own `n_jobs`.
+  `H2O_MAX_MEM = 9G`, both computed automatically. The Step 3 AutoML, Step 4 leakage,
+  eval-fit and explain records in `experiments.jsonl` log their own `n_jobs`; the Step 2
+  tuning and threshold records do not (Step 2 used `num_threads = N_JOBS = 16`, see
+  `src/tune.py` `BASE_PARAMS`).
 - On a cloud machine, record its CPU count, RAM and OS in the Step 4 write-up.
 - Run every with/without-leak pair on the same machine with the same settings, so those
   comparisons stay fair.

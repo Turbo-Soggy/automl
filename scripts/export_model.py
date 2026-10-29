@@ -122,7 +122,8 @@ def training_data() -> dict[str, Any]:
     }
 
 
-def export(quick: bool) -> Path:
+def export() -> Path:
+    """Copy the tuned LightGBM to models/final{suffix}/ with schema.json and demo samples, then write the model card."""
     import lightgbm as lgb
     import config
     from app.model_card import write_model_card
@@ -192,8 +193,10 @@ def export(quick: bool) -> Path:
     print(f"[export] {model_path.relative_to(ROOT)} sha256={model_sha[:12]} trees={booster.num_trees()} "
           f"parity max diff={parity['max_abs_diff']:.1e} demo rows={len(pos)}")
     # The model card is generated from schema.json and the tables, so its numbers are never typed.
-    card = write_model_card(schema, config.TABLES, out_dir / "MODEL_CARD.md" if quick else ROOT / "MODEL_CARD.md",
-                            suffix)
+    # Quick mode is read from config (EMBER_QUICK), not from --quick: run_all.py --quick sets only the
+    # environment variable, and a quick card must never overwrite the real MODEL_CARD.md.
+    card_path = out_dir / "MODEL_CARD.md" if config.QUICK else ROOT / "MODEL_CARD.md"
+    card = write_model_card(schema, config.TABLES, card_path, suffix)
     print(f"[export] wrote {card.relative_to(ROOT)}")
     return out_dir
 
@@ -204,7 +207,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     if args.quick:
         os.environ["EMBER_QUICK"] = "1"   # before importing config, which reads it at import time
-    export(args.quick)
+    export()
 
 
 if __name__ == "__main__":

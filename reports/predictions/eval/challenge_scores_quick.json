@@ -2,14 +2,19 @@
   "reload_check_max_abs_diff": {
     "lgbm_default": 0.0,
     "grid": 0.0,
-    "random": 1.0842021724855044e-19,
-    "optuna": 1.0842021724855044e-19,
+    "random": 0.0,
+    "optuna": 0.0,
     "logreg": 1.1920928955078125e-07,
     "flaml": 0.0,
+    "autogluon": 0.0,
     "h2o": 0.0
   },
   "reload_check_rows": 300,
-  "not_scored": {
-    "autogluon": "models/autogluon_quick not on disk: the 1.8 GB Step 3 predictor was not committed and is not rebuilt (its test scores are saved, so it is in every other table)"
+  "not_scored": {},
+  "machine": {
+    "cpu_count": 16,
+    "ram_gib": 63.4,
+    "os": "Windows-11-10.0.26300-SP0",
+    "processor": "Intel64 Family 6 Model 197 Stepping 2, GenuineIntel"
   }
 }

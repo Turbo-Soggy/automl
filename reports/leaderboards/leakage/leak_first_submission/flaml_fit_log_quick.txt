@@ -1,57 +1,71 @@
-2026-10-29 08:51:43,727 INFO task = classification
-2026-10-29 08:51:43,727 INFO Evaluation method: holdout
-2026-10-29 08:51:45,076 INFO Minimizing error metric: 1-roc_auc
-2026-10-29 08:51:45,151 INFO List of ML learners in AutoML Run: ['lgbm', 'rf', 'xgboost', 'extra_tree', 'xgb_limitdepth', 'sgd', 'catboost', 'lrl1']
-2026-10-29 08:51:45,153 INFO iteration 0, current learner lgbm
-2026-10-29 08:51:46,741 INFO Estimated sufficient time budget=15867s. Estimated necessary time budget=391s.
-2026-10-29 08:51:46,741 INFO  at 3.0s,	estimator lgbm's best error=3.8587e-02,	best estimator lgbm's best error=3.8587e-02
-2026-10-29 08:51:46,741 INFO iteration 1, current learner lgbm
-2026-10-29 08:51:48,427 INFO  at 4.7s,	estimator lgbm's best error=3.8587e-02,	best estimator lgbm's best error=3.8587e-02
-2026-10-29 08:51:48,427 INFO iteration 2, current learner sgd
-2026-10-29 08:51:55,687 INFO  at 12.0s,	estimator sgd's best error=1.5758e-01,	best estimator lgbm's best error=3.8587e-02
-2026-10-29 08:51:55,687 INFO iteration 3, current learner lgbm
-2026-10-29 08:51:57,139 INFO  at 13.4s,	estimator lgbm's best error=3.0675e-02,	best estimator lgbm's best error=3.0675e-02
-2026-10-29 08:51:57,139 INFO iteration 4, current learner xgboost
-2026-10-29 08:51:59,376 INFO  at 15.6s,	estimator xgboost's best error=3.7763e-02,	best estimator lgbm's best error=3.0675e-02
-2026-10-29 08:51:59,377 INFO iteration 5, current learner lgbm
-2026-10-29 08:52:00,980 INFO  at 17.3s,	estimator lgbm's best error=2.3034e-02,	best estimator lgbm's best error=2.3034e-02
-2026-10-29 08:52:00,980 INFO iteration 6, current learner lgbm
-2026-10-29 08:52:02,636 INFO  at 18.9s,	estimator lgbm's best error=2.3034e-02,	best estimator lgbm's best error=2.3034e-02
-2026-10-29 08:52:02,636 INFO iteration 7, current learner lgbm
-2026-10-29 08:52:04,287 INFO  at 20.6s,	estimator lgbm's best error=1.8531e-02,	best estimator lgbm's best error=1.8531e-02
-2026-10-29 08:52:04,287 INFO iteration 8, current learner lgbm
-2026-10-29 08:52:06,405 INFO  at 22.7s,	estimator lgbm's best error=8.7375e-03,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:06,405 INFO iteration 9, current learner lgbm
-2026-10-29 08:52:08,065 INFO  at 24.3s,	estimator lgbm's best error=8.7375e-03,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:08,065 INFO iteration 10, current learner lgbm
-2026-10-29 08:52:09,780 INFO  at 26.1s,	estimator lgbm's best error=8.7375e-03,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:09,780 INFO iteration 11, current learner extra_tree
-2026-10-29 08:52:09,890 INFO  at 26.2s,	estimator extra_tree's best error=9.9100e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:09,890 INFO iteration 12, current learner extra_tree
-2026-10-29 08:52:10,045 INFO  at 26.3s,	estimator extra_tree's best error=8.4128e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:10,045 INFO iteration 13, current learner extra_tree
-2026-10-29 08:52:10,172 INFO  at 26.4s,	estimator extra_tree's best error=8.1200e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:10,173 INFO iteration 14, current learner rf
-2026-10-29 08:52:10,315 INFO  at 26.6s,	estimator rf's best error=6.6725e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:10,315 INFO iteration 15, current learner rf
-2026-10-29 08:52:10,581 INFO  at 26.8s,	estimator rf's best error=5.7847e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:10,581 INFO iteration 16, current learner xgboost
-2026-10-29 08:52:12,501 INFO  at 28.8s,	estimator xgboost's best error=3.7763e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:12,501 INFO iteration 17, current learner rf
-2026-10-29 08:52:12,745 INFO  at 29.0s,	estimator rf's best error=4.4906e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:12,745 INFO iteration 18, current learner extra_tree
-2026-10-29 08:52:13,029 INFO  at 29.3s,	estimator extra_tree's best error=4.2097e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:13,029 INFO iteration 19, current learner rf
-2026-10-29 08:52:13,432 INFO  at 29.7s,	estimator rf's best error=2.9919e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:13,432 INFO iteration 20, current learner extra_tree
-2026-10-29 08:52:13,575 INFO  at 29.8s,	estimator extra_tree's best error=4.2097e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:13,576 INFO iteration 21, current learner catboost
-2026-10-29 08:52:27,890 INFO  at 44.2s,	estimator catboost's best error=1.0175e-02,	best estimator lgbm's best error=8.7375e-03
-2026-10-29 08:52:30,029 INFO retrain lgbm for 2.1s
-2026-10-29 08:52:30,031 INFO retrained model: LGBMClassifier(colsample_bytree=np.float64(0.996498378007316),
+2026-10-29 23:19:24,067 INFO task = classification
+2026-10-29 23:19:24,068 INFO Evaluation method: holdout
+2026-10-29 23:19:24,182 INFO Minimizing error metric: 1-roc_auc
+2026-10-29 23:19:24,430 INFO List of ML learners in AutoML Run: ['lgbm', 'rf', 'xgboost', 'extra_tree', 'xgb_limitdepth', 'sgd', 'catboost', 'lrl1']
+2026-10-29 23:19:24,432 INFO iteration 0, current learner lgbm
+2026-10-29 23:19:25,562 INFO Estimated sufficient time budget=11274s. Estimated necessary time budget=278s.
+2026-10-29 23:19:25,562 INFO  at 1.5s,	estimator lgbm's best error=3.8587e-02,	best estimator lgbm's best error=3.8587e-02
+2026-10-29 23:19:25,563 INFO iteration 1, current learner lgbm
+2026-10-29 23:19:26,816 INFO  at 2.8s,	estimator lgbm's best error=3.8587e-02,	best estimator lgbm's best error=3.8587e-02
+2026-10-29 23:19:26,817 INFO iteration 2, current learner sgd
+2026-10-29 23:19:30,875 INFO  at 6.8s,	estimator sgd's best error=1.5758e-01,	best estimator lgbm's best error=3.8587e-02
+2026-10-29 23:19:30,876 INFO iteration 3, current learner lgbm
+2026-10-29 23:19:31,974 INFO  at 7.9s,	estimator lgbm's best error=3.0675e-02,	best estimator lgbm's best error=3.0675e-02
+2026-10-29 23:19:31,974 INFO iteration 4, current learner xgboost
+2026-10-29 23:19:34,194 INFO  at 10.1s,	estimator xgboost's best error=3.7763e-02,	best estimator lgbm's best error=3.0675e-02
+2026-10-29 23:19:34,194 INFO iteration 5, current learner extra_tree
+2026-10-29 23:19:34,355 INFO  at 10.3s,	estimator extra_tree's best error=9.9100e-02,	best estimator lgbm's best error=3.0675e-02
+2026-10-29 23:19:34,355 INFO iteration 6, current learner lgbm
+2026-10-29 23:19:35,544 INFO  at 11.5s,	estimator lgbm's best error=2.3034e-02,	best estimator lgbm's best error=2.3034e-02
+2026-10-29 23:19:35,544 INFO iteration 7, current learner extra_tree
+2026-10-29 23:19:35,741 INFO  at 11.7s,	estimator extra_tree's best error=8.4128e-02,	best estimator lgbm's best error=2.3034e-02
+2026-10-29 23:19:35,741 INFO iteration 8, current learner lgbm
+2026-10-29 23:19:37,047 INFO  at 13.0s,	estimator lgbm's best error=2.3034e-02,	best estimator lgbm's best error=2.3034e-02
+2026-10-29 23:19:37,047 INFO iteration 9, current learner lgbm
+2026-10-29 23:19:38,692 INFO  at 14.6s,	estimator lgbm's best error=1.8531e-02,	best estimator lgbm's best error=1.8531e-02
+2026-10-29 23:19:38,692 INFO iteration 10, current learner lgbm
+2026-10-29 23:19:40,836 INFO  at 16.8s,	estimator lgbm's best error=8.7375e-03,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:40,837 INFO iteration 11, current learner xgboost
+2026-10-29 23:19:42,880 INFO  at 18.8s,	estimator xgboost's best error=3.7763e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:42,880 INFO iteration 12, current learner xgboost
+2026-10-29 23:19:44,743 INFO  at 20.7s,	estimator xgboost's best error=3.1903e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:44,743 INFO iteration 13, current learner extra_tree
+2026-10-29 23:19:44,888 INFO  at 20.8s,	estimator extra_tree's best error=8.1200e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:44,888 INFO iteration 14, current learner lgbm
+2026-10-29 23:19:46,275 INFO  at 22.2s,	estimator lgbm's best error=8.7375e-03,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:46,275 INFO iteration 15, current learner extra_tree
+2026-10-29 23:19:46,505 INFO  at 22.4s,	estimator extra_tree's best error=4.2097e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:46,505 INFO iteration 16, current learner extra_tree
+2026-10-29 23:19:46,647 INFO  at 22.6s,	estimator extra_tree's best error=4.2097e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:46,647 INFO iteration 17, current learner extra_tree
+2026-10-29 23:19:46,879 INFO  at 22.8s,	estimator extra_tree's best error=4.2097e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:46,879 INFO iteration 18, current learner lgbm
+2026-10-29 23:19:48,783 INFO  at 24.7s,	estimator lgbm's best error=8.7375e-03,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:48,784 INFO iteration 19, current learner extra_tree
+2026-10-29 23:19:48,955 INFO  at 24.9s,	estimator extra_tree's best error=4.2097e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:48,955 INFO iteration 20, current learner extra_tree
+2026-10-29 23:19:49,099 INFO  at 25.0s,	estimator extra_tree's best error=4.2097e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:49,099 INFO iteration 21, current learner extra_tree
+2026-10-29 23:19:49,357 INFO  at 25.3s,	estimator extra_tree's best error=4.2097e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:49,357 INFO iteration 22, current learner lgbm
+2026-10-29 23:19:51,307 INFO  at 27.2s,	estimator lgbm's best error=8.7375e-03,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:51,307 INFO iteration 23, current learner lgbm
+2026-10-29 23:19:53,191 INFO  at 29.1s,	estimator lgbm's best error=8.7375e-03,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:53,192 INFO iteration 24, current learner extra_tree
+2026-10-29 23:19:53,400 INFO  at 29.3s,	estimator extra_tree's best error=4.2097e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:53,400 INFO iteration 25, current learner rf
+2026-10-29 23:19:53,555 INFO  at 29.5s,	estimator rf's best error=6.6725e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:53,555 INFO iteration 26, current learner extra_tree
+2026-10-29 23:19:53,719 INFO  at 29.7s,	estimator extra_tree's best error=4.2097e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:53,719 INFO iteration 27, current learner rf
+2026-10-29 23:19:53,969 INFO  at 29.9s,	estimator rf's best error=5.7847e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:19:53,970 INFO iteration 28, current learner catboost
+2026-10-29 23:20:10,592 INFO  at 46.5s,	estimator catboost's best error=1.0175e-02,	best estimator lgbm's best error=8.7375e-03
+2026-10-29 23:20:12,528 INFO retrain lgbm for 1.9s
+2026-10-29 23:20:12,529 INFO retrained model: LGBMClassifier(colsample_bytree=np.float64(0.996498378007316),
                learning_rate=np.float64(0.21480951571013288), max_bin=63,
-               min_child_samples=13, n_estimators=43, n_jobs=4, num_leaves=10,
+               min_child_samples=13, n_estimators=43, n_jobs=16, num_leaves=10,
                reg_alpha=np.float64(0.002255250947893723),
                reg_lambda=np.float64(0.10239167483099826), verbose=-1)
-2026-10-29 08:52:30,031 INFO fit succeeded
-2026-10-29 08:52:30,031 INFO Time taken to find the best model: 22.67763376235962
+2026-10-29 23:20:12,529 INFO fit succeeded
+2026-10-29 23:20:12,529 INFO Time taken to find the best model: 16.770751476287842

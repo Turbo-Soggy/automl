@@ -650,6 +650,10 @@ def run_h2o(X: np.ndarray, y: np.ndarray, budget_s: int, paths: AutomlPaths,
 
     names, timings = names or feature_names(), {}
     model_dir = paths.models / f"h2o{RUN_SUFFIX}"
+    if model_dir.exists():
+        # H2O names leader folders with a timestamp, so without this every rerun would leave the
+        # previous leaders next to the new one (same rule as the AutoGluon folder above).
+        shutil.rmtree(model_dir)
     data_dir = model_dir / "data"
     with timed(timings, "init_s"):
         h2o.init(max_mem_size=max_mem or H2O_MAX_MEM, nthreads=N_JOBS)

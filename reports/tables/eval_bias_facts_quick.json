@@ -4,10 +4,10 @@
   "n_bootstrap": 1000,
   "eval_n_jobs": 2,
   "machine": {
-    "cpu_count": 4,
-    "ram_gib": 15.7,
-    "os": "Linux-6.18.44-fc-v185-x86_64-with-glibc2.39",
-    "processor": "x86_64"
+    "cpu_count": 16,
+    "ram_gib": 63.4,
+    "os": "Windows-11-10.0.26300-SP0",
+    "processor": "Intel64 Family 6 Model 197 Stepping 2, GenuineIntel"
   },
   "tuned_tuner": "random",
   "tuned_rounds": 479,
@@ -15,10 +15,10 @@
   "oof_1pct_fpr_thresholds": {
     "random": 0.9742673781785143,
     "lgbm_default": 0.9367995375895072,
-    "logreg": 0.9998897314071655
+    "logreg": 0.9998902082443237
   },
   "oof_threshold_sources": {
-    "random": "this step's fits (reports/predictions/eval/cv_stratified_fold*.npz)",
+    "random": "shared with the explain job (reports/predictions/oof_lgbm_tuned_quick.npz)",
     "lgbm_default": "reports/predictions/eval/oof_lgbm_default_fold*.npz",
     "logreg": "reports/predictions/eval/oof_logreg_fold*.npz"
   },
@@ -37,18 +37,18 @@
   "drift_slopes_per_week": {
     "roc_auc": {
       "expanding": 0.0005500018181984934,
-      "size_matched": 0.0008378704481963981,
-      "sliding_12w": 0.0007337355529608044
+      "size_matched": 0.0008378704481964014,
+      "sliding_12w": 0.000733735552960805
     },
     "f1": {
-      "expanding": 0.0023197248528876785,
-      "size_matched": 0.002068768985045772,
-      "sliding_12w": 0.00261717073232908
+      "expanding": 0.002319724852887677,
+      "size_matched": 0.0020687689850457693,
+      "sliding_12w": 0.002617170732329066
     },
     "tpr_at_1pct_fpr": {
-      "expanding": 0.010173059871854975,
-      "size_matched": 0.013348097685447037,
-      "sliding_12w": 0.016298962082094547
+      "expanding": 0.010173059871854967,
+      "size_matched": 0.013348097685447025,
+      "sliding_12w": 0.016298962082094543
     }
   },
   "drift_train_rows": {
@@ -57,8 +57,8 @@
     "expanding": 8000
   },
   "challenge_info": {
-    "built_utc": "2026-10-29T12:52:29.173116+00:00",
-    "seconds": 7.3,
+    "built_utc": "2026-10-29T16:01:26.482498+00:00",
+    "seconds": 2.5,
     "source": "data/raw/challenge",
     "files": 64,
     "file_type": "Win64",
@@ -94,15 +94,20 @@
     "reload_check_max_abs_diff": {
       "lgbm_default": 0.0,
       "grid": 0.0,
-      "random": 1.0842021724855044e-19,
-      "optuna": 1.0842021724855044e-19,
+      "random": 0.0,
+      "optuna": 0.0,
       "logreg": 1.1920928955078125e-07,
       "flaml": 0.0,
+      "autogluon": 0.0,
       "h2o": 0.0
     },
     "reload_check_rows": 300,
-    "not_scored": {
-      "autogluon": "models/autogluon_quick not on disk: the 1.8 GB Step 3 predictor was not committed and is not rebuilt (its test scores are saved, so it is in every other table)"
+    "not_scored": {},
+    "machine": {
+      "cpu_count": 16,
+      "ram_gib": 63.4,
+      "os": "Windows-11-10.0.26300-SP0",
+      "processor": "Intel64 Family 6 Model 197 Stepping 2, GenuineIntel"
     }
   }
 }

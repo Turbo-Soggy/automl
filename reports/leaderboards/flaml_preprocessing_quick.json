@@ -3,31 +3,31 @@
   "version": "2.7.0",
   "best_estimator": "lgbm",
   "best_config": {
-    "n_estimators": 112,
-    "num_leaves": 5,
-    "min_child_samples": 15,
-    "learning_rate": 0.44614960795687475,
-    "log_max_bin": 7,
-    "colsample_bytree": 1.0,
-    "reg_alpha": 0.01724981316028688,
-    "reg_lambda": 0.050648621080596416
+    "n_estimators": 43,
+    "num_leaves": 10,
+    "min_child_samples": 13,
+    "learning_rate": 0.21480951571013288,
+    "log_max_bin": 6,
+    "colsample_bytree": 0.996498378007316,
+    "reg_alpha": 0.002255250947893723,
+    "reg_lambda": 0.10239167483099826
   },
-  "best_val_auc": 0.99209375,
+  "best_val_auc": 0.99155,
   "importance_type": "split",
   "eval_method": "holdout",
   "split_ratio": 0.1,
   "n_splits": 5,
   "holdout_rows_expected": 800,
   "fit_log_highlights": [
-    "2026-10-29 07:03:50,535 INFO Evaluation method: holdout",
-    "2026-10-29 07:03:50,848 INFO Minimizing error metric: 1-roc_auc",
-    "2026-10-29 07:03:52,018 INFO List of ML learners in AutoML Run: ['lgbm', 'rf', 'xgboost', 'extra_tree', 'xgb_limitdepth', 'sgd', 'catboost', 'lrl1']",
-    "2026-10-29 07:04:53,308 INFO retrain lgbm for 1.4s",
-    "2026-10-29 07:04:53,308 INFO retrained model: LGBMClassifier(learning_rate=np.float64(0.44614960795687475), max_bin=127,",
-    "2026-10-29 07:04:53,310 INFO Time taken to find the best model: 57.007277965545654"
+    "2026-10-29 23:01:51,592 INFO Evaluation method: holdout",
+    "2026-10-29 23:01:52,005 INFO Minimizing error metric: 1-roc_auc",
+    "2026-10-29 23:01:52,764 INFO List of ML learners in AutoML Run: ['lgbm', 'rf', 'xgboost', 'extra_tree', 'xgb_limitdepth', 'sgd', 'catboost', 'lrl1']",
+    "2026-10-29 23:02:58,097 INFO retrain lgbm for 2.1s",
+    "2026-10-29 23:02:58,098 INFO retrained model: LGBMClassifier(colsample_bytree=np.float64(0.996498378007316),",
+    "2026-10-29 23:02:58,100 INFO Time taken to find the best model: 26.42789888381958"
   ],
   "retrain_full": true,
-  "time_to_find_best_model_s": 57.007277965545654,
+  "time_to_find_best_model_s": 26.42789888381958,
   "estimator_list": [
     "lgbm",
     "rf",
@@ -42,11 +42,11 @@
     "lgbm",
     "catboost",
     "xgboost",
-    "rf",
     "extra_tree",
+    "rf",
     "sgd"
   ],
-  "n_trials_total": 36,
+  "n_trials_total": 23,
   "n_features_in": 2568,
   "n_features_used": 2518,
   "dropped_features": [
@@ -156,6 +156,7 @@
   ],
   "missing_values_in_train": 0,
   "imputation": "SimpleImputer(strategy='median') on numeric columns (FLAML DataTransformer)",
+  "preprocessing": "FLAML DataTransformer",
   "feature_engineering": "none (FLAML only converts types, drops constant columns and imputes)",
   "checks": {
     "importance_type": "split",
@@ -170,10 +171,5 @@
       "n_columns_max_abs_over_1e3": 263,
       "n_columns_max_abs_over_1e6": 150
     }
-  },
-  "refreshed": {
-    "changed": {},
-    "at_utc": "2026-10-29T03:52:39+00:00",
-    "by": "src/automl_checks.refresh_notes (saved models + train; no refit, no test data)"
   }
 }

@@ -3,7 +3,7 @@
 Short answers for the viva after the 5-minute demo, with a pointer to the evidence for each.
 The numbers are copied from the named tables (they are the same ones the deck reads at build
 time with `scripts/build_slides.py`). If a table is regenerated, check the numbers against it.
-Every team member should be able to answer questions 17 to 20 about the code.
+Every team member should be able to answer questions 19 to 22 about the code.
 
 ## Data and design choices
 
@@ -54,9 +54,12 @@ wall times differ (25.7 / 20.2 / 24.8 min).
 Tuners only see CV folds inside train, and the tuned model is picked by CV AUC (Optuna, 0.9978).
 AutoML tools validate inside train, and neither test set is loaded before a fit ends. Both
 operating thresholds (1% FPR and the cost-based one) are set on train out-of-fold scores. Test
-sets are scored once at the end.
+sets are scored once at the end. The one decision that read test scores was choosing which
+finished, frozen model to deploy (report section 7). No AutoML tool was significantly better
+than the tuned LightGBM on test_future, so the choice was made on practical grounds (one plain
+model file, exact TreeSHAP, its own train out-of-fold threshold).
 *Evidence:* `reports/critical_eval.md`, "Test-set discipline"; `models/threshold.json`
-(`how_chosen`); `src/tune.py`, `data/splits/`.
+(`how_chosen`); `reports/tables/automl_pairwise.csv`; `src/tune.py`, `data/splits/`.
 
 **7. Random and Optuna share their first 10 trials. Doesn't that bias the comparison?**
 It is deliberate: Optuna's TPE starts with 10 seeded random trials drawn with the same seed as
@@ -72,7 +75,7 @@ other anyway.
 Not on accuracy, but much cheaper. On test_future AUC, AutoGluon is statistically tied with the
 tuned LightGBM (-0.00006, CI includes 0). FLAML (-0.00053) and H2O (-0.00110) are slightly
 worse, and all three beat untuned LightGBM. AutoGluon needed 20.2 wall minutes against 76.0 for
-the selected manual search (283.5 for all three searches). Every winner is in effect one tree
+the selected manual search and refit (283.5 for all three searches and their refits). Every winner is in effect one tree
 model, which is why the scores are so close.
 *Evidence:* `reports/tables/automl_pairwise.csv`, `automl_vs_manual.csv`;
 `reports/automl_comparison.md`, "Verdict".
@@ -99,7 +102,7 @@ out-of-range values, loses 0.0632 AUC, so the test set is not too easy for every
 Yes, but not where AUC looks. At a threshold fixed on train, the FPR rises from 0.95% on
 test_random to 1.23% on test_future. Precision is 99.0% on the 50/50 test mix but 51.2% at 1%
 malware prevalence, and 44.7% on future files (121 false alarms per 10,000 files). On the 814
-challenge-set files (malware the AV engines first missed) the model catches only 53.7%. The
+challenge-set files (malware the AV engines first missed) the model catches only 53.7% at the 1%-FPR threshold (79.9% at the deployed one). The
 50/50 mix and the hard tail matter more than the random-vs-future step.
 *Evidence:* `reports/critical_eval.md`, sections 1-2; `reports/tables/precision_both_sets.csv`,
 `challenge.csv`.
@@ -118,8 +121,12 @@ file first arrives?" catches it. We report this as a finding, not a bug to fix.
 **13. Why did `first_submission_date` (the time leak) do almost nothing?**
 Every future date lies after the last training date, so for a tree the column is a constant on
 test_future. Our classes are 50/50 in every week, so the date carries almost no label
-information. It moved test_future AUC by at most 0.0009, which is within the run-to-run noise
-of a time-budgeted AutoML search. In data where the malware share changes over time, the same
+information. It moved test_future AUC by at most 0.0009. Under test-set resampling that move
+excludes 0 for 4 of 4 models (also for the deterministic tuned LightGBM, whose move is about
++0.0001), so it is small but not zero for these fitted models. Whether it is more than the
+run-to-run noise of a time-budgeted AutoML search we cannot say: that noise was not measured
+(one seed per run). The only hint is the gap between H2O's Step 3 and Step 4 clean searches,
+which differ in budget and machine. So no effect of the date on the AutoML tools is shown. In data where the malware share changes over time, the same
 column would let a model learn the calendar. This is not the result the plan expected, and we
 report it as it came out.
 *Evidence:* `reports/critical_eval.md`, section 4; `reports/tables/leakage.csv`.
@@ -138,7 +145,7 @@ cluster, because no MOJO could be exported.
 
 **15. Steps 2-3 ran on the laptop and Step 4 on a cloud VM. Does that break the comparison?**
 No comparison crosses machines. Steps 2-3 ran on the 16-core laptop (63 GB). Step 4 ran on a
-4-core / 15 GB Linux cloud VM, where every with/without-leak pair ran with the same settings
+4-core / 15.7 GiB (16.9 GB) RAM Linux cloud VM, where every with/without-leak pair ran with the same settings
 (600 s per AutoML run, a lean FLAML preprocessing, a smaller H2O heap without XGBoost). What
 changes is the absolute AutoML score: fewer cores search fewer models, so H2O's clean
 test_future AUC was 0.9922 on the VM against 0.9970 in Step 3. That is why Step 4 reports

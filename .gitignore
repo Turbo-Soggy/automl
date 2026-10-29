@@ -15,6 +15,10 @@ data/*
 models/*.bin
 models/autogluon/
 models/autogluon_quick/
+# Quick-run (smoke test) H2O and AutoGluon folders anywhere under models/: H2O names its
+# leaders with timestamps, so each quick run would otherwise add new untracked folders.
+models/**/h2o_quick/
+models/**/autogluon_quick/
 models/refit_v1/
 AutogluonModels/
 catboost_info/

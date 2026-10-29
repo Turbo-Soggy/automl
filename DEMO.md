@@ -5,6 +5,14 @@ Step 5 of the project: the tuned LightGBM served by a FastAPI service (`app/api.
 (copied from `reports/tables/automl_vs_manual.csv` and `models/threshold.json`), as does `MODEL_CARD.md`.
 Run every command from the project root.
 
+**Fitting the deck and the demo into one 5-minute slot.** This script on its own is about 5 minutes,
+and so are the speaker notes of `reports/slides.pptx`, so do not present both in full. Start the API and
+the Streamlit page (sections 1 and 3) before the talk. Then present slides 1-8 in about 3 minutes, using a
+shortened version of their notes. At slide 9, switch to the browser for about 1.5 minutes and show
+section 4 items 2 and 5 only (a correct malicious file, then the notepad.exe upload). Return to slide 10
+for the last 30 seconds. Keep the curl calls (section 2) and the other walk-through items as backups in
+case the examiner asks.
+
 Interpreter: Windows `.venv/Scripts/python.exe`, Linux/macOS `.venv/bin/python`. Below, `PY` stands for it:
 
 ```bash

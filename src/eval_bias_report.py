@@ -330,6 +330,8 @@ def build_tables() -> dict[str, Path]:
     print("[tables] random_vs_future", flush=True)
     thresholds_oof, thr_sources = oof_thresholds(y_train, cfg)
     deploy_thr, deploy_source = temporal.deployment_threshold()
+    # deploy_source starts with "models" only when models/threshold.json exists (the cost threshold
+    # fitted on train OOF scores); otherwise it is the 0.5 fallback and the deployment rows are skipped.
     facts.update(oof_1pct_fpr_thresholds=thresholds_oof, oof_threshold_sources=thr_sources,
                  deployment_threshold=deploy_thr, deployment_threshold_source=deploy_source)
     out["cv_comparison"] = write_csv(cv_comparison(y_train, cfg, tuned_scores, thr_sources[tuned]), "cv_comparison")

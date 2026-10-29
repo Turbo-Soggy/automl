@@ -33,6 +33,8 @@ def set_seed(seed: int = SEED) -> None:
 QUICK: bool = os.environ.get("EMBER_QUICK") == "1"
 # Appended to split and log file names so quick runs live in separate files.
 RUN_SUFFIX: str = "_quick" if QUICK else ""
+# Appended to every generated write-up title so a quick file is never mistaken for a result.
+QUICK_BANNER: str = " (QUICK smoke run: tiny data, not results)" if QUICK else ""
 
 # --- Paths -----------------------------------------------------------------
 ROOT: Path = Path(__file__).resolve().parent
@@ -66,7 +68,7 @@ AUTOML_BUDGET_S: int = 1200     # seconds per AutoML tool
 # with/without-leak comparison is at an equal budget.
 LEAKAGE_BUDGET_S: int = 600
 # All tools use the same cores so timings are comparable. Steps 2-3 ran on a 16-core laptop;
-# a smaller machine (Step 4 onwards ran on a 4-core cloud VM) uses all of its cores instead.
+# a smaller machine (Step 4 ran on a 4-core cloud VM) uses all of its cores instead.
 N_JOBS: int = min(16, os.cpu_count() or 1)
 N_BOOTSTRAP: int = 1000         # resamples for the paired bootstrap confidence intervals
 

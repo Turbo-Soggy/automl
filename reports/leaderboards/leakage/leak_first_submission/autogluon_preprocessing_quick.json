@@ -9,7 +9,8 @@
   },
   "models_trained": [
     "LightGBMXT",
-    "WeightedEnsemble_L2"
+    "WeightedEnsemble_L2",
+    "LightGBM"
   ],
   "validation": "holdout split of train made by AutoGluon (no bagging or stacking in medium_quality)",
   "holdout_rows": 800,
@@ -177,14 +178,16 @@
     "\tTypes of features in processed data (raw dtype, special dtypes):",
     "Automatically generating train/validation split with holdout_frac=0.1, Train Rows: 7200, Val Rows: 800",
     "Fitting 11 L1 models, fit_strategy=\"sequential\" ...",
-    "Fitting model: LightGBMXT ... Training model for up to 21.57s of the 21.57s of remaining time.",
-    "Fitting model: WeightedEnsemble_L2 ... Training model for up to 21.57s of the -0.11s of remaining time."
+    "Fitting model: LightGBMXT ... Training model for up to 26.74s of the 26.74s of remaining time.",
+    "Fitting model: LightGBM ... Training model for up to 1.39s of the 1.39s of remaining time.",
+    "Fitting model: WeightedEnsemble_L2 ... Training model for up to 26.74s of the -0.32s of remaining time."
   ],
   "checks": {
     "seeds": {
       "train/validation split (learner random_state)": 42,
       "base models (random_seed)": {
         "LightGBMXT": 0,
+        "LightGBM": 0,
         "WeightedEnsemble_L2": 0
       }
     },
@@ -260,10 +263,10 @@
     "data": "AutoGluon internal validation split (data=None, transformed features)",
     "rows_cap": 5000,
     "family_shuffle_sets": 5,
-    "family_seconds": 7.992446848999862,
+    "family_seconds": 3.889366199997312,
     "feature_time_cap_s": 60.0,
-    "features_covered": 768,
+    "features_covered": 2507,
     "features_total": 2507,
-    "feature_seconds": 74.7662171259999
+    "feature_seconds": 47.45656090000557
   }
 }

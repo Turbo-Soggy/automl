@@ -3,18 +3,15 @@
   "version": "1.6.3",
   "presets": "medium_quality",
   "best_model": "WeightedEnsemble_L2",
-  "best_val_auc": 0.9909187500000001,
+  "best_val_auc": 0.99090625,
   "ensemble_weights": {
-    "LightGBMXT": 0.8636363636363636,
-    "CatBoost": 0.13636363636363635
+    "LightGBMXT": 1.0
   },
   "models_trained": [
     "WeightedEnsemble_L2",
     "LightGBMXT",
     "LightGBM",
-    "CatBoost",
-    "RandomForestGini",
-    "RandomForestEntr"
+    "RandomForestGini"
   ],
   "validation": "holdout split of train made by AutoGluon (no bagging or stacking in medium_quality)",
   "holdout_rows": 800,
@@ -182,23 +179,11 @@
     "\tTypes of features in processed data (raw dtype, special dtypes):",
     "Automatically generating train/validation split with holdout_frac=0.1, Train Rows: 7200, Val Rows: 800",
     "Fitting 11 L1 models, fit_strategy=\"sequential\" ...",
-    "Fitting model: LightGBMXT ... Training model for up to 56.15s of the 56.15s of remaining time.",
-    "Fitting model: LightGBM ... Training model for up to 45.13s of the 45.13s of remaining time.",
-    "Fitting model: RandomForestGini ... Training model for up to 32.33s of the 32.33s of remaining time.",
-    "Fitting model: RandomForestEntr ... Training model for up to 28.94s of the 28.94s of remaining time.",
-    "Fitting model: CatBoost ... Training model for up to 25.69s of the 25.69s of remaining time.",
-    "Fitting model: WeightedEnsemble_L2 ... Training model for up to 56.15s of the -0.11s of remaining time."
+    "Fitting model: LightGBMXT ... Training model for up to 56.43s of the 56.43s of remaining time.",
+    "Fitting model: LightGBM ... Training model for up to 31.48s of the 31.48s of remaining time.",
+    "Fitting model: RandomForestGini ... Training model for up to 1.86s of the 1.86s of remaining time.",
+    "Fitting model: WeightedEnsemble_L2 ... Training model for up to 56.43s of the -3.54s of remaining time."
   ],
-  "feature_importance": {
-    "data": "AutoGluon internal validation split (data=None, transformed features)",
-    "rows_cap": 5000,
-    "family_shuffle_sets": 5,
-    "family_seconds": 4.36591210000006,
-    "feature_time_cap_s": 60.0,
-    "features_covered": 1792,
-    "features_total": 2506,
-    "feature_seconds": 63.980131400000005
-  },
   "checks": {
     "seeds": {
       "train/validation split (learner random_state)": 42,
@@ -206,8 +191,6 @@
         "LightGBMXT": 0,
         "LightGBM": 0,
         "RandomForestGini": 0,
-        "RandomForestEntr": 0,
-        "CatBoost": 0,
         "WeightedEnsemble_L2": 0
       }
     },
@@ -279,9 +262,14 @@
     },
     "refit_on_all_rows": false
   },
-  "refreshed": {
-    "changed": {},
-    "at_utc": "2026-10-29T03:52:40+00:00",
-    "by": "src/automl_checks.refresh_notes (saved models + train; no refit, no test data)"
+  "feature_importance": {
+    "data": "AutoGluon internal validation split (data=None, transformed features)",
+    "rows_cap": 5000,
+    "family_shuffle_sets": 5,
+    "family_seconds": 4.586384900001576,
+    "feature_time_cap_s": 60.0,
+    "features_covered": 2506,
+    "features_total": 2506,
+    "feature_seconds": 55.33595300000161
   }
 }

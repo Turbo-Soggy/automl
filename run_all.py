@@ -15,7 +15,6 @@ from __future__ import annotations
 import argparse
 import os
 import subprocess
-import sys
 import time
 import uuid
 from datetime import datetime, timezone
@@ -43,7 +42,6 @@ STEP_SCRIPTS: dict[str, list[str]] = {
 # pipeline run reuses every run already logged with valid timing instead of repeating it
 # (the eval_bias fits resume the same way by default). Delete its log records to force a rerun.
 SCRIPT_ARGS: dict[str, list[str]] = {"run_leakage.py": ["--skip-done"]}
-NOT_IMPLEMENTED: dict[str, str] = {}
 DEPLOY_TESTS: str = "tests/test_api.py"  # pytest file run after the deploy step's scripts
 
 
@@ -126,9 +124,6 @@ def main() -> None:
 
     t0 = time.time()
     for step in args.steps:
-        if step in NOT_IMPLEMENTED:
-            print(f"[run_all] step '{step}': not implemented yet ({NOT_IMPLEMENTED[step]}); skipping.", flush=True)
-            continue
         print(f"[run_all] === step '{step}' ===", flush=True)
         for name in scripts_for(step, args.redownload):
             extra = list(SCRIPT_ARGS.get(name, []))

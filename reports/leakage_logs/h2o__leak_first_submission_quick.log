@@ -1,32 +1,32 @@
 [leakage] h2o on leak_first_submission: budget 30 s, quick=True
 Checking whether there is an H2O instance running at http://localhost:54321..... not found.
 Attempting to start a local H2O server...
-  Java Version: Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=36883 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=; openjdk version "21.0.12.1" 2026-08-18; OpenJDK Runtime Environment (build 21.0.12.1+1-1-24.04.4-Ubuntu); OpenJDK 64-Bit Server VM (build 21.0.12.1+1-1-24.04.4-Ubuntu, mixed mode, sharing)
-  Starting server from /home/user/automl/.venv/lib/python3.12/site-packages/h2o/backend/bin/h2o.jar
-  Ice root: /tmp/tmprkjyy22_
-  JVM stdout: /tmp/tmprkjyy22_/h2o_unknownUser_started_from_python.out
-  JVM stderr: /tmp/tmprkjyy22_/h2o_unknownUser_started_from_python.err
+  Java Version: openjdk version "21.0.12.1" 2026-08-18 LTS; OpenJDK Runtime Environment Microsoft-14941484 (build 21.0.12.1+1-LTS); OpenJDK 64-Bit Server VM Microsoft-14941484 (build 21.0.12.1+1-LTS, mixed mode, sharing)
+  Starting server from C:\projects\automl\.venv\Lib\site-packages\h2o\backend\bin\h2o.jar
+  Ice root: C:\Users\benja\AppData\Local\Temp\tmpemzr_keq
+  JVM stdout: C:\Users\benja\AppData\Local\Temp\tmpemzr_keq\h2o_benja_started_from_python.out
+  JVM stderr: C:\Users\benja\AppData\Local\Temp\tmpemzr_keq\h2o_benja_started_from_python.err
   Server is running at http://127.0.0.1:54321
 Connecting to H2O server at http://127.0.0.1:54321 ... successful.
---------------------------  ----------------------------------
+--------------------------  -----------------------------
 H2O_cluster_uptime:         02 secs
-H2O_cluster_timezone:       Etc/UTC
+H2O_cluster_timezone:       Asia/Kolkata
 H2O_data_parsing_timezone:  UTC
 H2O_cluster_version:        3.46.0.12
-H2O_cluster_version_age:    2 months and 17 days
-H2O_cluster_name:           H2O_from_python_unknownUser_71hfe8
+H2O_cluster_version_age:    2 months and 18 days
+H2O_cluster_name:           H2O_from_python_benja_71hfe8
 H2O_cluster_total_nodes:    1
-H2O_cluster_free_memory:    8.98 Gb
-H2O_cluster_total_cores:    4
-H2O_cluster_allowed_cores:  4
+H2O_cluster_free_memory:    6.984 Gb
+H2O_cluster_total_cores:    16
+H2O_cluster_allowed_cores:  16
 H2O_cluster_status:         locked, healthy
 H2O_connection_url:         http://127.0.0.1:54321
 H2O_connection_proxy:       {"http": null, "https": null}
 H2O_internal_security:      False
-Python_version:             3.12.3 final
+Python_version:             3.12.10 final
 H2O_telemetry_server:       disabled
 H2O_telemetry_client:       disabled
---------------------------  ----------------------------------
+--------------------------  -----------------------------
 
 +------------------------------------------------------------------+
 | You are running the community edition of H2O-3 OSS.              |
@@ -38,16 +38,22 @@ H2O_telemetry_client:       disabled
 | Contact enterprise@h2o.ai to upgrade.                            |
 +------------------------------------------------------------------+
 
-08:55:44.731: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]
+23:29:18.104: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, header__38, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__3, header__50, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]
 
 
-08:55:59.746: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]
+23:29:31.869: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, header__38, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__3, header__50, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]
 
 
-08:56:10.321: _train param, Dropping unused columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]
+23:29:43.182: _train param, Dropping unused columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, header__38, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__3, header__50, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]
 
 
-08:56:13.497: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, header__31, section__10, section__6, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__56, pefilewarnings__11, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__2, general__3, header__50, header__57, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]
+23:29:45.473: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, header__38, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__3, header__50, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]
+
+
+23:29:46.590: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, header__38, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__3, header__50, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]
+
+
+23:29:47.572: _train param, Dropping bad and constant columns: [header__42, pefilewarnings__1, header__45, pefilewarnings__5, header__44, pefilewarnings__9, pefilewarnings__35, pefilewarnings__34, pefilewarnings__78, pefilewarnings__77, pefilewarnings__39, pefilewarnings__38, pefilewarnings__32, pefilewarnings__30, pefilewarnings__74, section__10, section__6, header__38, pefilewarnings__46, header__37, section__8, pefilewarnings__45, header__36, pefilewarnings__44, pefilewarnings__83, pefilewarnings__82, datadirectories__30, datadirectories__31, pefilewarnings__42, pefilewarnings__41, strings__112, pefilewarnings__18, pefilewarnings__16, pefilewarnings__15, pefilewarnings__59, general__4, pefilewarnings__54, general__3, header__50, pefilewarnings__25, pefilewarnings__24, pefilewarnings__68, pefilewarnings__23, pefilewarnings__22, pefilewarnings__29, pefilewarnings__28, pefilewarnings__27, pefilewarnings__26, pefilewarnings__61, pefilewarnings__21, pefilewarnings__20, pefilewarnings__63, pefilewarnings__62]
 
 Warning: This model doesn't have variable importances
 
@@ -70,5 +76,5 @@ Warning: This model doesn't have variable importances
 |                                                                 |
 | Request a license or upgrade:  enterprise@h2o.ai                |
 +-----------------------------------------------------------------+
-H2O session _sid_9fa8 closed.
-[leakage] h2o leak_first_submission best=StackedEnsemble_BestOfFamily_1_AutoML_1_20261029_85541 wall_s=54 test_random_auc=0.97951 test_future_auc=0.97972 timing_valid=True
+H2O session _sid_af8f closed.
+[leakage] h2o leak_first_submission best=StackedEnsemble_BestOfFamily_1_AutoML_1_20261029_232911 wall_s=75 test_random_auc=0.98508 test_future_auc=0.98437 timing_valid=True

@@ -1,21 +1,21 @@
 rank,lgbm_tuned,flaml,autogluon,h2o
-1,header: coff.char.DLL,header: coff.char.DLL,header: coff.char.DLL,exports: has_exports(0/128)
-2,datadirectories: EXPORT.size,datadirectories: EXPORT.size,header: optional.minor_linker_version,header: coff.char.DLL
-3,authenticode: latest_signing_time,authenticode: signing_time_diff,section: vsize[hash 43],authenticode: latest_signing_time
-4,authenticode: signing_time_diff,pefilewarnings: warning[Suspicious flags set for section...],imports: library[hash 170],histogram: byte_0x7a_freq
-5,exports: has_exports(0/128),authenticode: latest_signing_time,strings: char_'Q'_freq,strings: char_'J'_freq
-6,datadirectories: SECURITY.size,strings: char_'Q'_freq,strings: count[dos_msg],byteentropy: entropy_bin9/byte_hi_nibble0
-7,pefilewarnings: warning[Suspicious flags set for section...],strings: char_'t'_freq,section: overlay.entropy,authenticode: chain_max_depth
-8,strings: char_'Q'_freq,datadirectories: SECURITY.size,header: optional.sizeof_image,strings: char_'K'_freq
-9,datadirectories: SECURITY.virtual_address,exports: has_exports(0/128),header: optional.checksum,strings: char_'z'_freq
-10,strings: char_'z'_freq,byteentropy: entropy_bin9/byte_hi_nibble0,header: optional.sizeof_stack_reserve,pefilewarnings: warning[Suspicious flags set for section...]
-11,strings: char_'t'_freq,datadirectories: BASERELOC.virtual_address,histogram: byte_0x43_freq,strings: entropy
-12,datadirectories: RESOURCE.size,strings: char_'z'_freq,strings: count[snapshot],strings: char_'q'_freq
-13,section: overlay.entropy,section: overlay.size,imports: library[hash 93],authenticode: num_certs
-14,header: optional.minor_linker_version,header: optional.minor_linker_version,byteentropy: entropy_bin6/byte_hi_nibble2,section: entropy[hash 32]
-15,header: coff.timestamp,imports: function[hash 98],imports: library[hash 201],strings: char_'Y'_freq
-16,datadirectories: EXPORT.virtual_address,byteentropy: entropy_bin6/byte_hi_nibble14,strings: char_':'_freq,datadirectories: DEBUG.size
-17,byteentropy: entropy_bin9/byte_hi_nibble0,strings: char_'_'_freq,strings: char_'e'_freq,histogram: byte_0xca_freq
-18,strings: char_'_'_freq,byteentropy: entropy_bin6/byte_hi_nibble12,header: optional.dll_char.DYNAMIC_BASE,strings: char_'e'_freq
-19,strings: char_'y'_freq,datadirectories: RESOURCE.size,strings: char_'_'_freq,strings: char_'Q'_freq
-20,header: optional.image_base,strings: char_'y'_freq,imports: n_imported_functions,"strings: char_""'""_freq"
+1,header: coff.char.DLL,header: coff.char.DLL,authenticode: latest_signing_time,exports: has_exports(0/128)
+2,datadirectories: EXPORT.size,datadirectories: EXPORT.size,pefilewarnings: warning[Suspicious flags set for section...],header: coff.char.DLL
+3,authenticode: latest_signing_time,authenticode: signing_time_diff,header: coff.char.DLL,authenticode: latest_signing_time
+4,authenticode: signing_time_diff,authenticode: latest_signing_time,exports: has_exports(0/128),histogram: byte_0x7a_freq
+5,exports: has_exports(0/128),exports: has_exports(0/128),authenticode: signing_time_diff,strings: char_'J'_freq
+6,datadirectories: SECURITY.size,datadirectories: SECURITY.size,datadirectories: SECURITY.size,byteentropy: entropy_bin9/byte_hi_nibble0
+7,pefilewarnings: warning[Suspicious flags set for section...],pefilewarnings: warning[Suspicious flags set for section...],datadirectories: has_relocs,authenticode: chain_max_depth
+8,strings: char_'Q'_freq,strings: char_'Q'_freq,authenticode: chain_max_depth,strings: char_'K'_freq
+9,datadirectories: SECURITY.virtual_address,strings: char_'t'_freq,header: optional.minor_linker_version,strings: char_'z'_freq
+10,strings: char_'z'_freq,histogram: byte_0x7a_freq,section: vsize[hash 43],pefilewarnings: warning[Suspicious flags set for section...]
+11,strings: char_'t'_freq,byteentropy: entropy_bin9/byte_hi_nibble0,datadirectories: RESOURCE.size,strings: entropy
+12,datadirectories: RESOURCE.size,imports: function[hash 989],imports: library[hash 170],strings: char_'q'_freq
+13,section: overlay.entropy,histogram: byte_0x00_freq,datadirectories: SECURITY.virtual_address,authenticode: num_certs
+14,header: optional.minor_linker_version,datadirectories: BASERELOC.size,strings: char_'Q'_freq,section: entropy[hash 32]
+15,header: coff.timestamp,header: optional.minor_linker_version,datadirectories: EXPORT.size,strings: char_'Y'_freq
+16,datadirectories: EXPORT.virtual_address,strings: char_'n'_freq,strings: count[snapshot],datadirectories: DEBUG.size
+17,byteentropy: entropy_bin9/byte_hi_nibble0,strings: entropy,header: optional.dll_char.TERMINAL_SERVER_AWARE,histogram: byte_0xca_freq
+18,strings: char_'_'_freq,strings: char_'_'_freq,strings: char_':'_freq,strings: char_'e'_freq
+19,strings: char_'y'_freq,datadirectories: DEBUG.size,strings: count[dos_msg],strings: char_'Q'_freq
+20,header: optional.image_base,strings: char_'J'_freq,header: optional.sizeof_stack_reserve,"strings: char_""'""_freq"

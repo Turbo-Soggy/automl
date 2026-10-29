@@ -1,2 +1,2 @@
 [leakage] flaml on clean: budget 30 s, quick=True
-[leakage] flaml clean best=lgbm wall_s=46 test_random_auc=0.99089 test_future_auc=0.99046 timing_valid=True
+[leakage] flaml clean best=lgbm wall_s=41 test_random_auc=0.99089 test_future_auc=0.99046 timing_valid=True

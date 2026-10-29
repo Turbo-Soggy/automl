@@ -1,2 +1,2 @@
 [leakage] lgbm_tuned on clean: budget 30 s, quick=True
-[leakage] lgbm_tuned clean best=LightGBM (random config, 479 trees) wall_s=50 test_random_auc=0.99235 test_future_auc=0.99244 timing_valid=True
+[leakage] lgbm_tuned clean best=LightGBM (random config, 479 trees) wall_s=26 test_random_auc=0.99235 test_future_auc=0.99244 timing_valid=True
