@@ -11,6 +11,7 @@ uvicorn==0.54.0
 pydantic==2.14.1
 python-multipart==0.0.32
 streamlit==1.66.1
+altair==6.3.0   # imported by app/story.py (also a streamlit dependency)
 requests==2.34.2
 tqdm==4.70.1
 huggingface_hub==2.3.0

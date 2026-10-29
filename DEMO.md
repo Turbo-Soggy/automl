@@ -26,12 +26,12 @@ scores in its own process and that line says so; the demo still works (`present.
 | # | Section | Time | Say / show |
 |---|---|---|---|
 | 1 | The question | 0:00, 20 s | Spot malware without running it; does AutoML beat hand-tuning; and is the usual test too optimistic? |
-| 2 | The data | 0:20, 40 s | EMBER2024 from Hugging Face; the three numbers (learning files, random test, future test); point at the timeline: the future test is from later weeks. "The model only sees 2,568 measurements per file, in these 12 groups." |
+| 2 | The data | 0:20, 40 s | EMBER2024 from Hugging Face; the three numbers (learning files, random test, future test); point at the timeline: the future test is from later weeks. Read the "What the model sees" line: the model only sees measurements of each file, in the groups listed. |
 | 3 | The contenders | 1:00, 30 s | Team 1: LightGBM tuned by hand with three search strategies, plus two reference points. Team 2: three AutoML tools with the same time budget each. |
 | 4 | How we compared them fairly | 1:30, 30 s | Same files, same seed, test files never used to choose anything, two exams. Read the blue box: the headline score is "malware caught at 1 false alarm per 100 safe programs". |
-| 5 | The results | 2:00, 40 s | The dot chart: top models within a fraction of a point. Read the bullets: AutoGluon ties tuned LightGBM, FLAML and H2O slightly behind, the search strategy barely matters, the straight-line model far behind. |
+| 5 | The results | 2:00, 40 s | The dot chart: top models within a fraction of a point. Read the bullets: AutoGluon ties tuned LightGBM, FLAML and H2O behind, the search strategy barely matters, the straight-line model far behind. |
 | 6 | The winner, and why | 2:40, 40 s | "A tie at the top." AutoGluon's time vs the hand search. Why: every AutoML tool ended up with boosted trees too. Why we deploy LightGBM: chosen before seeing test scores, one small file, explainable. |
-| 7 | Try it live | 3:20, 60 s | Click **Caught malware**: verdict, flag line ("low on purpose: a missed malware costs 10 false alarms"), the red reasons. Then **Upload a file**: `C:\Windows\System32\notepad.exe` ("read in memory, never run"). If time allows, **Missed malware**: be honest about errors. |
+| 7 | Try it live | 3:20, 60 s | Click **Caught malware**: verdict, flag line (read the caption under the card: it is low on purpose), the red reasons. Then **Upload a file**: `C:\Windows\System32\notepad.exe` ("read in memory, never run"). If time allows, **Missed malware**: be honest about errors. |
 | 8 | What we learned | 4:20, 30 s | The four boxes; stress 2 (most real-world alarms would be false) and 3 (no AutoML tool noticed the planted cheat). |
 | 9 | Keep in mind | 4:50, 10 s | Triage aid, not a blocker. Point to the repository link. |
 

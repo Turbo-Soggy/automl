@@ -15,7 +15,10 @@ than the training data, and by planting a "cheat" column to see who notices it.
 
 **See it in about 10 minutes** (no dataset download needed). You need Python 3.12 and
 `git`. The slim `app/requirements.txt` installs only what the presentation needs; the
-40 GB dataset and the AutoML tools are only needed to re-run the experiments.
+40 GB dataset and the AutoML tools are only needed to re-run the experiments. On Windows,
+run the commands in PowerShell or Git Bash (not cmd.exe), and clone into a short path
+such as `C:\automl`: Streamlit ships deeply nested files that can exceed Windows'
+260-character path limit.
 
 ```bash
 git clone https://github.com/Turbo-Soggy/automl.git
@@ -33,7 +36,8 @@ script for presenting it.
 
 **Then read, in this order:**
 
-1. The presentation page (above). Every number on it comes from `reports/tables/`.
+1. The presentation page (above). Every number on it is read from the saved results
+   (`reports/tables/`, `models/final/`, `data/splits/splits_info.json`, `config.py`).
 2. [`reports/report.pdf`](reports/report.pdf): the full write-up of every step.
 3. [`reports/critical_eval.md`](reports/critical_eval.md): the answer to the research question.
 4. [`reports/qa_prep.md`](reports/qa_prep.md): likely questions, with answers.

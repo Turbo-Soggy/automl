@@ -39,6 +39,7 @@ pillow==13.0.0
 uvicorn==0.54.0
 pydantic==2.14.1
 streamlit==1.66.1
+altair==6.3.0   # imported by app/story.py (also a streamlit dependency)
 # Step 5: the API's upload parser (starlette's multipart support) and FastAPI's TestClient (httpx2)
 python-multipart==0.0.32
 httpx2==2.16.0

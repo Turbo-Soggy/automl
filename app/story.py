@@ -152,7 +152,7 @@ def data_section(schema: dict[str, Any]) -> None:
         f'<div class="seg past" style="flex:{split["train"]["n_weeks"]}"><b>{split["train"]["n_weeks"]} weeks</b> '
         f'{split["train"]["date_min"][:10]} to {split["train"]["date_max"][:10]}<br>learning files and the random '
         "test are drawn from here</div>"
-        f'<div class="seg future" style="flex:{max(future["n_weeks"], 18)}"><b>{future["n_weeks"]} later weeks</b> '
+        f'<div class="seg future" style="flex:{future["n_weeks"]}"><b>{future["n_weeks"]} later weeks</b> '
         f'{future["date_min"][:10]} to {future["date_max"][:10]}<br>the future test</div></div>',
         unsafe_allow_html=True)
     groups = [g["name"] for g in schema["feature_groups"]]
@@ -179,7 +179,7 @@ def contenders() -> None:
         "<b>logistic regression</b>, a simple straight-line model.</p></div>"
         '<div class="team" style="border-color:#ea580c"><div class="tt">Team 2: AutoML</div>'
         "<p>Tools that choose the model type and its settings on their own. Each got the same "
-        f"<b>{minutes:g} minutes</b>:</p><ul>"
+        f"<b>{minutes:g}-minute</b> time budget:</p><ul>"
         "<li><b>FLAML</b> (Microsoft): a fast, cost-aware search</li>"
         "<li><b>AutoGluon</b> (Amazon): trains many models and combines the best</li>"
         "<li><b>H2O AutoML</b>: trains many models and stacks them</li></ul></div>"
@@ -195,7 +195,8 @@ def fairness() -> None:
     st.markdown(
         f"- **Same learning files for everyone** ({train} programs). Hand-tuning searched on {subset} of them to "
         "save time, then retrained its best settings on all of them.\n"
-        f"- **Same random seed ({config.SEED})** everywhere, so every run can be repeated.\n"
+        f"- **Same random seed ({config.SEED})** everywhere, so the data splits and the hand-tuning repeat "
+        "exactly (AutoML searches under a time limit can still vary a little from run to run).\n"
         f"- **No peeking.** Hand-tuning chose its settings by {config.CV_FOLDS}-fold cross-validation on the "
         "learning files; the AutoML tools used their own internal checks. The test files were only used for the "
         "final scores.\n"
@@ -252,7 +253,7 @@ def result_sentences(df: pd.DataFrame) -> None:
         if d is None:
             continue
         verdict = ("**a tie**: the difference is smaller than the uncertainty" if not d.significant_95
-                   else ("**ahead**" if d.diff_a_minus_b > 0 else "**slightly behind**"))
+                   else ("**ahead**" if d.diff_a_minus_b > 0 else "**behind**"))
         lines.append(f"**{MODELS[tool][0]}**: {by.loc[tool, 'caught']:.1f}%, {verdict} "
                      f"({pts(d.diff_a_minus_b)}, 95% CI {100 * d.ci_low:+.2f} to {100 * d.ci_high:+.2f}).")
     hand = by.loc[["grid", "random", "optuna"], "caught"]
@@ -305,7 +306,7 @@ def winner(schema: dict[str, Any], model_file: Path) -> None:
         st.caption("From the interpretability notes in reports/tables/automl_vs_manual.csv.")
     st.markdown("Trees ask simple yes/no questions about single measurements (*is the file signed? is the "
                 "content very random?*) and combine thousands of them. They cope with measurements on wildly "
-                "different scales without any rescaling, which suits these 2,568 mixed numbers.")
+                f"different scales without any rescaling, which suits these {schema['feature_dim']:,} mixed numbers.")
     r = rvf.set_index("model")
     tree_gaps = r.loc[["optuna", "grid", "random", "flaml", "autogluon", "h2o"], "roc_auc_gap"]
     st.markdown(f"A straight-line model is not enough: logistic regression's AUC drops by "
@@ -316,8 +317,8 @@ def winner(schema: dict[str, Any], model_file: Path) -> None:
     size_mb = model_file.stat().st_size / 2**20 if model_file.exists() else float("nan")
     st.markdown(
         ("With accuracy tied, we chose on everything else:\n" if tied else "Besides scoring best:\n") +
-        "- Its settings were **chosen before any test score was seen** (by cross-validation on the learning "
-        "files).\n"
+        "- Its settings were **chosen by cross-validation on the learning files**, without looking at any test "
+        "score.\n"
         f"- It is **one file** ({schema['num_trees']} trees, {size_mb:.1f} MB) that needs no AutoML library to run.\n"
         "- It can **explain each decision** with SHAP, as the live demo shows next.")
 
@@ -328,7 +329,7 @@ def learned() -> None:
     rvf = table("random_vs_future")
     if rvf is not None:
         r = rvf.set_index("model")
-        finding("1. The usual random test flatters a little, if you only look at AUC",
+        finding("1. Random test vs future test: by AUC, the gap is small for trees",
                 f"Tuned LightGBM's AUC is {r.loc['optuna', 'test_random_roc_auc']:.4f} on the random test and "
                 f"{r.loc['optuna', 'test_future_roc_auc']:.4f} on the future test: a small gap for trees, a large "
                 f"one ({r.loc['logreg', 'roc_auc_gap']:.4f}) for the straight-line model.")
@@ -341,7 +342,8 @@ def learned() -> None:
             finding("2. In the real world, most alarms would be false",
                     f"Our tests are half malware, so {pct(p.precision_at_test_mix, 0)} of the deployed model's alarms "
                     f"are real. If only {pct(p.prevalence, 0)} of files were malware, about "
-                    f"<b>{pct(p.precision, 0)}</b> of its alarms would be: each catch comes with several false alarms. "
+                    f"<b>{pct(p.precision, 0)}</b> of its alarms would be: about "
+                    f"{p.false_alarms_per_10k / p.true_alarms_per_10k:.0f} false alarms for every real catch. "
                     "That is why it is a triage aid, not an automatic blocker.")
     leak = table("leakage")
     if leak is not None:

@@ -298,7 +298,7 @@ def test_presentation_numbers_come_from_the_tables(monkeypatch) -> None:
     for tool, name in (("autogluon", "AutoGluon"), ("flaml", "FLAML"), ("h2o", "H2O AutoML")):
         row = pw[(pw.test_set == "test_future") & (pw.metric == "tpr_at_1pct_fpr")
                  & (pw.method_a == tool) & (pw.method_b == "lgbm_tuned")].iloc[0]
-        verdict = "**a tie**" if not row.significant_95 else ("**ahead**" if row.diff_a_minus_b > 0 else "**slightly behind**")
+        verdict = "**a tie**" if not row.significant_95 else ("**ahead**" if row.diff_a_minus_b > 0 else "**behind**")
         assert f"**{name}**: {100 * rvf.loc[tool, 'test_future_tpr_at_1pct_fpr']:.1f}%, {verdict}" in text, tool
     avm = pd.read_csv(tables / "automl_vs_manual.csv").set_index("method")
     assert f"AutoGluon got there in **{avm.loc['autogluon', 'wall_minutes']:.0f} minutes**" in text

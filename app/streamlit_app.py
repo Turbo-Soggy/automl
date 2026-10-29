@@ -86,7 +86,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu, footer {di
 .timeline {display: flex; gap: 6px; margin: 1rem 0 1.2rem; font-size: .92rem;}
 .timeline .seg {border-radius: 10px; padding: .6rem .8rem; color: #fff; line-height: 1.35;}
 .timeline .past {background: #2563eb;}
-.timeline .future {background: #7c3aed;}
+.timeline .future {background: #7c3aed; min-width: 150px;}
 .chips {display: flex; flex-wrap: wrap; gap: .4rem;}
 .chip {border: 1px solid rgba(128,128,128,.45); border-radius: 999px; padding: .25rem .75rem; font-size: .95rem;}
 .teams {display: flex; gap: 1rem; flex-wrap: wrap;}
@@ -231,12 +231,15 @@ def verdict_card(res: dict, true_label: int | None) -> None:
         f'<div class="gauge"><div class="fill" style="width:{max(100 * p, 1):.1f}%;background:{colour}"></div>'
         f'<div class="line" style="left:{100 * threshold:.2f}%"></div></div>'
         f'<div class="truth">{html.escape(truth)}</div></div>', unsafe_allow_html=True)
-    st.caption("The flag line is low on purpose: missing a malware file is treated as 10 times worse than a false alarm.")
+    cost = schema()["threshold"]["cost_ratio_fn_to_fp"]
+    st.caption(f"The flag line is low on purpose: missing a malware file is treated as {cost:g} times worse than a "
+               "false alarm.")
 
 
 def reasons(res: dict) -> None:
-    st.markdown("The model looks at 2,568 measurements of the file, in 12 groups. "
-                "These groups pushed its decision the most:")
+    s = schema()
+    st.markdown(f"The model looks at {s['feature_dim']:,} measurements of the file, in {len(s['feature_groups'])} "
+                "groups. These groups pushed its decision the most:")
     top = list(res["family_shap"].items())[:TOP_FAMILIES]   # the API sorts families by |SHAP sum|
     biggest = max(abs(v) for _, v in top) or 1.0
     rows = []
@@ -267,7 +270,7 @@ def technical(res: dict, s: dict[str, Any], scored_by: str, sample: str | None) 
         st.markdown(f"**Top-{TOP_K} SHAP columns** (log-odds; positive pushes towards malicious; "
                     f"base value {res['base_value']:+.3f})")
         st.dataframe(contrib.style.format({"shap": "{:+.3f}", "value": "{:.4g}"}), hide_index=True)
-        st.markdown("**SHAP sum per family (all 2,568 columns)**")
+        st.markdown(f"**SHAP sum per family (all {s['feature_dim']:,} columns)**")
         st.bar_chart(pd.Series(res["family_shap"]), horizontal=True, height=320, sort=False)
 
 
