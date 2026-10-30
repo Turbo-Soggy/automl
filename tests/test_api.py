@@ -247,7 +247,7 @@ def test_upload_never_touches_disk(client, monkeypatch) -> None:
 
 @pytest.mark.parametrize("demo_only", [False, True])
 def test_streamlit_app_runs_in_process(demo_only: bool, monkeypatch) -> None:
-    """The page renders all nine sections and every example kind headless (streamlit's AppTest),
+    """The page renders all ten sections and every example kind headless (streamlit's AppTest),
     scoring in-process, with the full test_future from the cache (when present) and with only
     the shipped demo samples."""
     import streamlit as st
@@ -262,7 +262,8 @@ def test_streamlit_app_runs_in_process(demo_only: bool, monkeypatch) -> None:
     assert not at.exception, at.exception
     text = " ".join(m.value for m in at.markdown)
     for n, title in enumerate(["The question", "The data", "The contenders", "How we compared them fairly",
-                               "The results", "The winner, and why", "Try it live", "What we learned",
+                               "The results", "The full scorecard: every evaluation metric",
+                               "The winner, and why", "Try it live", "What we learned",
                                "Keep in mind"], start=1):
         assert f'<div class="n">{n}</div><div class="t">{title}</div>' in text, title
     right, wrong = "The model was right", "The model got this one wrong"
@@ -275,7 +276,7 @@ def test_streamlit_app_runs_in_process(demo_only: bool, monkeypatch) -> None:
         assert head in text and outcome in text, choice
         assert "points to" in text                     # the plain-language reasons
         assert "What we learned" in text               # the sections after the demo still render
-        assert len(at.expander) == 1 and len(at.dataframe) == 1   # technical detail with the SHAP table
+        assert len(at.expander) == 2 and len(at.dataframe) == 1   # metric glossary; technical detail + SHAP table
     source = " ".join(m.value for m in at.markdown if m.value.startswith("Source:"))
     assert ("demo_samples.npz" in source) == (demo_only or not (Path(api.ROOT) / "data" / "cache" / "X_test.npy").exists())
 
@@ -305,6 +306,38 @@ def test_presentation_numbers_come_from_the_tables(monkeypatch) -> None:
     leak = pd.read_csv(tables / "leakage.csv")
     leak = leak[leak.variant == "leak_detection_ratio"]
     assert f"{int(leak['relied_on_leak'].sum())} of {len(leak)} models made it" in text
+
+
+def test_scorecard_numbers_come_from_the_tables(monkeypatch) -> None:
+    """The scorecard section shows each model's metrics and the deployed confusion matrix from the saved tables."""
+    import pandas as pd
+    import streamlit as st
+    from streamlit.testing.v1 import AppTest
+    st.cache_data.clear()
+    monkeypatch.setenv("EMBER_IN_PROCESS", "1")
+    monkeypatch.setenv("EMBER_DEMO_SAMPLES", "1")
+    at = AppTest.from_file(str(Path(api.ROOT) / "app" / "streamlit_app.py"), default_timeout=180)
+    at.run()
+    assert not at.exception, at.exception
+    text = " ".join(m.value for m in at.markdown)
+    tables = Path(api.ROOT) / "reports" / "tables"
+    rvf = pd.read_csv(tables / "random_vs_future.csv").set_index("model")
+    for model in ("optuna", "autogluon", "logreg"):
+        for test_set in ("test_future", "test_random"):
+            r = rvf.loc[model]
+            assert f"<td>{r[f'{test_set}_roc_auc']:.4f}<span" in text, (model, test_set)
+            assert f"<td>{r[f'{test_set}_f1']:.4f}</td>" in text, (model, test_set)
+            assert f"<td>{100 * r[f'{test_set}_fpr']:.2f}%</td>" in text, (model, test_set)
+    ts = pd.read_csv(tables / "tuning_summary.csv").set_index("method")
+    assert f"<td>{100 * ts.loc['optuna', 'test_future_accuracy']:.2f}%</td>" in text
+    assert f"{ts.loc['optuna', 'best_cv_auc']:.4f} ± {ts.loc['optuna', 'cv_auc_std']:.4f}" in text
+    schema = json.loads((api.model_dir() / "schema.json").read_text(encoding="utf-8"))
+    th = pd.read_csv(tables / "threshold.csv")
+    row = th[th.cost_ratio == schema["threshold"]["cost_ratio_fn_to_fp"]].iloc[0]
+    assert abs(row.threshold - schema["threshold"]["threshold"]) < 1e-12   # the deployed flag line
+    cells = {str(v) for tbl in at.table for v in tbl.value.to_numpy().ravel()}
+    for col in ("test_future_tp", "test_future_fn", "test_future_fp", "test_future_tn"):
+        assert f"{int(row[col]):,}" in cells, col
 
 
 def test_present_launcher_commands() -> None:

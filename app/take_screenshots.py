@@ -7,7 +7,7 @@ Edge on Windows (no browser download); elsewhere run "playwright install chromiu
 
 Screens: (a) a malicious test_future file classified correctly, (b) a benign one classified
 correctly, (c) an upload of a benign Windows binary. Each shot is the live-demo section of the
-page only (section 7, from its heading to the end of the "Why?" reasons), not the whole talk.
+page only (section 8, from its heading to the end of the "Why?" reasons), not the whole talk.
 """
 from __future__ import annotations
 

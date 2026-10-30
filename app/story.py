@@ -1,8 +1,9 @@
 """The presentation sections of the demo page (app/streamlit_app.py), for a non-specialist audience.
 
 One function per section, in the order of the talk: the question, the data, the contenders, how
-they were compared, the results, the winner and why, what we learned, and what to keep in mind.
-The live demo (section 7) stays in streamlit_app.py because it calls the API.
+they were compared, the results, the full scorecard of metrics, the winner and why, what we
+learned, and what to keep in mind. The live demo (section 8) stays in streamlit_app.py because it
+calls the API.
 
 Every number shown is read at run time from reports/tables/, reports/data_check.json,
 data/splits/splits_info.json, models/final/ or config.py; none is typed here. A missing file
@@ -13,6 +14,7 @@ from __future__ import annotations
 
 import html
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -264,7 +266,179 @@ def result_sentences(df: pd.DataFrame) -> None:
     st.markdown("\n".join(f"- {s}" for s in lines))
 
 
-# --- Section 6: the winner and why ------------------------------------------------------------
+# --- Section 6: the full scorecard ------------------------------------------------------------
+
+# What each metric means, in plain words, for the glossary under the tables.
+METRIC_TEXT: list[tuple[str, str]] = [
+    ("ROC-AUC", "how well the scores put malware above safe files, over every possible flag line "
+                "(0.5 = coin flip, 1.0 = perfect)"),
+    ("Caught at 1% false alarms", "TPR at 1% FPR, our headline score: the share of malware caught when the flag "
+                                  "line lets only 1 in 100 safe files be flagged"),
+    ("Accuracy", "the share of all files given the right label"),
+    ("Precision", "of the files flagged as malware, the share that really are malware. It depends on how common "
+                  "malware is: our tests are half malware, so it is high here, and much lower when malware is "
+                  "rare (section 9)"),
+    ("Recall", "of the malware files, the share that were flagged (also called detection rate or TPR)"),
+    ("F1", "one number that balances precision and recall (their harmonic mean)"),
+    ("False alarms", "FPR: the share of safe files wrongly flagged"),
+    ("Brier score", "the average squared gap between the malware probability and the truth; lower is better, "
+                    "and it rewards honest probabilities"),
+]
+
+
+def with_ci(row: pd.Series, col: str, as_pct: bool) -> str:
+    """'value (low–high)' for a metric and its 95% confidence interval."""
+    fmt = (lambda x: f"{100 * x:.2f}%") if as_pct else (lambda x: f"{x:.4f}")
+    return f"{fmt(row[col])} ({fmt(row[col + '_ci_low'])}–{fmt(row[col + '_ci_high'])})"
+
+
+def accuracies(test_set: str) -> dict[str, float]:
+    """Accuracy at the 0.5 cut-off per model id: hand-tuned and baselines from tuning_summary.csv, AutoML from
+    automl_vs_manual.csv (random_vs_future.csv does not carry accuracy)."""
+    out: dict[str, float] = {}
+    ts, avm = table("tuning_summary"), table("automl_vs_manual")
+    if ts is not None:
+        out.update(ts.set_index("method")[f"{test_set}_accuracy"].to_dict())
+    if avm is not None:
+        out.update(avm[avm.kind == "automl"].set_index("method")[f"{test_set}_accuracy"].to_dict())
+    return out
+
+
+def metric_table(rvf: pd.DataFrame, prec: pd.DataFrame, test_set: str, order: list[str]) -> pd.DataFrame:
+    """Every standard metric for every model on one test set, as display strings."""
+    r = rvf.set_index("model")
+    at_half = prec[(prec.test_set == test_set) & (prec.threshold_name == "0.5")].drop_duplicates("model")
+    precision = at_half.set_index("model")["precision_at_test_mix"]   # at the test sets' own ~50/50 mix
+    recall = at_half.set_index("model")["tpr"]
+    acc = accuracies(test_set)
+    rows = []
+    for m in order:
+        row = r.loc[m]
+        rows.append({
+            "Model": MODELS[m][0],
+            "ROC-AUC": with_ci(row, f"{test_set}_roc_auc", as_pct=False),
+            "Caught at 1% false alarms": with_ci(row, f"{test_set}_tpr_at_1pct_fpr", as_pct=True),
+            "Accuracy": pct(acc[m], 2) if m in acc else "n/a",
+            "Precision": pct(precision[m], 2) if m in precision else "n/a",
+            "Recall": pct(recall[m], 2) if m in recall else "n/a",
+            "F1": f"{row[f'{test_set}_f1']:.4f}",
+            "False alarms": pct(row[f"{test_set}_fpr"], 2),
+        })
+    return pd.DataFrame(rows)
+
+
+def scores_html(df: pd.DataFrame) -> str:
+    """A compact HTML table of metric_table() output; a 'value (low–high)' score shows its range small below."""
+    def cell(v: str) -> str:
+        value, _, ci = v.partition(" (")
+        return html.escape(value) + (f'<span class="ci">{html.escape(ci.rstrip(")"))}</span>' if ci else "")
+    head = "".join(f"<th>{html.escape(c)}</th>" for c in df.columns)
+    body = "".join(f"<tr><td>{html.escape(str(row[0]))}</td>"   # the model name is not split
+                   + "".join(f"<td>{cell(str(v))}</td>" for v in row[1:]) + "</tr>"
+                   for row in df.itertuples(index=False))
+    return f'<div class="scores"><table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'
+
+
+def confusion(tp: int, fn: int, fp: int, tn: int) -> pd.DataFrame:
+    """A 2x2 confusion matrix with plain row and column names, as display strings."""
+    return pd.DataFrame({"Flagged as malware": [f"{tp:,}", f"{fp:,}"], "Let through": [f"{fn:,}", f"{tn:,}"]},
+                        index=["Really malware", "Really safe"])
+
+
+def deployed_confusion(schema: dict[str, Any]) -> None:
+    """The deployed model's confusion matrix on the future test, at its flag line and at the plain 0.5 cut-off."""
+    th = table("threshold")
+    if th is None:
+        return
+    rows = th[th.cost_ratio == schema["threshold"]["cost_ratio_fn_to_fp"]]
+    if not len(rows):
+        return
+    t = rows.iloc[0]
+    malware, safe = int(t.test_future_tp + t.test_future_fn), int(t.test_future_fp + t.test_future_tn)
+    fn_half, fp_half = int(t["test_future_fn_at_0.5"]), int(t["test_future_fp_at_0.5"])
+    st.markdown(f"#### The deployed model, file by file (future test: {malware:,} malware, {safe:,} safe)")
+    left, right = st.columns(2)
+    with left:
+        st.markdown(f"**At its flag line ({schema['threshold']['threshold']:.4f})**, as deployed")
+        st.table(confusion(int(t.test_future_tp), int(t.test_future_fn), int(t.test_future_fp),
+                           int(t.test_future_tn)))
+    with right:
+        st.markdown("**At the plain 0.5 cut-off**")
+        st.table(confusion(malware - fn_half, fn_half, fp_half, safe - fp_half))
+    st.caption(f"The low flag line trades {int(t.test_future_fp) - fp_half:,} extra false alarms for "
+               f"{fn_half - int(t.test_future_fn):,} fewer missed malware files: a miss counts "
+               f"{schema['threshold']['cost_ratio_fn_to_fp']:g} times a false alarm. The line was chosen on the "
+               "learning files only. Source: reports/tables/threshold.csv.")
+
+
+def plain_check(how: str) -> str:
+    """An AutoML tool's validation note in the page's words: 'train' -> 'learning files', 2496 -> 2,496."""
+    how = how.replace("of train", "of the learning files")
+    return re.sub(r"\d{4,}", lambda m: f"{int(m.group()):,}", how)
+
+
+def before_the_test() -> None:
+    """The scores each model reached on the learning files alone, before any test file was used."""
+    ts, own = table("tuning_summary"), table("automl_self_estimate")
+    lines = []
+    if ts is not None:
+        s = ts.set_index("method")
+        lines += [f"**{MODELS[m][0]}**: {s.loc[m, 'best_cv_auc']:.4f} ± {s.loc[m, 'cv_auc_std']:.4f}"
+                  for m in ("optuna", "grid", "random", "lgbm_default", "logreg") if m in s.index]
+    if own is not None:
+        o = own[(own.run == "step3") & (own.variant == "clean")].set_index("tool")
+        lines += [f"**{MODELS[m][0]}**: {o.loc[m, 'own_auc']:.4f}, on its {plain_check(o.loc[m, 'own_validation'])}"
+                  for m in ("autogluon", "flaml", "h2o") if m in o.index]
+    if not lines:
+        return
+    st.markdown("#### Before the test: validation on the learning files only")
+    st.markdown(f"Hand-tuned models and baselines: {config.CV_FOLDS}-fold cross-validation AUC (mean ± spread "
+                f"across folds) on the {config.TUNE_SUBSET_N:,}-file tuning subset. AutoML tools: the AUC on the "
+                "part of the learning files each tool held out to check itself. None of these used a test file. "
+                "The checks differ in size and data, so compare each number with that model's test score, not "
+                "with each other.")
+    st.markdown("\n".join(f"- {s}" for s in lines))
+
+
+def calibration_line() -> None:
+    """The Brier score of each model whose future-test probabilities were checked (calibration.csv)."""
+    cal = table("calibration")
+    if cal is None:
+        return
+    c = cal[cal.test_set == "test_future"].set_index("model")
+    names = {TUNED: "optuna", "autogluon": "autogluon", "flaml": "flaml", "h2o": "h2o", "logreg": "logreg"}
+    parts = [f"{MODELS[m][0]} {c.loc[k, 'brier']:.4f}" for k, m in names.items() if k in c.index]
+    st.markdown("**How trustworthy the probabilities are** (Brier score on the future test, lower is better): "
+                + "; ".join(parts) + ".")
+
+
+def scorecard(schema: dict[str, Any]) -> None:
+    """Section 6: every evaluation metric, for when someone asks for more than the headline score."""
+    rvf, prec = table("random_vs_future"), table("precision_both_sets")
+    if rvf is None or prec is None:
+        missing("The full metrics table")
+        return
+    st.markdown("Section 5 led with one score. Here is every standard metric for every model, on both tests, for "
+                "when someone asks. Accuracy, precision, recall, F1 and false alarms use the usual 0.5 cut-off "
+                "on the malware probability. The small grey numbers under a score are its 95% confidence interval. "
+                "The tests are half malware, so precision here is far higher than it would be where malware is rare "
+                "(section 9).")
+    order = (rvf[rvf.model.isin(MODELS)].sort_values("test_future_tpr_at_1pct_fpr", ascending=False)
+             ["model"].tolist())
+    for test_set, label in (("test_future", "Future test (later weeks: the one that matters)"),
+                            ("test_random", "Random test (same weeks as the learning files)")):
+        st.markdown(f"#### {label}")
+        st.markdown(scores_html(metric_table(rvf, prec, test_set, order)), unsafe_allow_html=True)
+    st.caption("Rows in the order of section 5's chart. Sources: reports/tables/random_vs_future.csv, "
+               "precision_both_sets.csv, tuning_summary.csv and automl_vs_manual.csv.")
+    calibration_line()
+    deployed_confusion(schema)
+    before_the_test()
+    with st.expander("What each metric means"):
+        st.markdown("\n".join(f"- **{name}**: {text}." for name, text in METRIC_TEXT))
+
+
+# --- Section 7: the winner and why ------------------------------------------------------------
 
 def plain_pick(note: str) -> str | None:
     """Plain words for an AutoML tool's final model, from its interpretability note; None if not a tree model."""
@@ -323,7 +497,7 @@ def winner(schema: dict[str, Any], model_file: Path) -> None:
         "- It can **explain each decision** with SHAP, as the live demo shows next.")
 
 
-# --- Section 8: what we learned ---------------------------------------------------------------
+# --- Section 9: what we learned ---------------------------------------------------------------
 
 def learned() -> None:
     rvf = table("random_vs_future")
@@ -369,7 +543,7 @@ def learned() -> None:
                     "ordinary future malware.")
 
 
-# --- Section 9: keep in mind and explore ------------------------------------------------------
+# --- Section 10: keep in mind and explore -----------------------------------------------------
 
 def keep_in_mind() -> None:
     st.markdown('<ul class="keep">'

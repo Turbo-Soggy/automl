@@ -1201,14 +1201,14 @@ def deployment(F: dict) -> list[Flowable]:
         "thrember and never stored or executed." % MONO_FONT,
     ]))
     s.append(P("app/streamlit_app.py (with app/story.py) is the presentation page: one page that reads top to bottom "
-               "as the whole talk, for a non-specialist audience, in nine sections: the question, the data, the "
-               "contenders, how they were compared, the results, the winner and why, a live demo, what we learned, "
-               "and the limits. Every number on it is read from reports/tables/. In the live demo the user picks an "
+               "as the whole talk, for a non-specialist audience, in ten sections: the question, the data, the "
+               "contenders, how they were compared, the results, a full scorecard of evaluation metrics, the winner "
+               "and why, a live demo, what we learned, and the limits. Every number on it is read from reports/tables/. In the live demo the user picks an "
                "example (a caught malware file, a safe program, a missed malware file, a false alarm) or uploads a PE "
                "file; the API scores it, and the page shows the verdict and the four feature families that pushed "
                "the decision most (SHAP sums, in plain words). The raw score, the threshold and the top-10 SHAP "
                "columns are in a technical-detail box. present.py starts the API and the page together. MODEL_CARD.md (generated from the same tables) documents data, metrics, "
-               "intended and out-of-scope uses and known limits. DEMO.md is the 5-minute demo script. Deployment is "
+               "intended and out-of-scope uses and known limits. reports/talk_script.md is the presenter's script for the page (generated from the same tables) and DEMO.md the setup notes. Deployment is "
                "local; cloud hosting is left to the student's own account."))
     shots = [
         ("a_malicious_correct.png", "Streamlit demo: a malicious test_future file, correctly flagged, with the "

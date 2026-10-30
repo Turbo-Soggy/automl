@@ -1,9 +1,9 @@
 """Step 5: the presentation page for the malware detector served by app/api.py.
 
 One page that reads top to bottom as the whole talk, for an audience that knows nothing about
-malware detection or AutoML, in nine numbered sections: the question, the data, the contenders,
-how they were compared, the results, the winner and why, a live demo, what we learned, and what
-to keep in mind. Sections other than the live demo live in app/story.py and read every number
+malware detection or AutoML, in ten numbered sections: the question, the data, the contenders,
+how they were compared, the results, the full scorecard of evaluation metrics, the winner and why,
+a live demo, what we learned, and what to keep in mind. Sections other than the live demo live in app/story.py and read every number
 from the saved results in reports/. The live demo sends a file to the API and shows the verdict
 and the feature families that pushed it (SHAP); the raw numbers are in a "Technical detail" box.
 
@@ -97,6 +97,14 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], #MainMenu, footer {di
 .metric {border-left: 5px solid #2563eb; background: rgba(37,99,235,.08); padding: .8rem 1rem; border-radius: 6px;
          font-size: 1.1rem; margin: .4rem 0 .3rem;}
 .winner {font-size: 1.6rem; font-weight: 800; margin: .2rem 0 .6rem;}
+.scores {overflow-x: auto; margin-bottom: .5rem;}
+.scores table {border-collapse: collapse; width: 100%; font-size: .9rem;}
+.scores th {text-align: right; padding: .35rem .45rem; border-bottom: 2px solid rgba(128,128,128,.45);
+  vertical-align: bottom; line-height: 1.25;}
+.scores td {text-align: right; padding: .35rem .45rem; border-bottom: 1px solid rgba(128,128,128,.2);
+  white-space: nowrap; vertical-align: top;}
+.scores th:first-child, .scores td:first-child {text-align: left; white-space: normal; font-weight: 600;}
+.scores .ci {display: block; font-size: .76rem; opacity: .6;}
 .finding {border: 1px solid rgba(128,128,128,.35); border-radius: 12px; padding: .9rem 1.1rem; margin-bottom: .8rem;}
 .finding .ft {font-weight: 800; font-size: 1.15rem; margin-bottom: .3rem;}
 /* The example picker as large pills: the presenter clicks them in front of an audience. */
@@ -189,7 +197,7 @@ def call(in_process: bool, *, features: np.ndarray | None = None, file: bytes | 
     return r.json()
 
 
-# --- The live demo (section 7) ---------------------------------------------------------------
+# --- The live demo (section 8) ---------------------------------------------------------------
 
 def how_good() -> None:
     """The deployed model's operating point, before the audience tries it."""
@@ -334,13 +342,15 @@ def main() -> None:
     story.fairness()
     step(5, "The results")
     story.results()
-    step(6, "The winner, and why")
+    step(6, "The full scorecard: every evaluation metric")
+    story.scorecard(s)
+    step(7, "The winner, and why")
     story.winner(s, api.model_dir() / s["model_file"])
-    step(7, "Try it live")
+    step(8, "Try it live")
     live_demo(s, in_process, scored_by)
-    step(8, "What we learned")
+    step(9, "What we learned")
     story.learned()
-    step(9, "Keep in mind")
+    step(10, "Keep in mind")
     story.keep_in_mind()
     st.caption(f"Model {s['model_version']}, {scored_by}. Details: MODEL_CARD.md.")
 

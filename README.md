@@ -31,8 +31,10 @@ py -3.12 -m venv .venv                                    # Linux / macOS: pytho
 `present.py` starts the prediction API and the presentation page and opens
 http://127.0.0.1:8501 in your browser (Ctrl+C stops both). The page is the whole
 talk, top to bottom: the question, the data, the contenders, how we compared them,
-the results, the winner and why, a live demo, and what we learned. `DEMO.md` is the
-script for presenting it.
+the results, the full scorecard of evaluation metrics, the winner and why, a live demo,
+and what we learned. [`reports/talk_script.md`](reports/talk_script.md) is the script
+for presenting it (what to say, where to scroll and what to click), and `DEMO.md`
+covers setup and backups.
 
 **Then read, in this order:**
 
@@ -86,7 +88,7 @@ script for presenting it.
 | Skill-based evaluation report (the college's Word template; certificates page left for the student) | [`reports/skill_report.docx`](reports/skill_report.docx) and [`reports/skill_report.pdf`](reports/skill_report.pdf), built by `scripts/build_skill_report.py` (the PDF is printed by Microsoft Word, Windows only) |
 | Slides (5-minute talk, with speaker notes) and Q&A preparation | [`reports/slides.pptx`](reports/slides.pptx) (`scripts/build_slides.py`), [`reports/qa_prep.md`](reports/qa_prep.md) |
 | Model card | [`MODEL_CARD.md`](MODEL_CARD.md) |
-| Demo script and screenshots | [`DEMO.md`](DEMO.md), [`reports/screenshots/`](reports/screenshots/) |
+| Presentation script (what to say and where to click on the page), demo notes and screenshots | [`reports/talk_script.md`](reports/talk_script.md) (`scripts/build_talk_script.py`), [`DEMO.md`](DEMO.md), [`reports/screenshots/`](reports/screenshots/) |
 | Deployed model and app | [`models/final/`](models/final/) (model, `schema.json`, threshold), [`app/api.py`](app/api.py) (FastAPI), [`app/streamlit_app.py`](app/streamlit_app.py) (the presentation page; start it with `present.py`) |
 | Answer to the research question | [`reports/critical_eval.md`](reports/critical_eval.md), [`reports/limitations.md`](reports/limitations.md) |
 | Step write-ups | [`reports/tuning_writeup.md`](reports/tuning_writeup.md) (Step 2), [`reports/automl_comparison.md`](reports/automl_comparison.md) (Step 3), [`reports/leakage.md`](reports/leakage.md), [`reports/temporal_bias.md`](reports/temporal_bias.md), [`reports/explainability.md`](reports/explainability.md) (Step 4) |
@@ -340,7 +342,7 @@ src/
   critical_eval_writeup.py  renders reports/critical_eval.md and reports/limitations.md from the tables
 app/
   api.py               Step 5 FastAPI service: /health, /predict (validated vector), /predict_file (in memory)
-  streamlit_app.py     Step 5 presentation page: the whole talk in nine sections, with the live demo (calls the API)
+  streamlit_app.py     Step 5 presentation page: the whole talk in ten sections, with the live demo (calls the API)
   story.py             the page's presentation sections, every number read from reports/tables/
   model_card.py        renders MODEL_CARD.md from models/final/schema.json and the tables
   take_screenshots.py  saves the demo screenshots to reports/screenshots/
@@ -360,6 +362,7 @@ scripts/
   build_slides.py      Step 6: reports/slides.pptx with speaker notes
   build_skill_report.py  Step 6: reports/skill_report.docx/.pdf in the college's report template
   report_diagrams.py   the UML class and sequence diagrams for that report
+  build_talk_script.py reports/talk_script.md: the presenter's script for the page, numbers from the tables
 tests/
   conftest.py          puts the project root on sys.path; skip helpers
   test_splits.py       disjointness, temporal order, sizes, balance, CV folds, feature groups

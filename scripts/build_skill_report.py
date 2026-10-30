@@ -620,11 +620,13 @@ def system_design(doc: Document, F: dict[str, Any]) -> None:
 
     heading(doc, "3.3 User interface design (Streamlit)", before=8)
     para(doc, "The interface is a single web page titled \"Can a model spot malware without running it?\" that reads "
-              "top to bottom as the whole presentation, in nine numbered sections, with no tabs or side panels.")
+              "top to bottom as the whole presentation, in ten numbered sections, with no tabs or side panels.")
     bullets(doc, [
         "**Story sections.** The question, the data (with a timeline of the training and future weeks), the "
         "contenders, how they were compared, the results (a chart of every model with 95% confidence intervals), "
-        "the winner and why, what was learned, and the limits. Every number is read from reports/tables/.",
+        "a full scorecard (AUC, accuracy, precision, recall, F1 and false-alarm rate for every model on both "
+        "tests, the deployed model's confusion matrix, and the cross-validation scores), the winner and why, what "
+        "was learned, and the limits. Every number is read from reports/tables/.",
         "**Try it live.** Five buttons pick a caught malware file, a safe program, a missed malware file, a false "
         "alarm, or an upload of a Windows program. The page shows a red or green verdict card with the malware "
         "score, the flag line and the true answer, then the feature families that pushed the decision, in plain "
