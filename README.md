@@ -83,6 +83,7 @@ script for presenting it.
 | Deliverable | File |
 |---|---|
 | Report (PDF) | [`reports/report.pdf`](reports/report.pdf), built by `scripts/build_report.py` |
+| Skill-based evaluation report (the college's Word template; certificates page left for the student) | [`reports/skill_report.docx`](reports/skill_report.docx) and [`reports/skill_report.pdf`](reports/skill_report.pdf), built by `scripts/build_skill_report.py` (the PDF is printed by Microsoft Word, Windows only) |
 | Slides (5-minute talk, with speaker notes) and Q&A preparation | [`reports/slides.pptx`](reports/slides.pptx) (`scripts/build_slides.py`), [`reports/qa_prep.md`](reports/qa_prep.md) |
 | Model card | [`MODEL_CARD.md`](MODEL_CARD.md) |
 | Demo script and screenshots | [`DEMO.md`](DEMO.md), [`reports/screenshots/`](reports/screenshots/) |
@@ -357,6 +358,8 @@ scripts/
   export_model.py      Step 5: copies the tuned LightGBM to models/final/ with schema.json and the model card
   build_report.py      Step 6: reports/report.pdf (and figures/architecture.png) from the saved outputs
   build_slides.py      Step 6: reports/slides.pptx with speaker notes
+  build_skill_report.py  Step 6: reports/skill_report.docx/.pdf in the college's report template
+  report_diagrams.py   the UML class and sequence diagrams for that report
 tests/
   conftest.py          puts the project root on sys.path; skip helpers
   test_splits.py       disjointness, temporal order, sizes, balance, CV folds, feature groups
